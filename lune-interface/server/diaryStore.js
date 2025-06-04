@@ -30,14 +30,40 @@ exports.getAll = async function() {
   return diary.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 };
 
+function parseTags(text) {
+  const fields = new Set();
+  const states = new Set();
+  const loops = new Set();
+  if (typeof text === 'string') {
+    const regex = /\[\[([^\[]+?)\]\]/g;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      const tag = `[[${match[1]}]]`;
+      if (/loop/i.test(match[1])) {
+        loops.add(tag);
+      } else if (/state/i.test(match[1])) {
+        states.add(tag);
+      } else {
+        fields.add(tag);
+      }
+    }
+  }
+  return {
+    fields: Array.from(fields),
+    states: Array.from(states),
+    loops: Array.from(loops)
+  };
+}
+
 exports.add = async function(text) {
+  const tags = parseTags(text);
   const entry = {
     id: crypto.randomUUID(),
     text,
     timestamp: new Date().toISOString(),
-    fields: [],
-    states: [],
-    loops: [],
+    fields: tags.fields,
+    states: tags.states,
+    loops: tags.loops,
     links: [],
     agent_logs: {}
   };

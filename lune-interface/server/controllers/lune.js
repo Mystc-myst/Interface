@@ -40,3 +40,19 @@ exports.handleUserMessage = async (req, res) => {
     res.status(500).json({ error: "Lune failed to reply." });
   }
 };
+
+// Lightweight offline reflection for diary pipeline
+const diaryStore = require('../diaryStore');
+
+exports.processEntry = async function(entry) {
+  entry.agent_logs = entry.agent_logs || {};
+  const resOut = entry.agent_logs.Resistor ? entry.agent_logs.Resistor.text : '';
+  const interpOut = entry.agent_logs.Interpreter ? entry.agent_logs.Interpreter.text : '';
+  const forgeOut = entry.agent_logs.Forge ? entry.agent_logs.Forge.text : '';
+  const reflection = `Based on your entry and analyses: ${resOut}; ${interpOut}; ${forgeOut}`;
+  entry.agent_logs.Lune = {
+    text: reflection,
+    references: ['text', 'Resistor', 'Interpreter', 'Forge']
+  };
+  await diaryStore.saveEntry(entry);
+};
