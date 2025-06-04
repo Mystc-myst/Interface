@@ -1,8 +1,12 @@
 // /server/controllers/lune.js (for OpenAI v4+)
 const OpenAI = require('openai');
 
+if (!process.env.OPENAI_API_KEY) {
+  console.warn('Warning: OPENAI_API_KEY is not set. Lune replies will fail.');
+}
+
 const openai = new OpenAI({
-  apiKey: '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'
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 
