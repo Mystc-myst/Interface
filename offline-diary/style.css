@@ -16,6 +16,14 @@ h1 {
   margin-bottom: 10px;
   text-align: center;
 }
+#file-buttons input {
+  margin-right: 6px;
+}
+#searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
 #entryInput {
   width: 100%;
   box-sizing: border-box;
