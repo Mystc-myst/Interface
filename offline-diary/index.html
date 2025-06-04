@@ -10,9 +10,14 @@
   <div class="container">
     <h1>Offline Diary</h1>
     <div id="file-buttons">
+      <input id="passwordInput" type="password" placeholder="Password (optional)">
       <button id="openFile">Open Diary</button>
       <button id="createFile">Create Diary</button>
+      <button id="exportBtn" disabled>Export CSV</button>
+      <button id="importBtn">Import JSON</button>
+      <input id="importInput" type="file" accept=".json" style="display:none">
     </div>
+    <input id="searchInput" placeholder="Search entries..." disabled>
     <textarea id="entryInput" placeholder="Write a new entry..." rows="4" disabled></textarea>
     <button id="saveEntry" disabled>Save Entry</button>
     <div id="entriesList"></div>
