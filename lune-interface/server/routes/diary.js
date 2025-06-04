@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const DiaryEntry = require('../models/DiaryEntry');
+const resistor = require('../controllers/resistor');
+const interpreter = require('../controllers/interpreter');
+const forge = require('../controllers/forge');
 
 // Create a diary entry (accepts 'text' or legacy 'content')
 router.post('/', async (req, res) => {
@@ -11,6 +14,16 @@ router.post('/', async (req, res) => {
     }
     const entry = new DiaryEntry({ text });
     await entry.save();
+
+    // Trigger simple agent processing sequentially
+    try {
+      await resistor.processEntry(entry);
+      await interpreter.processEntry(entry);
+      await forge.processEntry(entry);
+    } catch (err) {
+      console.error('Agent processing failed:', err);
+    }
+
     res.status(201).json(entry);
   } catch (err) {
     res.status(400).json({ error: err.message });
