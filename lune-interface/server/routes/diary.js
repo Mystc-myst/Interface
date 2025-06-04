@@ -50,7 +50,29 @@ router.put('/:id', async (req, res) => {
     }
     const entry = await diaryStore.updateText(req.params.id, text);
     if (!entry) return res.status(404).json({ error: 'Entry not found.' });
+
+    // Re-run simple agent pipeline after edit
+    try {
+      await resistor.processEntry(entry);
+      await interpreter.processEntry(entry);
+      await forge.processEntry(entry);
+      await lune.processEntry(entry);
+    } catch (err) {
+      console.error('Agent processing failed:', err);
+    }
+
     res.json(entry);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete an entry
+router.delete('/:id', async (req, res) => {
+  try {
+    const removed = await diaryStore.deleteById(req.params.id);
+    if (!removed) return res.status(404).json({ error: 'Entry not found.' });
+    res.json({ message: 'Entry deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

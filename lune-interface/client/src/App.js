@@ -36,6 +36,14 @@ function App() {
     setSelectedEntry({ text: '' });
   };
 
+  const handleDelete = async (id) => {
+    await fetch(`/diary/${id}`, { method: 'DELETE' });
+    await fetchEntries();
+    if (selectedEntry && (selectedEntry._id === id || selectedEntry.id === id)) {
+      setSelectedEntry(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-luneGray p-4">
       <h1 className="text-lunePurple text-3xl font-bold mb-4 text-center">Lune Diary</h1>
@@ -58,6 +66,7 @@ function App() {
             entries={entries}
             onSelect={handleSelect}
             onNew={handleNew}
+            onDelete={handleDelete}
           />
         </div>
         {/* Right panel: DiaryEditable */}

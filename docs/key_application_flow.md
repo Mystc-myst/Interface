@@ -9,3 +9,4 @@ This document outlines the current flow for diary entries and agent processing.
 4. **Context management** – All contextual data flows through `diaryStore.js`, allowing expansion into features like the Knowledge Dock or additional agent pipelines without using a database.
 
 The intent is to keep the pipeline modular so future agents can reference and update diary entries or derived outputs while maintaining history.
+5. **Editing and deletion** – Existing entries can be updated or removed via the API. Editing an entry will refresh its timestamp and re-run the Resistor → Interpreter → Forge → Lune agent chain so the reflections stay in sync.

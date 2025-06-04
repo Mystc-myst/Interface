@@ -93,3 +93,11 @@ exports.saveEntry = async function(entry) {
   }
   return entry;
 };
+
+exports.deleteById = async function(id) {
+  const index = diary.findIndex(e => e.id === id);
+  if (index === -1) return null;
+  const removed = diary.splice(index, 1)[0];
+  save();
+  return removed;
+};

@@ -22,8 +22,9 @@ function DiaryEditable({ entry, onSave }) {
     e.preventDefault();
     if (!text.trim()) return;
     try {
-      if (entry._id) {
-        await fetch(`/diary/${entry._id}`, {
+      const id = entry.id || entry._id;
+      if (id) {
+        await fetch(`/diary/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text }),

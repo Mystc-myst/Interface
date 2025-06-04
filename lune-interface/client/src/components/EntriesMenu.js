@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function EntriesMenu({ entries, onSelect, onNew }) {
+function EntriesMenu({ entries, onSelect, onNew, onDelete }) {
   const [search, setSearch] = useState('');
 
   // Filter entries by search term
@@ -32,17 +32,35 @@ function EntriesMenu({ entries, onSelect, onNew }) {
         {filtered.map(entry => (
           <div
             key={entry._id || entry.id || Math.random()}
-            className="cursor-pointer p-2 rounded hover:bg-lunePurple/10 border-b"
-            tabIndex={0}
-            role="button"
-            onClick={() => onSelect(entry)}
-            onKeyPress={e => (e.key === 'Enter' || e.key === ' ') && onSelect(entry)}
-            aria-label={`Select diary entry from ${entry.timestamp ? new Date(entry.timestamp).toLocaleDateString() : 'Unknown date'}`}
+            className="p-2 border-b flex justify-between items-start hover:bg-lunePurple/10"
           >
-            <div className="text-xs text-luneDarkGray">
-              {entry.timestamp ? new Date(entry.timestamp).toLocaleString() : 'No Date'}
+            <div
+              className="flex-1 cursor-pointer"
+              tabIndex={0}
+              role="button"
+              onClick={() => onSelect(entry)}
+              onKeyPress={e => (e.key === 'Enter' || e.key === ' ') && onSelect(entry)}
+              aria-label={`Select diary entry from ${entry.timestamp ? new Date(entry.timestamp).toLocaleDateString() : 'Unknown date'}`}
+            >
+              <div className="text-xs text-luneDarkGray">
+                {entry.timestamp ? new Date(entry.timestamp).toLocaleString() : 'No Date'}
+              </div>
+              <div className="truncate">{entry.text || '[No Content]'}</div>
             </div>
-            <div className="truncate">{entry.text || '[No Content]'}</div>
+            <div className="flex gap-2">
+              <button
+                className="text-lunePurple text-sm"
+                onClick={() => onSelect(entry)}
+              >
+                Edit
+              </button>
+              <button
+                className="text-red-600 text-sm"
+                onClick={() => onDelete && onDelete(entry.id || entry._id)}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))}
         {filtered.length === 0 && (
