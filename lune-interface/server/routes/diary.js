@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const diaryStore = require('../diaryStore');
-const resistor = require('../controllers/resistor');
-const interpreter = require('../controllers/interpreter');
-const forge = require('../controllers/forge');
-const lune = require('../controllers/lune');
+// Agent controllers are not used in offline mode
+// const resistor = require('../controllers/resistor');
+// const interpreter = require('../controllers/interpreter');
+// const forge = require('../controllers/forge');
+// const lune = require('../controllers/lune');
 
 // Create a diary entry (accepts 'text' or legacy 'content')
 router.post('/', async (req, res) => {
@@ -15,15 +16,7 @@ router.post('/', async (req, res) => {
     }
     const entry = await diaryStore.add(text);
 
-    // Trigger simple agent processing sequentially
-    try {
-      await resistor.processEntry(entry);
-      await interpreter.processEntry(entry);
-      await forge.processEntry(entry);
-      await lune.processEntry(entry);
-    } catch (err) {
-      console.error('Agent processing failed:', err);
-    }
+    // Agent processing disabled for offline diary
 
     res.status(201).json(entry);
   } catch (err) {
@@ -50,14 +43,7 @@ router.put('/:id', async (req, res) => {
     }
     const entry = await diaryStore.updateText(req.params.id, text);
     if (!entry) return res.status(404).json({ error: 'Entry not found.' });
-    try {
-      await resistor.processEntry(entry);
-      await interpreter.processEntry(entry);
-      await forge.processEntry(entry);
-      await lune.processEntry(entry);
-    } catch (err) {
-      console.error('Agent processing failed:', err);
-    }
+    // Agent processing disabled for offline diary
     res.json(entry);
   } catch (err) {
     res.status(500).json({ error: err.message });
