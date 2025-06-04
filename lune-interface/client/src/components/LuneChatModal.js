@@ -16,7 +16,7 @@ export default function LuneChatModal({ open, onClose, entries }) {
     setLoading(true);
 
     try {
-      const res = await fetch('/lune/send', {
+      const res = await fetch('/api/lune/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
