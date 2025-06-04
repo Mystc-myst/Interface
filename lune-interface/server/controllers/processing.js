@@ -1,4 +1,5 @@
-const StateLog = require('../models/StateLog');
+const crypto = require('crypto');
+const stateLogStore = require('../stateLogStore');
 
 // Controller function to trigger deeper analysis (MVP Mock)
 exports.triggerAnalysis = async (req, res) => {
@@ -10,17 +11,18 @@ exports.triggerAnalysis = async (req, res) => {
   const symbolicTags = ["concept_a", "emotion_b", "archetype_c"]; // Example mocked tags
   const loopType = "reflection_loop";
 
-  // Create a new state log entry and save to MongoDB
-  const newStateLog = new StateLog({
-    timestamp: new Date(),
+  // Create a new state log entry and save to JSON file
+  const newStateLog = {
+    id: crypto.randomUUID(),
+    timestamp: new Date().toISOString(),
     loopType: loopType,
     somaticFeedback: somaticFeedback,
     symbolicTags: symbolicTags,
     processingStage: "Forge (Mocked)" // Indicate the final stage
-  });
+  };
 
   try {
-    await newStateLog.save(); // Save the state log
+    await stateLogStore.add(newStateLog); // Save the state log
     res.json({ message: 'Deeper analysis mocked successfully', symbolicTags }); // Send mocked tags back
   } catch (err) {
     console.error('Error triggering analysis or saving state log:', err);
