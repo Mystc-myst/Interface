@@ -33,7 +33,7 @@ function App() {
 
   // Click "New Entry" resets the editor
   const handleNew = () => {
-    setSelectedEntry({ content: '' });
+    setSelectedEntry({ text: '' });
   };
 
   return (
