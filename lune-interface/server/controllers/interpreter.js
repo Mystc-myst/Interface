@@ -1,4 +1,4 @@
-const DiaryEntry = require('../models/DiaryEntry');
+const diaryStore = require('../diaryStore');
 
 exports.processEntry = async function(entry) {
   entry.agent_logs = entry.agent_logs || {};
@@ -8,6 +8,5 @@ exports.processEntry = async function(entry) {
     text: `Word count: ${wordCount}. Prior analysis: ${previous}`,
     references: []
   };
-  entry.markModified('agent_logs');
-  await entry.save();
+  await diaryStore.saveEntry(entry);
 };

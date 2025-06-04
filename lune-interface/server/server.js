@@ -1,6 +1,5 @@
 // server.js (FINAL, most reliable dotenv loading for Windows + Node)
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const luneRoutes = require('./routes/lune');
 const processingRoutes = require('./routes/processing');
@@ -25,25 +24,7 @@ app.use('/diary', diaryRoutes);
 app.use('/api/lune', luneRoutes); // <-- Lune chat API: /api/lune/send
 app.use('/api/processing', processingRoutes);
 
-// --- Database ---
-async function connectToDatabase() {
-  try {
-    const uri = process.env.MONGO_URI;
-    if (!uri) {
-      console.error('Error: MONGO_URI is not defined in .env file!');
-      process.exit(1);
-    }
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('MongoDB database connection established successfully');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
-  }
-}
-connectToDatabase();
+// No database connection needed; diary entries are stored in diary.json
 
 // --- Start Server ---
 app.listen(port, () => {
