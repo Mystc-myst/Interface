@@ -20,7 +20,7 @@ export default function EntriesPage({ entries, refreshEntries, startEdit }) {
             <div className="whitespace-pre-wrap mb-2">{entry.text}</div>
             {entry.agent_logs?.Lune && (
               <div className="mb-2 p-2 bg-luneGray rounded">
-                <span className="font-semibold">Lune:</span> {entry.agent_logs.Lune.text}
+                <span className="font-semibold">Lune:</span> {entry.agent_logs.Lune.reflection}
               </div>
             )}
             <button onClick={() => { startEdit(entry.id); navigate('/chat'); }} className="text-sm text-lunePurple mr-2">Edit</button>
