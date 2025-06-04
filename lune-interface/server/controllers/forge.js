@@ -6,7 +6,7 @@ exports.processEntry = async function(entry) {
   const summary = entry.text ? entry.text.slice(0, 60) : '';
   entry.agent_logs.Forge = {
     text: `Summary: ${summary}... | Interpreter says: ${interp}`,
-    references: []
+    references: ['Resistor', 'Interpreter', 'fields', 'loops']
   };
   await diaryStore.saveEntry(entry);
 };

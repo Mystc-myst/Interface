@@ -4,6 +4,7 @@ const diaryStore = require('../diaryStore');
 const resistor = require('../controllers/resistor');
 const interpreter = require('../controllers/interpreter');
 const forge = require('../controllers/forge');
+const lune = require('../controllers/lune');
 
 // Create a diary entry (accepts 'text' or legacy 'content')
 router.post('/', async (req, res) => {
@@ -19,6 +20,7 @@ router.post('/', async (req, res) => {
       await resistor.processEntry(entry);
       await interpreter.processEntry(entry);
       await forge.processEntry(entry);
+      await lune.processEntry(entry);
     } catch (err) {
       console.error('Agent processing failed:', err);
     }

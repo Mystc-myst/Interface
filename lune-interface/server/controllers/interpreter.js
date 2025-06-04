@@ -6,7 +6,7 @@ exports.processEntry = async function(entry) {
   const previous = entry.agent_logs.Resistor ? entry.agent_logs.Resistor.text : '';
   entry.agent_logs.Interpreter = {
     text: `Word count: ${wordCount}. Prior analysis: ${previous}`,
-    references: []
+    references: ['text', 'Resistor']
   };
   await diaryStore.saveEntry(entry);
 };

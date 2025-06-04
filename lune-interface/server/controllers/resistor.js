@@ -20,7 +20,7 @@ exports.processEntry = async function(entry) {
   entry.agent_logs = entry.agent_logs || {};
   entry.agent_logs.Resistor = {
     text: `Sentiment score: ${score}`,
-    references: []
+    references: ['text']
   };
   await diaryStore.saveEntry(entry);
 };
