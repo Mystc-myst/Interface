@@ -1,4 +1,4 @@
-const DiaryEntry = require('../models/DiaryEntry');
+const diaryStore = require('../diaryStore');
 
 // Simple sentiment-like analysis. Counts some positive/negative words.
 const positiveWords = ['happy','joy','excited','good','great'];
@@ -22,6 +22,5 @@ exports.processEntry = async function(entry) {
     text: `Sentiment score: ${score}`,
     references: []
   };
-  entry.markModified('agent_logs');
-  await entry.save();
+  await diaryStore.saveEntry(entry);
 };

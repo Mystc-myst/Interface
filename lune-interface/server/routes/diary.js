@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const DiaryEntry = require('../models/DiaryEntry');
+const diaryStore = require('../diaryStore');
 const resistor = require('../controllers/resistor');
 const interpreter = require('../controllers/interpreter');
 const forge = require('../controllers/forge');
@@ -12,8 +12,7 @@ router.post('/', async (req, res) => {
     if (!text || typeof text !== 'string') {
       return res.status(400).json({ error: 'Text is required.' });
     }
-    const entry = new DiaryEntry({ text });
-    await entry.save();
+    const entry = await diaryStore.add(text);
 
     // Trigger simple agent processing sequentially
     try {
@@ -33,7 +32,7 @@ router.post('/', async (req, res) => {
 // Get all entries (newest first)
 router.get('/', async (req, res) => {
   try {
-    const entries = await DiaryEntry.find().sort({ timestamp: -1 });
+    const entries = await diaryStore.getAll();
     res.json(entries);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -47,11 +46,7 @@ router.put('/:id', async (req, res) => {
     if (!text || typeof text !== 'string') {
       return res.status(400).json({ error: 'Text is required.' });
     }
-    const entry = await DiaryEntry.findByIdAndUpdate(
-      req.params.id,
-      { text, timestamp: new Date() },
-      { new: true }
-    );
+    const entry = await diaryStore.updateText(req.params.id, text);
     if (!entry) return res.status(404).json({ error: 'Entry not found.' });
     res.json(entry);
   } catch (err) {
