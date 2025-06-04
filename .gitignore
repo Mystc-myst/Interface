@@ -1,0 +1,5 @@
+# Ignore node_modules and archives
+node_modules/
+*.zip
+lune-interface/server/node_modules/
+lune-interface/client/node_modules/
