@@ -5,7 +5,7 @@ function EntriesMenu({ entries, onSelect, onNew }) {
 
   // Filter entries by search term
   const filtered = (Array.isArray(entries) ? entries : []).filter(e =>
-    (e.content || e.text || '').toLowerCase().includes(search.toLowerCase())
+    (e.text || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -37,12 +37,12 @@ function EntriesMenu({ entries, onSelect, onNew }) {
             role="button"
             onClick={() => onSelect(entry)}
             onKeyPress={e => (e.key === 'Enter' || e.key === ' ') && onSelect(entry)}
-            aria-label={`Select diary entry from ${entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : 'Unknown date'}`}
+            aria-label={`Select diary entry from ${entry.timestamp ? new Date(entry.timestamp).toLocaleDateString() : 'Unknown date'}`}
           >
             <div className="text-xs text-luneDarkGray">
-              {entry.createdAt ? new Date(entry.createdAt).toLocaleString() : 'No Date'}
+              {entry.timestamp ? new Date(entry.timestamp).toLocaleString() : 'No Date'}
             </div>
-            <div className="truncate">{entry.content || entry.text || '[No Content]'}</div>
+            <div className="truncate">{entry.text || '[No Content]'}</div>
           </div>
         ))}
         {filtered.length === 0 && (
