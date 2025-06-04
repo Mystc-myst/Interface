@@ -65,7 +65,7 @@ function DiaryEditable({ entry, onSave }) {
           {Object.entries(entry.agent_logs).map(([agent, log]) => (
             <div key={agent} className="border rounded p-2 bg-luneGray/20">
               <h3 className="font-semibold text-sm mb-1">{agent}</h3>
-              <div className="text-sm whitespace-pre-wrap">{log.text}</div>
+              <div className="text-sm whitespace-pre-wrap">{log.reflection || log.text}</div>
             </div>
           ))}
         </div>

@@ -53,7 +53,7 @@ export default function DockChat({ entries, refreshEntries, editingId, setEditin
             <div className="whitespace-pre-wrap">{entry.text}</div>
             {entry.agent_logs?.Lune && (
               <div className="mt-2 p-2 bg-luneGray rounded">
-                <span className="font-semibold">Lune:</span> {entry.agent_logs.Lune.text}
+                <span className="font-semibold">Lune:</span> {entry.agent_logs.Lune.reflection}
               </div>
             )}
             <button onClick={() => startEdit(entry.id)} className="text-sm text-lunePurple mt-1">Edit</button>

@@ -22,7 +22,7 @@ const DiaryEntrySchema = new mongoose.Schema({
       references: [String]
     },
     Lune: {
-      text: String,
+      reflection: String,
       references: [String]
     }
   }

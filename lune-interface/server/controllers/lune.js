@@ -51,7 +51,7 @@ exports.processEntry = async function(entry) {
   const forgeOut = entry.agent_logs.Forge ? entry.agent_logs.Forge.text : '';
   const reflection = `Based on your entry and analyses: ${resOut}; ${interpOut}; ${forgeOut}`;
   entry.agent_logs.Lune = {
-    text: reflection,
+    reflection,
     references: ['text', 'Resistor', 'Interpreter', 'Forge']
   };
   await diaryStore.saveEntry(entry);
