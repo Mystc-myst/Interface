@@ -27,3 +27,26 @@ Entries are stored as an array of objects with `id`, `text` and `timestamp`.
 Large dependencies such as `node_modules` and the archived `lune-interface.zip`
 have been removed and are ignored via `.gitignore` to keep the project small and
 focused on the offline diary.
+
+## React Client and Server
+
+The original React front‑end and Express backend live in `lune-interface/`.
+After running `./setup.sh` to install dependencies you can start them with:
+
+```bash
+cd lune-interface/server && npm start
+# in a separate terminal
+cd lune-interface/client && npm start
+```
+
+The client is configured to proxy API requests to `http://localhost:5001`.
+To enable conversations with Lune uncomment the line enabling the route in
+`lune-interface/server/server.js`:
+
+```js
+// app.use('/api/lune', luneRoutes);
+```
+
+Once enabled the React app shows a **Chat with Lune** button. Messages are
+sent to `/api/lune/send` and the conversation history is written under
+`offline-diary/chatlogs/`.
