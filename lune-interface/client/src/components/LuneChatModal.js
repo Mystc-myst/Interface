@@ -5,6 +5,19 @@ export default function LuneChatModal({ open, onClose, entries }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const handleClose = async () => {
+    try {
+      await fetch('/api/lune/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversation: messages })
+      });
+    } catch (e) {
+      console.error('Failed to log conversation', e);
+    }
+    onClose();
+  };
+
   if (!open) return null;
 
   // Handle sending a message to the backend
@@ -37,7 +50,7 @@ export default function LuneChatModal({ open, onClose, entries }) {
       <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col">
         <div className="flex justify-between items-center mb-2">
           <h2 className="font-bold text-xl text-lunePurple">Chat with Lune</h2>
-          <button onClick={onClose} className="text-lunePurple font-bold text-2xl">&times;</button>
+          <button onClick={handleClose} className="text-lunePurple font-bold text-2xl">&times;</button>
         </div>
         <div className="flex-1 overflow-y-auto mb-4 space-y-2 max-h-80 border rounded p-2 bg-luneGray/30">
           {messages.map((msg, i) => (

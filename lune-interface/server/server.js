@@ -2,7 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 // Agent routes are disabled for offline diary usage
-// const luneRoutes = require('./routes/lune');
+const luneRoutes = require('./routes/lune');
 // const processingRoutes = require('./routes/processing');
 
 const dotenv = require('dotenv');
@@ -22,7 +22,7 @@ app.use(express.json());
 // --- Routes ---
 const diaryRoutes = require('./routes/diary');
 app.use('/diary', diaryRoutes);
-// app.use('/api/lune', luneRoutes); // <-- Lune chat API: /api/lune/send
+app.use('/api/lune', luneRoutes); // <-- Lune chat API: /api/lune/send
 // app.use('/api/processing', processingRoutes);
 
 // No database connection needed; diary entries are stored in diary.json
