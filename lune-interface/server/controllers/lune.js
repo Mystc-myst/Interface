@@ -14,11 +14,13 @@ const openai = new OpenAI({
 exports.handleUserMessage = async (req, res) => {
   const { entries, conversation } = req.body;
   // Persist the conversation so far
+  /*
   try {
     await chatLogStore.add(conversation || []);
   } catch (err) {
     console.error('Failed to save chat log:', err);
   }
+  */
   const systemMessage = {
     role: "system",
     content: "You are Lune, a helpful, reflective journaling companion. You receive the user's diary entries as context and should use them to provide thoughtful, supportive responses."
