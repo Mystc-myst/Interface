@@ -1,5 +1,6 @@
 // /server/controllers/lune.js (for OpenAI v4+)
 const OpenAI = require('openai');
+const chatLogStore = require('../chatLogStore');
 
 if (!process.env.OPENAI_API_KEY) {
   console.warn('Warning: OPENAI_API_KEY is not set. Lune replies will fail.');
@@ -12,6 +13,12 @@ const openai = new OpenAI({
 
 exports.handleUserMessage = async (req, res) => {
   const { entries, conversation } = req.body;
+  // Persist the conversation so far
+  try {
+    await chatLogStore.add(conversation || []);
+  } catch (err) {
+    console.error('Failed to save chat log:', err);
+  }
   const systemMessage = {
     role: "system",
     content: "You are Lune, a helpful, reflective journaling companion. You receive the user's diary entries as context and should use them to provide thoughtful, supportive responses."
@@ -38,6 +45,20 @@ exports.handleUserMessage = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Lune failed to reply." });
+  }
+};
+
+exports.saveConversationLog = async (req, res) => {
+  const { conversation } = req.body;
+  if (!conversation || !Array.isArray(conversation)) {
+    return res.status(400).json({ error: 'Conversation must be an array.' });
+  }
+  try {
+    await chatLogStore.add(conversation);
+    res.json({ saved: true });
+  } catch (err) {
+    console.error('Failed to save conversation log:', err);
+    res.status(500).json({ error: 'Failed to save log.' });
   }
 };
 
