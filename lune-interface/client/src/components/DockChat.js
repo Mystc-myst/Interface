@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LuneChatModal from './LuneChatModal';
 
 export default function DockChat({ entries, refreshEntries, editingId, setEditingId }) {
   const [input, setInput] = useState('');
   const [editing, setEditing] = useState(null);
+  const [showChat, setShowChat] = useState(false);
+  const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,24 +44,60 @@ export default function DockChat({ entries, refreshEntries, editingId, setEditin
     }
   };
 
+  const handleUpload = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (Array.isArray(data)) {
+        for (const entry of data) {
+          const bodyText = entry.text || entry.content;
+          if (typeof bodyText === 'string') {
+            await fetch('/diary', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: bodyText })
+            });
+          }
+        }
+        await refreshEntries();
+      } else {
+        alert('Invalid diary JSON.');
+      }
+    } catch (err) {
+      alert('Failed to import diary: ' + err.message);
+    }
+    e.target.value = '';
+  };
+
   const startEdit = (id) => setEditing(id);
 
   return (
     <div className="p-4">
-      <h1 className="text-lunePurple text-3xl font-bold mb-4 text-center">Dock Chat</h1>
-      <div className="space-y-4 mb-4 max-h-[70vh] overflow-y-auto">
-        {entries.slice().sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp)).map(entry => (
-          <div key={entry.id} className="bg-white p-3 rounded shadow">
-            <div className="text-xs text-luneDarkGray">{new Date(entry.timestamp).toLocaleString()}</div>
-            <div className="whitespace-pre-wrap">{entry.text}</div>
-            {entry.agent_logs?.Lune && (
-              <div className="mt-2 p-2 bg-luneGray rounded">
-                <span className="font-semibold">Lune:</span> {entry.agent_logs.Lune.reflection}
-              </div>
-            )}
-            <button onClick={() => startEdit(entry.id)} className="text-sm text-lunePurple mt-1">Edit</button>
-          </div>
-        ))}
+      <h1 className="text-lunePurple text-3xl font-bold mb-4 text-center">Lune Diary.</h1>
+      <div className="flex gap-2 mb-4">
+        <button
+          type="button"
+          onClick={() => setShowChat(true)}
+          className="bg-lunePurple text-white px-4 py-2 rounded flex-1"
+        >
+          Chat with Lune
+        </button>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current && fileInputRef.current.click()}
+          className="bg-lunePurple text-white px-4 py-2 rounded flex-1"
+        >
+          Upload
+        </button>
+        <input
+          type="file"
+          accept="application/json"
+          ref={fileInputRef}
+          onChange={handleUpload}
+          className="hidden"
+        />
       </div>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <textarea
@@ -70,6 +109,7 @@ export default function DockChat({ entries, refreshEntries, editingId, setEditin
         <button type="submit" className="bg-luneGreen text-white px-4 py-2 rounded">{editing ? 'Update' : 'Add'}</button>
       </form>
       <button onClick={() => navigate('/entries')} className="mt-4 text-lunePurple underline">Go to Entries</button>
+      <LuneChatModal open={showChat} onClose={() => setShowChat(false)} entries={entries} />
     </div>
   );
 }

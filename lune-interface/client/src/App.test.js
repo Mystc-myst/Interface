@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders dock chat heading', () => {
+test('renders lune diary heading', () => {
   render(<App />);
-  const headingElement = screen.getByText(/dock chat/i);
+  const headingElement = screen.getByText(/lune diary./i);
   expect(headingElement).toBeInTheDocument();
 });
