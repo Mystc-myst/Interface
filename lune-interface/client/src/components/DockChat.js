@@ -74,8 +74,8 @@ export default function DockChat({ entries, refreshEntries, editingId, setEditin
   const startEdit = (id) => setEditing(id);
 
   return (
-    <div className="p-4">
-      <h1 className="text-lunePurple text-3xl font-bold mb-4 text-center">Lune Diary.</h1>
+    <div className="p-4 bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
+      <h1 className="text-lunePurple text-3xl font-bold mb-4 text-center font-literata">Lune Diary.</h1>
       <div className="flex gap-2 mb-4">
         <button
           type="button"
@@ -101,13 +101,14 @@ export default function DockChat({ entries, refreshEntries, editingId, setEditin
       </div>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <textarea
-          className="flex-1 border rounded p-2"
+          className={`flex-1 border rounded p-2 ring-1 ring-slate-800 shadow-inner bg-[#0d0d0f] text-[#f8f8f2] ${input.trim() ? 'animate-pulse' : ''}`}
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder="Write your thoughts..."
         />
-        <button type="submit" className="bg-luneGreen text-white px-4 py-2 rounded">{editing ? 'Update' : 'Add'}</button>
+        <button type="submit" className="bg-animusRed hover:bg-red-600 text-white px-4 py-2 rounded">{editing ? 'Update' : 'Add'}</button>
       </form>
+      {input.trim() && <div className="w-full h-[2px] bg-indigo-500/30 mt-1"></div>}
       <button onClick={() => navigate('/entries')} className="mt-4 text-lunePurple underline">Go to Entries</button>
       <LuneChatModal open={showChat} onClose={() => setShowChat(false)} entries={entries} />
     </div>

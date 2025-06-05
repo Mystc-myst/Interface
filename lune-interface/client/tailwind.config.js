@@ -16,9 +16,17 @@ module.exports = {
         luneGray: '#E2E8F0',
         luneDarkGray: '#A0AEC0',
         luneText: '#2D3748',
+        resistorBlue: '#3b4252',
+        memoryGoldAmber: '#fcd34d',
+        expressionYellow: '#fef3c7',
+        animusRed: '#b91c1c',
+        animaPink: '#fbcfe81a',
       },
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
+        literata: ['Literata', 'serif'],
+        ebGaramond: ['EB Garamond', 'serif'],
+        ibmPlexSans: ['IBM Plex Sans', 'sans-serif'],
+        ibmPlexMono: ['IBM Plex Mono', 'monospace'],
       },
       spacing: {
         '72': '18rem',
