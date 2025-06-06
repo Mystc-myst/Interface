@@ -1,6 +1,9 @@
 // /server/controllers/lune.js (for OpenAI v4+)
 const OpenAI = require('openai');
+const axios = require('axios'); // Added axios import
 const chatLogStore = require('../chatLogStore');
+
+let lastN8nResponse = null; // Variable to store n8n response
 
 if (!process.env.OPENAI_API_KEY) {
   console.warn('Warning: OPENAI_API_KEY is not set. Lune replies will fail.');
@@ -21,32 +24,27 @@ exports.handleUserMessage = async (req, res) => {
     console.error('Failed to save chat log:', err);
   }
   */
-  const systemMessage = {
-    role: "system",
-    content: "You are Lune, a helpful, reflective journaling companion. You receive the user's diary entries as context and should use them to provide thoughtful, supportive responses."
-  };
-  const entrySummary = entries
-    .map(e => `- (${e.createdAt ? new Date(e.createdAt).toLocaleString() : 'No Date'}) ${e.content || e.text || '[No Content]'}`)
-    .join('\n');
-  const userContext = `Here are my diary entries:\n${entrySummary}`;
-  const messages = [
-    systemMessage,
-    { role: "user", content: userContext },
-    ...(conversation || []).map(msg => ({
-      role: msg.sender === "user" ? "user" : "assistant",
-      content: msg.text
-    }))
-  ];
+
+  // Send data to n8n webhook
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages
+    const webhookUrl = 'https://mystc-myst.app.n8n.cloud/webhook-test/3ebfea78-42d9-487b-81e3-57b5335fc0f3';
+    const userMessage = conversation && conversation.length > 0 ? conversation[conversation.length - 1].text : null;
+    const data = {
+      diaryEntries: entries,
+      userMessage: userMessage
+      // luneResponse is removed as n8n will provide it
+    };
+    await axios.post(webhookUrl, data, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
-    const reply = completion.choices[0].message.content;
-    res.json({ reply });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Lune failed to reply." });
+    // If the webhook call is successful, send an acknowledgment to the client
+    res.status(202).json({ message: "Request received, processing via n8n." });
+  } catch (webhookError) {
+    console.error('Error sending data to n8n webhook:', webhookError);
+    // If the webhook call fails, inform the client
+    res.status(500).json({ error: "Failed to forward message to n8n." });
   }
 };
 
@@ -78,4 +76,26 @@ exports.processEntry = async function(entry) {
     references: ['text', 'Resistor', 'Interpreter', 'Forge']
   };
   await diaryStore.saveEntry(entry);
+};
+
+exports.receiveN8nResponse = (req, res) => {
+  const { message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ error: "Missing 'message' in request body." });
+  }
+
+  lastN8nResponse = message;
+  console.log('Received message from n8n:', lastN8nResponse); // Optional: log received message
+  res.status(200).json({ message: "Response received and stored." });
+};
+
+exports.getN8nResponse = (req, res) => {
+  if (lastN8nResponse !== null) {
+    const messageToReturn = lastN8nResponse;
+    lastN8nResponse = null; // Clear the message after retrieving it
+    res.status(200).json({ message: messageToReturn });
+  } else {
+    res.status(200).json({ message: null }); // No new message
+  }
 };

@@ -20,10 +20,57 @@ export default function LuneChatModal({ open, onClose, entries }) {
 
   if (!open) return null;
 
+  // --- Polling Logic ---
+  const startPollingForResponse = async (currentMessages) => {
+    const POLLING_INTERVAL = 3000; // 3 seconds
+    const MAX_POLLS = 10; // 10 polls for a total of 30 seconds
+
+    for (let i = 0; i < MAX_POLLS; i++) {
+      await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL));
+
+      try {
+        const pollRes = await fetch('/api/lune/get_n8n_response');
+
+        if (!pollRes.ok) {
+          console.error(`Polling failed with status: ${pollRes.status}`);
+          // Optionally, if it's a server error, break or show specific message
+          if (pollRes.status >= 500) {
+            setMessages([...currentMessages, { sender: 'lune', text: 'Error fetching Lune\'s response due to server issue.' }]);
+            setLoading(false);
+            return;
+          }
+          continue; // Try next poll for client-side or recoverable errors
+        }
+
+        const pollData = await pollRes.json();
+
+        if (pollData.message && pollData.message.trim() !== '') {
+          setMessages([...currentMessages, { sender: 'lune', text: pollData.message }]);
+          setLoading(false);
+          return; // Exit polling
+        }
+      } catch (pollError) {
+        console.error('Polling fetch error:', pollError);
+        setMessages([...currentMessages, { sender: 'lune', text: 'Error fetching Lune\'s response.' }]);
+        setLoading(false);
+        return; // Exit polling on fetch error
+      }
+
+      // If loop finishes without a message
+      if (i === MAX_POLLS - 1) {
+        setMessages([...currentMessages, { sender: 'lune', text: 'Sorry, Lune did not respond in time.' }]);
+        setLoading(false);
+        return;
+      }
+    }
+  };
+  // --- End Polling Logic ---
+
   // Handle sending a message to the backend
   const handleSend = async () => {
     if (!input.trim()) return;
-    const newMessages = [...messages, { sender: 'user', text: input }];
+    const userMessage = { sender: 'user', text: input };
+    const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput('');
     setLoading(true);
@@ -33,16 +80,30 @@ export default function LuneChatModal({ open, onClose, entries }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          entries,
-          conversation: newMessages
+          entries, // assuming 'entries' is available in this scope
+          conversation: [userMessage] // Send only the latest user message for context to n8n if that's the design
+                                    // Or pass 'newMessages' if n8n expects the whole conversation history up to this point
         }),
       });
-      const data = await res.json();
-      setMessages([...newMessages, { sender: 'lune', text: data.reply }]);
-    } catch {
-      setMessages([...newMessages, { sender: 'lune', text: 'Sorry, Lune could not reply.' }]);
+
+      if (!res.ok) { // Check if response status is 202 (Accepted) or similar success
+        // Handle non-2xx responses from /api/lune/send
+        const errorData = await res.json().catch(() => ({})); // Try to parse error, default to empty object
+        console.error('Failed to send message to server:', res.status, errorData.error);
+        setMessages([...newMessages, { sender: 'lune', text: `Sorry, failed to send your message. ${errorData.error || ''}`.trim() }]);
+        setLoading(false);
+        return;
+      }
+
+      // If /api/lune/send is successful (e.g., 202 Accepted), start polling
+      startPollingForResponse(newMessages);
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setMessages([...newMessages, { sender: 'lune', text: 'Sorry, failed to send your message to the server.' }]);
+      setLoading(false);
     }
-    setLoading(false);
+    // setLoading(false) is now handled by startPollingForResponse or in error cases above
   };
 
   return (
