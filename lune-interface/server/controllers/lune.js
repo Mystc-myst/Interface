@@ -1,5 +1,4 @@
 // /server/controllers/lune.js (for OpenAI v4+)
-const OpenAI = require('openai');
 const axios = require('axios'); // Added axios import
 const chatLogStore = require('../chatLogStore');
 
@@ -8,10 +7,6 @@ let lastN8nResponse = null; // Variable to store n8n response
 if (!process.env.OPENAI_API_KEY) {
   console.warn('Warning: OPENAI_API_KEY is not set. Lune replies will fail.');
 }
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
 
 
 exports.handleUserMessage = async (req, res) => {
@@ -27,7 +22,7 @@ exports.handleUserMessage = async (req, res) => {
 
   // Send data to n8n webhook
   try {
-    const webhookUrl = 'https://mystc-myst.app.n8n.cloud/webhook-test/3ebfea78-42d9-487b-81e3-57b5335fc0f3';
+    const webhookUrl = 'https://mystc-myst.app.n8n.cloud/webhook/9f5ad6f1-d4a7-43a6-8c13-4b1c0e76bb4e/chat';
     const userMessage = conversation && conversation.length > 0 ? conversation[conversation.length - 1].text : null;
     const data = {
       diaryEntries: entries,

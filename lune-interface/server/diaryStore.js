@@ -35,6 +35,7 @@ function parseTags(text) {
   const states = new Set();
   const loops = new Set();
   if (typeof text === 'string') {
+    // eslint-disable-next-line no-useless-escape
     const regex = /\[\[([^\[]+?)\]\]/g;
     let match;
     while ((match = regex.exec(text)) !== null) {
