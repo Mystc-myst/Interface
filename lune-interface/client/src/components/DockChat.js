@@ -71,7 +71,7 @@ export default function DockChat({ entries, refreshEntries, editingId, setEditin
     e.target.value = '';
   };
 
-  const startEdit = (id) => setEditing(id);
+  // const startEdit = (id) => setEditing(id);
 
   return (
     <div className="p-4 bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
