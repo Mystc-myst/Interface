@@ -111,7 +111,7 @@ export default function DockChat({ entries, refreshEntries, editingId, setEditin
       </form>
       {input.trim() && <div className="w-full h-[2px] bg-indigo-500/30 mt-1"></div>}
       <button onClick={() => navigate('/entries')} className="mt-4 text-lunePurple underline">Go to Entries</button>
-      <LuneChatModal open={showChat} onClose={() => setShowChat(false)} entries={entries} />
+      <LuneChatModal open={showChat} onClose={() => setShowChat(false)} />
     </div>
   );
 }
