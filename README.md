@@ -57,3 +57,7 @@ around 8&nbsp;seconds a friendly notice appears informing the user that the
 request may take a moment. If no response arrives within 30&nbsp;seconds the
 modal displays a timeout message and re-enables the input so the user can
 retry.
+
+All chat replies are returned in the HTTP response to `/api/lune/send`.
+n8n cannot push updates to the app. The n8n webhook URL should be stored in an
+environment variable.
