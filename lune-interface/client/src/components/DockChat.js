@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import LuneChatModal from './LuneChatModal';
 
@@ -114,3 +115,10 @@ export default function DockChat({ entries, refreshEntries, editingId, setEditin
     </div>
   );
 }
+
+DockChat.propTypes = {
+  entries: PropTypes.array.isRequired,
+  refreshEntries: PropTypes.func.isRequired,
+  editingId: PropTypes.any,
+  setEditingId: PropTypes.func,
+};

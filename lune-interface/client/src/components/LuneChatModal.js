@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 export default function LuneChatModal({ open, onClose, entries }) {
   const [messages, setMessages] = useState([]);
@@ -150,3 +151,9 @@ export default function LuneChatModal({ open, onClose, entries }) {
     </div>
   );
 }
+
+LuneChatModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  entries: PropTypes.array.isRequired,
+};
