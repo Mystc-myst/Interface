@@ -5,6 +5,7 @@ export default function LuneChatModal({ open, onClose, entries }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [slowWarningShown, setSlowWarningShown] = useState(false);
 
   const handleClose = async () => {
     try {
@@ -25,42 +26,56 @@ export default function LuneChatModal({ open, onClose, entries }) {
   const startPollingForResponse = async (currentMessages) => {
     const POLLING_INTERVAL = 3000; // 3 seconds
     const MAX_POLLS = 10; // 10 polls for a total of 30 seconds
+    const WARNING_POLL = Math.ceil(8000 / POLLING_INTERVAL); // ~8s
+
+    let updated = [...currentMessages];
 
     for (let i = 0; i < MAX_POLLS; i++) {
       await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL));
+
+      if (i === WARNING_POLL && !slowWarningShown) {
+        updated = [...updated, { sender: 'system', text: 'This may take a moment. Thank you for your patience.' }];
+        setMessages(updated);
+        setSlowWarningShown(true);
+      }
 
       try {
         const pollRes = await fetch('/api/lune/get_n8n_response');
 
         if (!pollRes.ok) {
           console.error(`Polling failed with status: ${pollRes.status}`);
-          // Optionally, if it's a server error, break or show specific message
           if (pollRes.status >= 500) {
-            setMessages([...currentMessages, { sender: 'lune', text: 'Error fetching Lune\'s response due to server issue.' }]);
+            updated = [...updated, { sender: 'lune', text: 'Error fetching Lune\'s response due to server issue.' }];
+            setMessages(updated);
             setLoading(false);
             return;
           }
-          continue; // Try next poll for client-side or recoverable errors
+          continue;
         }
 
         const pollData = await pollRes.json();
 
         if (pollData.message && pollData.message.trim() !== '') {
-          setMessages([...currentMessages, { sender: 'lune', text: pollData.message }]);
+          updated = [...updated, { sender: 'lune', text: pollData.message }];
+          setMessages(updated);
           setLoading(false);
-          return; // Exit polling
+          setSlowWarningShown(false);
+          return;
         }
       } catch (pollError) {
         console.error('Polling fetch error:', pollError);
-        setMessages([...currentMessages, { sender: 'lune', text: 'Error fetching Lune\'s response.' }]);
+        updated = [...updated, { sender: 'lune', text: 'Error fetching Lune\'s response.' }];
+        setMessages(updated);
         setLoading(false);
-        return; // Exit polling on fetch error
+        setSlowWarningShown(false);
+        return;
       }
 
-      // If loop finishes without a message
       if (i === MAX_POLLS - 1) {
-        setMessages([...currentMessages, { sender: 'lune', text: 'Sorry, Lune did not respond in time.' }]);
+        updated = [...updated, { sender: 'system', text: 'Lune is busy or offline. Please try again later.' }];
+        setMessages(updated);
         setLoading(false);
+        setSlowWarningShown(false);
         return;
       }
     }
@@ -75,6 +90,7 @@ export default function LuneChatModal({ open, onClose, entries }) {
     setMessages(newMessages);
     setInput('');
     setLoading(true);
+    setSlowWarningShown(false);
 
     try {
       const res = await fetch('/api/lune/send', {
@@ -128,7 +144,12 @@ export default function LuneChatModal({ open, onClose, entries }) {
               {msg.text}
             </div>
           ))}
-          {loading && <div className="text-luneGray">Lune is thinking…</div>}
+          {loading && (
+            <div className="flex items-center text-luneGray">
+              <div className="w-4 h-4 mr-2 border-2 border-lunePurple border-t-transparent rounded-full animate-spin"></div>
+              Lune is thinking…
+            </div>
+          )}
         </div>
         <div className="flex gap-2">
           <input

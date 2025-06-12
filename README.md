@@ -50,3 +50,9 @@ To enable conversations with Lune uncomment the line enabling the route in
 Once enabled the React app shows a **Chat with Lune** button. Messages are
 sent to `/api/lune/send` and the conversation history is written under
 `offline-diary/chatlogs/`.
+
+The chat modal now shows a spinner while waiting for Lune's reply. After
+around 8&nbsp;seconds a friendly notice appears informing the user that the
+request may take a moment. If no response arrives within 30&nbsp;seconds the
+modal displays a timeout message and re-enables the input so the user can
+retry.
