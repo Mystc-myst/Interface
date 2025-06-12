@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 
 export default function EntriesPage({ entries, refreshEntries, startEdit }) {
@@ -41,3 +42,9 @@ export default function EntriesPage({ entries, refreshEntries, startEdit }) {
     </div>
   );
 }
+
+EntriesPage.propTypes = {
+  entries: PropTypes.array.isRequired,
+  refreshEntries: PropTypes.func.isRequired,
+  startEdit: PropTypes.func.isRequired,
+};
