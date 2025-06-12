@@ -5,7 +5,6 @@ export default function LuneChatModal({ open, onClose }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [slowWarningShown, setSlowWarningShown] = useState(false);
 
   const handleClose = async () => {
     try {
@@ -22,65 +21,7 @@ export default function LuneChatModal({ open, onClose }) {
 
   if (!open) return null;
 
-  // --- Polling Logic ---
-  const startPollingForResponse = async (currentMessages) => {
-    const POLLING_INTERVAL = 3000; // 3 seconds
-    const MAX_POLLS = 10; // 10 polls for a total of 30 seconds
-    const WARNING_POLL = Math.ceil(8000 / POLLING_INTERVAL); // ~8s
-
-    let updated = [...currentMessages];
-
-    for (let i = 0; i < MAX_POLLS; i++) {
-      await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL));
-
-      if (i === WARNING_POLL && !slowWarningShown) {
-        updated = [...updated, { sender: 'system', text: 'This may take a moment. Thank you for your patience.' }];
-        setMessages(updated);
-        setSlowWarningShown(true);
-      }
-
-      try {
-        const pollRes = await fetch('/api/lune/get_n8n_response');
-
-        if (!pollRes.ok) {
-          console.error(`Polling failed with status: ${pollRes.status}`);
-          if (pollRes.status >= 500) {
-            updated = [...updated, { sender: 'lune', text: 'Error fetching Lune\'s response due to server issue.' }];
-            setMessages(updated);
-            setLoading(false);
-            return;
-          }
-          continue;
-        }
-
-        const pollData = await pollRes.json();
-
-        if (pollData.message && pollData.message.trim() !== '') {
-          updated = [...updated, { sender: 'lune', text: pollData.message }];
-          setMessages(updated);
-          setLoading(false);
-          setSlowWarningShown(false);
-          return;
-        }
-      } catch (pollError) {
-        console.error('Polling fetch error:', pollError);
-        updated = [...updated, { sender: 'lune', text: 'Error fetching Lune\'s response.' }];
-        setMessages(updated);
-        setLoading(false);
-        setSlowWarningShown(false);
-        return;
-      }
-
-      if (i === MAX_POLLS - 1) {
-        updated = [...updated, { sender: 'system', text: 'Lune is busy or offline. Please try again later.' }];
-        setMessages(updated);
-        setLoading(false);
-        setSlowWarningShown(false);
-        return;
-      }
-    }
-  };
-  // --- End Polling Logic ---
+  // Polling logic removed - n8n now replies directly to /send
 
   // Handle sending a message to the backend
   const handleSend = async () => {
@@ -90,7 +31,6 @@ export default function LuneChatModal({ open, onClose }) {
     setMessages(newMessages);
     setInput('');
     setLoading(true);
-    setSlowWarningShown(false);
 
     try {
       const res = await fetch('/api/lune/send', {
@@ -101,25 +41,22 @@ export default function LuneChatModal({ open, onClose }) {
           userMessage: userMessage.text
         }),
       });
+      // n8n replies in this HTTP response; it cannot push messages separately
 
-      if (!res.ok) { // Check if response status is 202 (Accepted) or similar success
-        // Handle non-2xx responses from /api/lune/send
-        const errorData = await res.json().catch(() => ({})); // Try to parse error, default to empty object
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
         console.error('Failed to send message to server:', res.status, errorData.error);
         setMessages([...newMessages, { sender: 'lune', text: `Sorry, failed to send your message. ${errorData.error || ''}`.trim() }]);
-        setLoading(false);
-        return;
+      } else {
+        const { aiReply } = await res.json();
+        setMessages([...newMessages, { sender: 'lune', text: aiReply }]);
       }
-
-      // If /api/lune/send is successful (e.g., 202 Accepted), start polling
-      startPollingForResponse(newMessages);
-
     } catch (error) {
       console.error('Error sending message:', error);
-      setMessages([...newMessages, { sender: 'lune', text: 'Sorry, failed to send your message to the server.' }]);
+      setMessages([...newMessages, { sender: 'lune', text: 'Sorry, something went wrong. Please try again later.' }]);
+    } finally {
       setLoading(false);
     }
-    // setLoading(false) is now handled by startPollingForResponse or in error cases above
   };
 
   return (
