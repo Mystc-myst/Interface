@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-export default function LuneChatModal({ open, onClose, entries }) {
+export default function LuneChatModal({ open, onClose }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -97,9 +97,8 @@ export default function LuneChatModal({ open, onClose, entries }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          entries, // assuming 'entries' is available in this scope
-          conversation: [userMessage] // Send only the latest user message for context to n8n if that's the design
-                                    // Or pass 'newMessages' if n8n expects the whole conversation history up to this point
+          sessionId: 'test-session-1',
+          userMessage: userMessage.text
         }),
       });
 
@@ -176,5 +175,4 @@ export default function LuneChatModal({ open, onClose, entries }) {
 LuneChatModal.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  entries: PropTypes.array.isRequired,
 };

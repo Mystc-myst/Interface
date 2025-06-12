@@ -10,24 +10,15 @@ if (!process.env.OPENAI_API_KEY) {
 
 
 exports.handleUserMessage = async (req, res) => {
-  const { entries, conversation } = req.body;
-  // Persist the conversation so far
-  /*
-  try {
-    await chatLogStore.add(conversation || []);
-  } catch (err) {
-    console.error('Failed to save chat log:', err);
-  }
-  */
+  const { sessionId, userMessage } = req.body;
+  // Conversation logging omitted since only userMessage is sent
 
   // Send data to n8n webhook
   try {
     const webhookUrl = 'https://mystc-myst.app.n8n.cloud/webhook/9f5ad6f1-d4a7-43a6-8c13-4b1c0e76bb4e/chat';
-    const userMessage = conversation && conversation.length > 0 ? conversation[conversation.length - 1].text : null;
     const data = {
-      sessionId: 'test-session-1', // required for n8n Simple Memory node
-      diaryEntries: entries,
-      userMessage: userMessage
+      sessionId: sessionId || 'test-session-1',
+      userMessage
       // luneResponse is removed as n8n will provide it
     };
     await axios.post(webhookUrl, data, {
