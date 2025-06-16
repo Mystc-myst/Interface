@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 // Agent routes are disabled for offline diary usage
 const luneRoutes = require('./routes/lune');
-// const processingRoutes = require('./routes/processing');
 
 const dotenv = require('dotenv');
 // Only ONE dotenv.config() call needed!
@@ -23,11 +22,19 @@ app.use(express.json());
 const diaryRoutes = require('./routes/diary');
 app.use('/diary', diaryRoutes);
 app.use('/api/lune', luneRoutes); // <-- Lune chat API: /api/lune/send
-// app.use('/api/processing', processingRoutes);
 
 // No database connection needed; diary entries are stored in diary.json
 
 // --- Start Server ---
-app.listen(port, () => {
-  console.log(`Server is running on port: ${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`Server is running on port: ${port}`);
+// });
+
+// Export app for testing purposes, and start server only if not in test.
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server is running on port: ${port}`);
+  });
+}
+
+module.exports = app;
