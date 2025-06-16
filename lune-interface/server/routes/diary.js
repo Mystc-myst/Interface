@@ -1,11 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const diaryStore = require('../diaryStore');
-// Agent controllers are not used in offline mode
-// const resistor = require('../controllers/resistor');
-// const interpreter = require('../controllers/interpreter');
-// const forge = require('../controllers/forge');
-// const lune = require('../controllers/lune');
+const axios = require('axios');
 
 // Create a diary entry (accepts 'text' or legacy 'content')
 router.post('/', async (req, res) => {
@@ -17,6 +13,17 @@ router.post('/', async (req, res) => {
     const entry = await diaryStore.add(text);
 
     // Agent processing disabled for offline diary
+    const n8nWebhookUrl = 'https://mystc-myst.app.n8n.cloud/webhook/9f5ad6f1-d4a7-43a6-8c13-4b1c0e76bb4e/chat';
+    try {
+      console.log(`Sending data to n8n webhook: ${n8nWebhookUrl}`);
+      const response = await axios.post(n8nWebhookUrl, { text: entry.text }); // Ensure 'text' field is used
+      console.log('n8n webhook response status:', response.status);
+      console.log('n8n webhook response data:', response.data);
+    } catch (webhookError) {
+      console.error('Error sending data to n8n webhook:', webhookError.message);
+      // Decide if you want to alter the client response if webhook fails.
+      // For now, we still return the locally saved entry.
+    }
 
     res.status(201).json(entry);
   } catch (err) {
