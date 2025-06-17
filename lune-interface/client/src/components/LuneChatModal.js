@@ -49,7 +49,18 @@ export default function LuneChatModal({ open, onClose }) {
         setMessages([...newMessages, { sender: 'lune', text: `Sorry, failed to send your message. ${errorData.error || ''}`.trim() }]);
       } else {
         const { aiReply } = await res.json();
-        setMessages([...newMessages, { sender: 'lune', text: aiReply }]);
+        let messageText;
+        if (typeof aiReply === 'object' && aiReply !== null) {
+          if (aiReply.hasOwnProperty('output')) {
+            messageText = aiReply.output;
+          } else {
+            console.warn("Unexpected AI response structure:", aiReply);
+            messageText = "Error: Received unexpected response format from AI.";
+          }
+        } else {
+          messageText = aiReply;
+        }
+        setMessages([...newMessages, { sender: 'lune', text: messageText }]);
       }
     } catch (error) {
       console.error('Error sending message:', error);
