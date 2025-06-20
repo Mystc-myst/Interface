@@ -51,7 +51,7 @@ export default function LuneChatModal({ open, onClose }) {
         const { aiReply } = await res.json();
         let messageText;
         if (typeof aiReply === 'object' && aiReply !== null) {
-          if (aiReply.hasOwnProperty('output')) {
+          if (Object.prototype.hasOwnProperty.call(aiReply, 'output')) {
             messageText = aiReply.output;
           } else {
             console.warn("Unexpected AI response structure:", aiReply);
