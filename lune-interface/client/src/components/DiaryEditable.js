@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import getCaretCoordinates from 'textarea-caret';
 
 function DiaryEditable({ entry, onSave }) {
   const [text, setText] = useState('');
@@ -38,24 +39,31 @@ function DiaryEditable({ entry, onSave }) {
     const cursorPos = e.target.selectionStart;
     const textBeforeCursor = newText.substring(0, cursorPos);
     const lastHashIndex = textBeforeCursor.lastIndexOf('#');
-    const lastSpaceIndex = textBeforeCursor.lastIndexOf(' ');
+    const lastSpaceIndex = textBeforeCursor.lastIndexOf(' '); // Also check for start of line
 
-    if (lastHashIndex !== -1 && lastHashIndex > lastSpaceIndex) {
+    if (lastHashIndex !== -1 && lastHashIndex > lastSpaceIndex && !textBeforeCursor.substring(lastHashIndex + 1).includes(' ')) {
       const currentTag = textBeforeCursor.substring(lastHashIndex + 1);
+      console.log('[DiaryEditable] Current partial tag:', currentTag);
+      console.log('[DiaryEditable] All available hashtags:', allHashtags);
+
+      // Filter suggestions: hashtags from allHashtags should start with '#' followed by the currentTag
       const filteredSuggestions = allHashtags.filter(tag =>
-        tag.toLowerCase().startsWith(`#${currentTag.toLowerCase()}`) || tag.toLowerCase().startsWith(currentTag.toLowerCase())
+        tag.toLowerCase().startsWith(`#${currentTag.toLowerCase()}`)
       );
+      console.log('[DiaryEditable] Filtered suggestions:', filteredSuggestions);
 
       if (filteredSuggestions.length > 0) {
         setSuggestions(filteredSuggestions);
         setShowSuggestions(true);
-        // Calculate position - this is a simplified example
-        // You might need a more robust way to get caret position in pixels
         if (textareaRef.current) {
-          // This is a placeholder for actual caret position calculation
-          // A library like 'textarea-caret' might be needed for accuracy
+          const caret = getCaretCoordinates(textareaRef.current, textareaRef.current.selectionStart);
           const textareaRect = textareaRef.current.getBoundingClientRect();
-          setSuggestionPosition({ top: textareaRect.bottom, left: textareaRect.left });
+          // Position the suggestion box relative to the textarea's viewport position
+          // caret.top and caret.left are relative to the textarea's content, not the viewport
+          setSuggestionPosition({
+            top: textareaRect.top + caret.top + caret.height, // Position below the caret line
+            left: textareaRect.left + caret.left,          // Position at the caret's horizontal start
+          });
         }
       } else {
         setShowSuggestions(false);
@@ -65,30 +73,48 @@ function DiaryEditable({ entry, onSave }) {
     }
   };
 
-  const handleSuggestionClick = (suggestion) => {
+  const insertHashtag = (suggestion) => {
+    if (!textareaRef.current) return;
     const cursorPos = textareaRef.current.selectionStart;
-    const textBeforeCursor = text.substring(0, cursorPos);
-    const lastHashIndex = textBeforeCursor.lastIndexOf('#');
+    const currentText = textareaRef.current.value; // Use currentText from ref for consistency
+    const textBeforeCursor = currentText.substring(0, cursorPos);
+    // Find the last '#' that is part of the current tag being typed
+    // This needs to correctly identify the start of the tag we are replacing.
+    let currentTagStart = textBeforeCursor.lastIndexOf('#');
+    if (currentTagStart === -1) return; // Should not happen if suggestions are shown
 
-    if (lastHashIndex !== -1) {
-      const textAfterCursor = text.substring(cursorPos);
-      const textBeforeHash = text.substring(0, lastHashIndex);
-      // Ensure the suggestion starts with #, if not, prepend it.
-      const fullSuggestion = suggestion.startsWith('#') ? suggestion : `#${suggestion}`;
-      const newText = `${textBeforeHash}${fullSuggestion} ${textAfterCursor}`;
-      setText(newText);
-      setShowSuggestions(false);
-      // Focus and set cursor position after the inserted hashtag
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.focus();
-          const newCursorPos = (textBeforeHash + fullSuggestion + " ").length;
-          textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-        }
-      }, 0);
-    }
+    // Ensure we are replacing the correct tag, especially if multiple '#' exist
+    const partBeforeTag = currentText.substring(0, currentTagStart);
+    const partAfterCursor = currentText.substring(cursorPos);
+
+    const fullSuggestion = suggestion.startsWith('#') ? suggestion : `#${suggestion}`;
+    const newText = `${partBeforeTag}${fullSuggestion} ${partAfterCursor}`;
+    setText(newText);
+    setShowSuggestions(false);
+
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        const newCursorPos = (partBeforeTag + fullSuggestion + " ").length;
+        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+      }
+    }, 0);
   };
 
+  const handleSuggestionClick = (suggestion) => {
+    insertHashtag(suggestion);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Tab' && showSuggestions && suggestions.length > 0) {
+      e.preventDefault(); // Prevent default Tab behavior (focus change)
+      insertHashtag(suggestions[0]); // Insert the first suggestion
+    }
+    // Optional: handle Escape key to close suggestions
+    if (e.key === 'Escape' && showSuggestions) {
+      setShowSuggestions(false);
+    }
+  };
 
   // Guard for no entry selected
   if (!entry) {
@@ -133,7 +159,8 @@ function DiaryEditable({ entry, onSave }) {
         className="w-full border rounded p-2 mb-2 min-h-[120px]"
         value={text}
         onChange={handleTextChange}
-        onBlur={() => setTimeout(() => setShowSuggestions(false), 100)} // Hide suggestions on blur with a small delay
+        onKeyDown={handleKeyDown}
+        onBlur={() => setTimeout(() => setShowSuggestions(false), 150)} // Hide suggestions on blur with a small delay to allow click/tab
         placeholder="Write your thoughts..."
         required
       />
@@ -147,7 +174,7 @@ function DiaryEditable({ entry, onSave }) {
             <div
               key={index}
               className="p-2 hover:bg-luneLightGray cursor-pointer"
-              onMouseDown={() => handleSuggestionClick(tag)} // Use onMouseDown to avoid blur event firing first
+              onMouseDown={() => handleSuggestionClick(tag)} // Use onMouseDown to avoid blur/tab event firing first
             >
               {tag}
             </div>
