@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Folder from './Folder';
 
 // Updated to use folders prop from App.js
-export default function EntriesPage({ entries, folders, refreshEntries, refreshFolders, startEdit, setFolders }) {
+export default function EntriesPage({ entries, folders, refreshEntries, refreshFolders, startEdit }) {
   const navigate = useNavigate();
 
   const handleDelete = async (id) => {
@@ -71,12 +71,6 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
 
   // Calculate which entries are unfiled based on the `folderId` property of each entry
   const unfiledEntries = entries.filter(entry => !entry.folderId);
-
-  // For Folder component, it needs an array of entry IDs that belong to it.
-  // We can compute this from the main `entries` list.
-  const getEntryIdsForFolder = (folderId) => {
-    return entries.filter(entry => entry.folderId === folderId).map(entry => entry.id);
-  };
 
   return (
     <div className="p-4 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
@@ -146,6 +140,8 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
 
 EntriesPage.propTypes = {
   entries: PropTypes.array.isRequired,
+  folders: PropTypes.array.isRequired,
   refreshEntries: PropTypes.func.isRequired,
+  refreshFolders: PropTypes.func.isRequired,
   startEdit: PropTypes.func.isRequired,
 };
