@@ -30,6 +30,7 @@ module.exports = {
         expressionYellow: '#fef3c7',
         animusRed: '#b91c1c',
         animaPink: '#fbcfe81a',
+        'brazen-gold': '#B8860B', // Added Brazen-Gold
 
         // Shadcn/ui style colors from CSS variables
         border: "oklch(var(--border) / <alpha-value>)",

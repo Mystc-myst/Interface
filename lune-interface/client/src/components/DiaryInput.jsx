@@ -51,7 +51,7 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false }) => {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full md:max-w-3xl mx-auto"
+      className="w-full md:max-w-[70ch] mx-auto" // Adjusted width
     >
       <textarea
         ref={textareaRef}
@@ -60,15 +60,13 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false }) => {
         value={text}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        className="frost w-full min-h-[8rem] resize-none overflow-hidden rounded-2xl p-4 md:p-6 text-lg leading-loose text-slate-200 placeholder:text-slate-400 outline-none ring-1 ring-inset focus:ring-2 focus:ring-violet-300/60 transition"
+        className="frost w-full md:w-[70ch] min-h-[8rem] resize-none overflow-hidden rounded-2xl p-4 md:p-6 text-lg leading-loose text-slate-200 placeholder:text-slate-400 outline-none ring-1 ring-inset focus:ring-2 focus:ring-violet-300/60 transition" // Adjusted width
       />
-      <div className="mt-8 flex items-center justify-between">
-        <span className="text-xs text-slate-300">
-          {wordCount} word{wordCount === 1 ? '' : 's'}
-        </span>
+      {/* New button container */}
+      <div className="flex items-center gap-4 justify-start mt-3"> {/* 1rem = gap-4, 0.75rem = mt-3 */}
         <Button
-          variant="secondary"
-          className="px-4 py-1"
+          variant="outline" // Using outline for clear glass effect
+          className="h-8 px-[18px] rounded-xl border-brazen-gold text-brazen-gold hover:bg-brazen-gold/10" // Custom styles for Save button
           onClick={() => {
             if (onSave) {
               onSave(text);
@@ -80,6 +78,15 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false }) => {
         >
           Save <kbd className="ml-2 text-xs">⌘/Ctrl + ↵</kbd>
         </Button>
+        <Button
+          variant="default" // Assuming default is a solid fill
+          className="h-8 px-[18px] rounded-xl bg-violet-600/70 hover:bg-violet-500/70 text-white backdrop-blur-md" // Custom styles for Chat button, using existing violet
+        >
+          Chat with Lune
+        </Button>
+        <span className="text-xs text-slate-300 ml-auto"> {/* Pushed word count to the right */}
+          {wordCount} word{wordCount === 1 ? '' : 's'}
+        </span>
       </div>
     </motion.div>
   );
