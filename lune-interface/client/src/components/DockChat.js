@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // Removed useRef
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 // LuneChatModal is now imported in App.js
@@ -7,41 +7,48 @@ import HashtagEntriesModal from './HashtagEntriesModal'; // Import HashtagEntrie
 import DiaryInput from "./DiaryInput"; // Back to relative path
 
 export default function DockChat({ entries, hashtags, refreshEntries, editingId, setEditingId }) {
-  const [input, setInput] = useState(''); // This state will be managed by DiaryInput, but handleSubmit logic relies on it. Consider refactoring.
-  const [editing, setEditing] = useState(null);
+  const [input, setInput] = useState('');
+  // const [editing, setEditing] = useState(null); // Removed internal 'editing' state
   // const [showChat, setShowChat] = useState(false); // Moved to App.js
   const [isHashtagModalOpen, setIsHashtagModalOpen] = useState(false); // State for hashtag modal
   const [selectedHashtag, setSelectedHashtag] = useState(null); // State for selected hashtag
   const navigate = useNavigate();
 
   useEffect(() => {
-    const id = editingId ?? editing;
-    if (id) {
-      const entry = entries.find(e => e.id === id);
-      setInput(entry ? entry.text : '');
-      setEditing(id);
-      if (setEditingId) setEditingId(null);
+    if (editingId) {
+      const entry = entries.find(e => e.id === editingId);
+      if (entry) {
+        setInput(entry.text);
+      } else {
+        setInput(''); // Entry not found with editingId, clear input
+        console.warn(`[DockChat] Entry with id "${editingId}" not found.`);
+      }
+    } else {
+      setInput(''); // No editingId, so clear input (e.g., after save or new session)
     }
-  }, [editingId, editing, entries, setEditingId]);
+  }, [editingId, entries]); // Removed 'setEditingId' and internal 'editing' from dependencies
 
   const handleSave = async (text) => {
     if (!text.trim()) return;
     try {
-      if (editing) {
-        await fetch(`/diary/${editing}`, {
+      if (editingId) { // Use editingId prop to determine if updating existing entry
+        await fetch(`/diary/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text })
         });
-      } else {
+      } else { // No editingId means it's a new entry
         await fetch('/diary', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text })
         });
       }
-      // setInput(''); // DiaryInput will clear its own text if needed, or we can pass a prop to clear it
-      setEditing(null); // Reset editing state
+      // After successful save, reset editingId in App.js
+      if (setEditingId) {
+        setEditingId(null);
+      }
+      // input state will be cleared by the useEffect when editingId becomes null
       await refreshEntries();
     } catch (err) {
       console.error('Failed to save entry', err);
