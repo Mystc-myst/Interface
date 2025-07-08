@@ -1,74 +1,100 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import './FolderChip.css';
 
-const FolderChip = ({ name, count, onClick, onDoubleClick, onLongPress }) => {
-  let longPressTimer;
+const FolderChip = ({
+  folderId,
+  name,
+  count,
+  isSelected,
+  onClick,
+  onDoubleClick,
+  onLongPress
+}) => {
+  const longPressTimer = useRef(null);
+  const chipRef = useRef(null);
 
-  const handleMouseDown = () => {
-    longPressTimer = setTimeout(() => {
+  const handleInteractionStart = () => {
+    // Clear any existing timer
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+    longPressTimer.current = setTimeout(() => {
       if (onLongPress) {
-        onLongPress();
+        onLongPress(); // This would typically receive the folderId or folder object
       }
+      longPressTimer.current = null; // Reset timer after firing
     }, 600); // 600ms for long press
   };
 
-  const handleMouseUp = () => {
-    clearTimeout(longPressTimer);
-  };
-
-  const handleTouchStart = () => {
-    longPressTimer = setTimeout(() => {
-      if (onLongPress) {
-        onLongPress();
-      }
-    }, 600);
-  };
-
-  const handleTouchEnd = () => {
-    clearTimeout(longPressTimer);
-  };
-
-  // Prevent context menu on long press if it's also a right click
-  const handleContextMenu = (e) => {
-    if (onLongPress) { // If long press is handled, prevent context menu
-        // This is a simple check; more sophisticated logic might be needed
-        // if right-click initiated long press should still show context menu.
-        // For now, assume long press takes precedence for triggering actions.
-        e.preventDefault();
+  const handleInteractionEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
     }
   };
 
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
+    };
+  }, []);
+
+  const handleContextMenu = (e) => {
+    // Prevent context menu if long press is a designated action,
+    // especially on touch devices where long press might also trigger context menu.
+    if (onLongPress) {
+      e.preventDefault();
+    }
+  };
 
   return (
     <button
+      ref={chipRef}
+      id={`folder-tab-${folderId}`}
       className="folder-chip"
-      onClick={onClick}
+      onClick={(e) => {
+        // If a long press was detected and fired, onClick might not be desired.
+        // However, standard behavior is that click fires after mouseup/touchend
+        // unless the long press itself initiated a modal or different state.
+        // For now, let click proceed.
+        if (onClick) onClick();
+      }}
       onDoubleClick={onDoubleClick}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleInteractionStart}
+      onMouseUp={handleInteractionEnd}
+      onTouchStart={handleInteractionStart}
+      onTouchEnd={handleInteractionEnd}
       onContextMenu={handleContextMenu}
       onKeyDown={(e) => {
+        // Delete key for deleting the folder (if it's selected or focused)
+        // The prompt implies onLongPress is for delete.
         if (e.key === 'Delete' || e.key === 'Backspace') {
-          if (onLongPress) { // Assuming onLongPress is the delete handler
-            e.preventDefault(); // Prevent browser back navigation on Backspace
+          if (onLongPress && isSelected) { // Only delete if selected and handler exists
+            e.preventDefault();
             onLongPress();
           }
         }
-        // Allow Enter/Space to also trigger click for accessibility with role="tab"
+        // Enter/Space for click activation (standard for buttons/tabs)
         if (e.key === 'Enter' || e.key === ' ') {
-            if(onClick) {
-                e.preventDefault();
-                onClick();
-            }
+          if (onClick) {
+            e.preventDefault();
+            onClick();
+          }
         }
       }}
+      role="tab"
+      aria-selected={isSelected}
       aria-label={`${name} folder, ${count} entries`}
-      role="tab" // As per spec
-      tabIndex={0} // Make it focusable
+      // tabIndex is 0 by default for buttons, but explicit for clarity when selected/focused
+      // For non-selected tabs in a tablist, tabIndex="-1" is common for roving tabindex,
+      // but here all chips are focusable via arrow keys if tablist handles that.
+      // Keeping it simple with tabIndex={0} as all are directly focusable.
+      tabIndex={0}
     >
-      <div className="folder-chip-name">{name}</div>
+      <div className="folder-chip-name" title={name}>{name}</div>
       <div className="folder-chip-count">{count}</div>
     </button>
   );

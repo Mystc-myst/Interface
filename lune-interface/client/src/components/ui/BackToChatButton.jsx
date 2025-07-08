@@ -1,64 +1,62 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './BackToChatButton.css';
 
-const BackToChatButton = ({ onClick }) => {
+const BackToChatButton = ({ id, onClick }) => { // Added id prop for keyboard shortcut targeting
   const [isVisible, setIsVisible] = useState(false);
   const buttonRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
 
   useEffect(() => {
-    let observer;
-    let timeoutId;
-
     const handleScroll = () => {
-      // Show button after 1s of scrolling from top
-      // This simple check works if page is scrollable from the start.
-      // A more robust way for "1s scroll" might involve tracking scroll start time.
-      // For now, show after scrolling down a bit (e.g., 100px) and then apply delay.
-
       // Clear any existing timeout to avoid multiple fade-ins if user scrolls up/down quickly
-      clearTimeout(timeoutId);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
 
       if (window.scrollY > 100) { // User has scrolled down a bit
-        timeoutId = setTimeout(() => {
+        // Set a timeout to make the button visible after 1 second
+        scrollTimeoutRef.current = setTimeout(() => {
           setIsVisible(true);
-        }, 700); // Spec says "fade-in after 1s scroll", animation is 400ms.
-                     // Total: 700ms delay + 400ms fade = ~1.1s effect.
-                     // Let's make it 600ms delay for 1s total.
+        }, 1000); // Animation starts after 1000ms (1s)
       } else {
+        // If scrolled back to top, hide the button immediately (or after its fade-out animation)
         setIsVisible(false);
       }
     };
 
-    // More robust: IntersectionObserver to detect when a certain point is passed.
-    // However, the spec says "1s scroll", implying time-based after scroll starts.
-    // The current implementation is a simplified version: show 600ms after scrolling past 100px.
-
+    // Add scroll listener
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check in case page loads scrolled
+    // Initial check in case page loads already scrolled down
+    handleScroll();
 
+    // Cleanup function to remove listener and clear timeout
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      clearTimeout(timeoutId);
-      if (observer) observer.disconnect();
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
     };
-  }, []);
+  }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
 
   const handleClick = () => {
     if (onClick) {
       onClick();
     } else {
-      // Placeholder action
-      alert('Back to Chat clicked!');
-      // window.location.href = '/chat'; // Example navigation
+      // Placeholder action if no onClick is provided
+      // In EntriesPage.jsx, onClick is provided to navigate.
+      console.log('Back to Chat clicked! (No custom onClick handler provided)');
     }
   };
 
   return (
     <button
+      id={id} // Apply id for keyboard shortcut targeting
       ref={buttonRef}
       className={`back-to-chat-button ${isVisible ? 'visible' : ''}`}
       onClick={handleClick}
       aria-label="Back to Chat"
+      // aria-hidden={!isVisible} // Hide from screen readers when not visible
+      // pointer-events are handled by CSS, so aria-hidden might be redundant if CSS fully hides it.
     >
       <span className="back-to-chat-icon" aria-hidden="true">↩</span>
       <span className="back-to-chat-text">Back to Chat</span>

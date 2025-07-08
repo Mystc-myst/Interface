@@ -6,39 +6,67 @@ import EntryCard from './EntryCard';
 
 // Mock CSS imports
 jest.mock('./EntryCard.css', () => ({}));
-jest.mock('../../styles/motion.css', () => ({}));
+jest.mock('../../styles/motion.css', () => ({})); // If motion.css is used by EntryCard directly or indirectly
 expect.extend(toHaveNoViolations);
 
 describe('EntryCard', () => {
   const defaultProps = {
+    id: 'e1',
     title: 'Test Title',
     snippet: 'Test snippet of content.',
     date: 'Jan 1, 2024',
+    isHighlighted: false,
     onClick: jest.fn(),
-    onDelete: jest.fn(),
+    onDeleteRequest: jest.fn(),
+    onSetHighlight: jest.fn(),
   };
 
   beforeEach(() => {
     defaultProps.onClick.mockClear();
-    defaultProps.onDelete.mockClear();
+    defaultProps.onDeleteRequest.mockClear();
+    defaultProps.onSetHighlight.mockClear();
   });
 
   test('renders title, snippet, and date, and has no a11y violations', async () => {
     const { container } = render(<EntryCard {...defaultProps} />);
+    const cardElement = screen.getByRole('listitem', { name: defaultProps.title });
+
+    expect(cardElement).toHaveAttribute('id', `entry-card-${defaultProps.id}`);
     expect(screen.getByText(defaultProps.title)).toBeInTheDocument();
     expect(screen.getByText(defaultProps.snippet)).toBeInTheDocument();
     expect(screen.getByText(defaultProps.date)).toBeInTheDocument();
+    expect(cardElement).not.toHaveClass('highlighted');
+    expect(cardElement).not.toHaveAttribute('aria-current');
 
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
 
-  test('has role="listitem" and is focusable', () => {
+  test('applies highlighted class and aria-current when isHighlighted is true', async () => {
+    const { container, rerender } = render(<EntryCard {...defaultProps} isHighlighted={true} />);
+    const cardElement = screen.getByRole('listitem', { name: defaultProps.title });
+
+    expect(cardElement).toHaveClass('highlighted');
+    expect(cardElement).toHaveAttribute('aria-current', 'true');
+    // Test that useEffect focuses the element (jsdom doesn't fully support focus effects like scrolling)
+    // but we can check if document.activeElement is the card.
+    expect(document.activeElement).toBe(cardElement);
+
+
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+
+    // Test that focus remains after re-render if still highlighted
+    rerender(<EntryCard {...defaultProps} isHighlighted={true} />);
+    expect(document.activeElement).toBe(cardElement);
+  });
+
+
+  test('calls onSetHighlight on focus', () => {
     render(<EntryCard {...defaultProps} />);
     const cardElement = screen.getByRole('listitem');
-    expect(cardElement).toBeInTheDocument();
-    cardElement.focus();
-    expect(cardElement).toHaveFocus();
+    fireEvent.focus(cardElement);
+    expect(defaultProps.onSetHighlight).toHaveBeenCalledWith(defaultProps.id);
   });
 
   test('calls onClick handler when card is clicked', () => {
@@ -47,72 +75,45 @@ describe('EntryCard', () => {
     expect(defaultProps.onClick).toHaveBeenCalledTimes(1);
   });
 
-  test('calls onClick handler when Enter key is pressed on a focused card', () => {
+  test('calls onClick handler when Enter key is pressed', () => {
     render(<EntryCard {...defaultProps} />);
     const cardElement = screen.getByRole('listitem');
-    cardElement.focus();
     fireEvent.keyDown(cardElement, { key: 'Enter', code: 'Enter' });
     expect(defaultProps.onClick).toHaveBeenCalledTimes(1);
   });
 
-  test('calls onClick handler when Space key is pressed on a focused card', () => {
+  test('calls onClick handler when Space key is pressed', () => {
     render(<EntryCard {...defaultProps} />);
     const cardElement = screen.getByRole('listitem');
-    cardElement.focus();
     fireEvent.keyDown(cardElement, { key: ' ', code: 'Space' });
     expect(defaultProps.onClick).toHaveBeenCalledTimes(1);
   });
 
   describe('Delete Icon', () => {
-    test('is not visible by default if onDelete is provided', () => {
+    test('is rendered if onDeleteRequest is provided', () => {
       render(<EntryCard {...defaultProps} />);
-      // The icon is conditionally rendered based on isHovered state, so it won't be in the DOM initially.
-      expect(screen.queryByRole('button', { name: /Delete entry/i })).not.toBeInTheDocument();
+      // Visibility is CSS based, so we just check for presence in DOM
+      expect(screen.getByRole('button', { name: `Delete entry: ${defaultProps.title}` })).toBeInTheDocument();
     });
 
-    test('becomes visible on mouseEnter and calls onDelete when clicked', () => {
-      render(<EntryCard {...defaultProps} />);
-      const cardElement = screen.getByRole('listitem');
+    test('is not rendered if onDeleteRequest prop is not provided', () => {
+      const propsWithoutDelete = { ...defaultProps, onDeleteRequest: undefined };
+      render(<EntryCard {...propsWithoutDelete} />);
+      expect(screen.queryByRole('button', { name: `Delete entry: ${defaultProps.title}` })).not.toBeInTheDocument();
+    });
 
-      fireEvent.mouseEnter(cardElement);
-      const deleteButton = screen.getByRole('button', { name: /Delete entry/i });
-      expect(deleteButton).toBeInTheDocument();
+    test('calls onDeleteRequest when clicked and stops propagation', () => {
+      render(<EntryCard {...defaultProps} />);
+      const deleteButton = screen.getByRole('button', { name: `Delete entry: ${defaultProps.title}` });
 
       fireEvent.click(deleteButton);
-      expect(defaultProps.onDelete).toHaveBeenCalledTimes(1);
-      // Ensure card's onClick was not called due to event propagation
-      expect(defaultProps.onClick).not.toHaveBeenCalled();
-    });
-
-    test('is hidden on mouseLeave', () => {
-      render(<EntryCard {...defaultProps} />);
-      const cardElement = screen.getByRole('listitem');
-
-      fireEvent.mouseEnter(cardElement);
-      expect(screen.getByRole('button', { name: /Delete entry/i })).toBeInTheDocument();
-
-      fireEvent.mouseLeave(cardElement);
-      expect(screen.queryByRole('button', { name: /Delete entry/i })).not.toBeInTheDocument();
-    });
-
-    test('is not rendered if onDelete prop is not provided', () => {
-      const propsWithoutDelete = { ...defaultProps, onDelete: undefined };
-      render(<EntryCard {...propsWithoutDelete} />);
-      const cardElement = screen.getByRole('listitem');
-
-      fireEvent.mouseEnter(cardElement);
-      expect(screen.queryByRole('button', { name: /Delete entry/i })).not.toBeInTheDocument();
+      expect(defaultProps.onDeleteRequest).toHaveBeenCalledWith(defaultProps.id);
+      expect(defaultProps.onClick).not.toHaveBeenCalled(); // Check propagation stopped
     });
   });
 
   test('loop dot is present', () => {
     render(<EntryCard {...defaultProps} />);
-    // The loop dot is a div with a specific class, not interactive itself.
-    // We can check for its presence if it has a unique identifier or test its container.
-    // For now, assuming its presence if the card renders. A more specific test might involve
-    // checking its computed style for the animation if that were easily testable in JSDOM,
-    // or giving it a data-testid.
-    // Simple check:
     const cardElement = screen.getByRole('listitem');
     expect(cardElement.querySelector('.entry-card-loop-dot')).toBeInTheDocument();
   });
