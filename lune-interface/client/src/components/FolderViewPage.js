@@ -50,7 +50,7 @@ export default function FolderViewPage({ allEntries, allFolders, startEdit, refr
         </Link>
       </div>
 
-      <div className="space-y-4 mb-4 max-h-[70vh] overflow-y-auto ring-1 ring-slate-800 shadow-inner bg-[#0d0d0f]">
+      <div className="space-y-4 mb-4 max-h-[70vh] overflow-y-auto ring-1 ring-slate-800 shadow-inner bg-[#0d0d0f] no-scrollbar">
         {entriesInFolder.length > 0 ? (
           entriesInFolder.map(entry => (
             <div

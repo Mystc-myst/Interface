@@ -106,7 +106,7 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
       )}
 
       {/* Entries Section */}
-      <div className="space-y-4 mb-4 max-h-[70vh] overflow-y-auto ring-1 ring-slate-800 shadow-inner bg-[#0d0d0f]">
+      <div className="space-y-4 mb-4 max-h-[70vh] overflow-y-auto ring-1 ring-slate-800 shadow-inner bg-[#0d0d0f] no-scrollbar">
         {unfiledEntries.map(entry => (
           <div
             key={entry.id}

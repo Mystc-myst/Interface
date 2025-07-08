@@ -77,7 +77,7 @@ export default function LuneChatModal({ open, onClose }) {
           <h2 className="font-bold text-xl text-lunePurple font-literata">Chat with Lune</h2>
           <button onClick={handleClose} className="text-lunePurple font-bold text-2xl">&times;</button>
         </div>
-        <div className="flex-1 overflow-y-auto mb-4 space-y-2 max-h-80 border rounded p-2 bg-luneGray/30 ring-1 ring-slate-800 shadow-inner bg-[#0d0d0f]">
+        <div className="flex-1 overflow-y-auto mb-4 space-y-2 max-h-80 border rounded p-2 bg-luneGray/30 ring-1 ring-slate-800 shadow-inner bg-[#0d0d0f] no-scrollbar">
           {messages.map((msg, i) => (
             <div
               key={i}

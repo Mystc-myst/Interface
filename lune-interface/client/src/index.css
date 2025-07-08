@@ -12,6 +12,15 @@ body {
 @tailwind components;
 @tailwind utilities;
 
+/* Utility to hide scrollbars while preserving scroll ability */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 @keyframes fadeIn {
   to {
     opacity: 1;

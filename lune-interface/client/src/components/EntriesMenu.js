@@ -28,7 +28,7 @@ function EntriesMenu({ entries, onSelect, onNew }) {
           New Entry
         </button>
       </div>
-      <div className="overflow-y-auto max-h-[70vh]">
+      <div className="overflow-y-auto max-h-[70vh] no-scrollbar">
         {filtered.map(entry => (
           <div
             key={entry._id || entry.id || Math.random()}
