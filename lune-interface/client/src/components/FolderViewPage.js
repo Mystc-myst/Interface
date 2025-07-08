@@ -62,10 +62,12 @@ export default function FolderViewPage({ allEntries, allFolders, startEdit, refr
   }
 
   return (
-    <div className="p-4 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-lunePurple text-3xl font-bold font-literata font-light">
-          Folder: {currentFolder.name}
+    <main className="relative">
+      <div className="absolute inset-0 bg-white/4 backdrop-blur-[6px] pointer-events-none rounded-[2rem]" />
+      <div className="p-4 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-lunePurple text-3xl font-bold font-literata font-light">
+            Folder: {currentFolder.name}
         </h1>
         <Link to="/entries" className="text-lunePurple underline hover:text-luneGold">
           Back to All Entries
@@ -77,7 +79,7 @@ export default function FolderViewPage({ allEntries, allFolders, startEdit, refr
           entriesInFolder.map(entry => (
             <div
               key={entry.id}
-              className="rounded-xl bg-gradient-to-b from-slate-800/30 to-slate-900/60 p-4 shadow-md backdrop-blur-md cursor-pointer hover:shadow-[0_0_12px_#fcd34d80] hover:scale-[1.02] focus:scale-[1.02] transition-transform duration-500 ease-in-out"
+              className="rounded-xl bg-white/6 p-4 shadow-md backdrop-blur-lg cursor-pointer hover:shadow-[0_0_12px_#fcd34d80] hover:scale-[1.02] focus:scale-[1.02] transition-transform duration-500 ease-in-out"
               onClick={() => { startEdit(entry.id); navigate('/chat'); }}
             >
               <div className="text-xs text-slate-300 italic tracking-wide font-ibmPlexMono uppercase">
@@ -109,7 +111,8 @@ export default function FolderViewPage({ allEntries, allFolders, startEdit, refr
           <div className="text-center text-slate-300 p-5">This folder is empty.</div>
         )}
       </div>
-    </div>
+      </div>
+    </main>
   );
 }
 
