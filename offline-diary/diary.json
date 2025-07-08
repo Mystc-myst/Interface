@@ -1,1 +1,22 @@
-[]
+{
+  "entries": [
+    {
+      "id": "b883077c-3813-4a3f-855b-1839fa981811",
+      "text": "API test entry 2",
+      "timestamp": "2025-07-08T12:10:10.141Z",
+      "fields": [],
+      "states": [],
+      "loops": [],
+      "hashtags": [],
+      "links": [],
+      "agent_logs": {},
+      "folderId": null
+    }
+  ],
+  "folders": [
+    {
+      "id": "87a240ed-e3b7-4397-8196-a15e163e404f",
+      "name": "Second API Folder"
+    }
+  ]
+}
