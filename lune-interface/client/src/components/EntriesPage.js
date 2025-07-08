@@ -1,17 +1,27 @@
-import React, { useCallback } from 'react'; // Removed useState as folders are now props
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import Folder from './Folder';
+import EntryCard from './ui/EntryCard'; // Import EntryCard
+import './EntriesPage.css'; // Import specific styles for EntriesPage if any are still needed (e.g., layout)
 
-// Updated to use folders prop from App.js
 export default function EntriesPage({ entries, folders, refreshEntries, refreshFolders, startEdit }) {
   const navigate = useNavigate();
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this entry?')) return;
-    await fetch(`/diary/${id}`, { method: 'DELETE' });
-    await refreshEntries(); // This will refresh both entries and folders from App.js
-    // No need to manually update local folder state as it's now managed by App.js
+  // handleDelete is now passed to EntryCard, which calls it with entryId
+  const handleDeleteEntry = async (id) => {
+    // Confirmation can be handled inside EntryCard's menu, or here.
+    // For consistency with FolderViewPage, let's assume menu action is sufficient,
+    // or add window.confirm if a global behavior is desired.
+    // The original EntriesPage had window.confirm, so let's keep it for now.
+    if (!window.confirm('Are you sure you want to delete this entry?')) return;
+    try {
+      await fetch(`/diary/${id}`, { method: 'DELETE' });
+      await refreshEntries(); // Refresh all data
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+      alert(`Error: ${error.message}`);
+    }
   };
 
   const handleAddFolder = async () => {
@@ -27,11 +37,9 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to create folder');
         }
-        // const newFolder = await response.json(); // The new folder object from backend
-        // Instead of setFolders directly, call refreshFolders to get the latest list from App.js
         if (refreshFolders) {
           await refreshFolders();
-        } else if (refreshEntries) { // Fallback if only refreshEntries (which refreshes all) is available
+        } else if (refreshEntries) {
           await refreshEntries();
         }
       } catch (error) {
@@ -42,99 +50,99 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
   };
 
   const handleDropEntryIntoFolder = useCallback(async (folderId, entryId) => {
-    const entry = entries.find(e => e.id === entryId);
-    if (!entry) return;
-
-    // Optimistic UI update can be tricky here if relying on parent state.
-    // Best to make API call then refresh.
+    // const entry = entries.find(e => e.id === entryId); // Not strictly needed if backend handles it
+    // if (!entry) return;
     try {
       const response = await fetch(`/diary/${entryId}/folder`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ folderId: folderId }), // folderId can be null to unassign
+        body: JSON.stringify({ folderId: folderId }),
       });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to move entry to folder');
       }
-      await refreshEntries(); // Refresh all data to reflect the change
+      await refreshEntries();
     } catch (error) {
       console.error('Error moving entry to folder:', error);
       alert(`Error: ${error.message}`);
-      // Optionally, revert optimistic update if one was made
     }
-  }, [entries, refreshEntries]); // refreshEntries from App.js now refreshes both entries and folders
+  }, [refreshEntries]); // Removed 'entries' from deps as it's not used directly
 
   const handleDragStartEntry = (e, entryId) => {
     e.dataTransfer.setData('text/plain', entryId);
   };
 
-  // Calculate which entries are unfiled based on the `folderId` property of each entry
-  const unfiledEntries = entries.filter(entry => !entry.folderId);
+  const unfiledEntries = entries.filter(entry => !entry.folderId)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort newest first for consistency
 
   return (
-    <main className="relative">
-      <div className="p-4 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-lunePurple text-3xl font-bold text-center font-literata font-light">Entries</h1>
+    <main className="entries-page-main"> {/* Use a class for page-level styling */}
+      <div className="entries-page-content"> {/* Wrapper for padding and animation */}
+        <div className="entries-page-header">
+          <h1 className="entries-page-title">Entries</h1>
           <button
-          onClick={handleAddFolder}
-          className="bg-lunePurple text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-lunePurple-dark transition-colors duration-300"
-        >
-          Add Folder +
-        </button>
-      </div>
-
-      {/* Folders Section */}
-      {folders.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-xl text-luneLightGray mb-3 font-literata font-light">Folders</h2>
-          <div className="flex flex-wrap gap-4 p-2 bg-[#0d0d0f]/50 rounded-lg shadow-inner">
-            {folders.map(folder => (
-              <Folder
-                key={folder.id}
-                folder={{
-                  ...folder,
-                  // Pass the actual entry objects to Folder if needed for display, or just IDs
-                  // For now, Folder component uses entry count for color, so IDs are enough.
-                  entries: folder.entries // folder.entries are IDs, Folder component expects this
-                }}
-                onDropEntry={handleDropEntryIntoFolder}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Entries Section */}
-      <div className="space-y-4 mb-4 max-h-[70vh] overflow-y-auto ring-1 ring-slate-800 shadow-inner bg-[#0d0d0f] no-scrollbar">
-        {unfiledEntries.map(entry => (
-          <div
-            key={entry.id}
-            draggable // Make entries draggable
-            onDragStart={(e) => handleDragStartEntry(e, entry.id)}
-            className="frost rounded-xl p-4 shadow-md cursor-grab hover:shadow-[0_0_12px_#fcd34d80] hover:scale-[1.02] focus:scale-[1.02] transition-transform duration-500 ease-in-out"
-            onClick={() => { startEdit(entry.id); navigate('/chat'); }}
+            onClick={handleAddFolder}
+            className="entries-page-add-folder-button"
           >
-            <div className="text-xs text-slate-300 italic tracking-wide font-ibmPlexMono uppercase">{new Date(entry.timestamp).toLocaleString()}</div>
-            <div className="whitespace-pre-wrap mb-2">{entry.text}</div>
-            {entry.agent_logs?.Lune && (
-              <div className="mb-2 p-2 bg-luneGray rounded">
-                <span className="font-semibold">Lune:</span> {entry.agent_logs.Lune.reflection}
-              </div>
-            )}
-            <button
-              onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
-              className="text-sm text-red-600"
-            >
-              Delete
-            </button>
+            Add Folder +
+          </button>
+        </div>
+
+        {/* Folders Section */}
+        {folders.length > 0 && (
+          <div className="entries-page-folders-section">
+            <h2 className="entries-page-section-title">Folders</h2>
+            <div className="entries-page-folders-grid">
+              {folders.map(folder => (
+                <Folder
+                  key={folder.id}
+                  folder={{
+                    ...folder,
+                    entries: folder.entries,
+                  }}
+                  onDropEntry={handleDropEntryIntoFolder}
+                />
+              ))}
+            </div>
           </div>
-        ))}
-        {entries.length === 0 && <div className="text-center text-slate-300">No entries.</div>}
-        {entries.length > 0 && unfiledEntries.length === 0 && folders.length === 0 && <div className="text-center text-slate-300">All entries are in folders.</div>}
-      </div>
-      <button onClick={() => navigate('/chat')} className="text-lunePurple underline">Back to Chat</button>
+        )}
+
+        {/* Unfiled Entries Section - Now uses EntryCard */}
+        {/* The container for EntryCards should manage their layout, e.g., vertical spacing */}
+        <div className="entries-list-container" role="list"> {/* Added role="list" for accessibility */}
+          {unfiledEntries.map(entry => (
+            <div
+              key={entry.id} // Key for React list
+              draggable // Keep draggable functionality if needed for folders
+              onDragStart={(e) => handleDragStartEntry(e, entry.id)}
+              // The EntryCard itself will handle its styling and click.
+              // The draggable div is a wrapper here.
+              // Consider if draggable should be on the EntryCard itself or a wrapper.
+              // For now, keeping wrapper for drag, EntryCard for content/interaction.
+            >
+              <EntryCard
+                id={entry.id}
+                // Generate a title if entry.title doesn't exist. Assume entry.text is primary content.
+                title={entry.title || entry.text.substring(0, 50) + (entry.text.length > 50 ? '...' : '')}
+                snippet={entry.text} // Or a more sophisticated snippet generation
+                date={new Date(entry.timestamp).toLocaleString()}
+                onClick={() => { startEdit(entry.id); navigate('/chat'); }}
+                onDeleteRequest={handleDeleteEntry} // Pass the delete handler
+                // onRemoveFromFolderRequest is not applicable for unfiled entries
+                // isHighlighted, onSetHighlight could be added for keyboard navigation consistency
+              />
+            </div>
+          ))}
+          {entries.length === 0 && <div className="entries-page-empty-message">No entries.</div>}
+          {entries.length > 0 && unfiledEntries.length === 0 && folders.length > 0 && (
+            <div className="entries-page-empty-message">All entries are in folders.</div>
+          )}
+           {entries.length > 0 && unfiledEntries.length === 0 && folders.length === 0 && (
+            <div className="entries-page-empty-message">No unfiled entries. Add some or check folders.</div>
+          )}
+        </div>
+        <button onClick={() => navigate('/chat')} className="entries-page-back-link">Back to Chat</button>
       </div>
     </main>
   );
