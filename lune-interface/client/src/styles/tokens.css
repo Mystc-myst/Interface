@@ -63,7 +63,7 @@
 body {
   font-family: 'Inter', sans-serif; /* Default body font */
   color: var(--moon-mist);
-  /* background-color: var(--ink-black); */ /* Removed to allow body::before gradient to show */
+  background-color: var(--ink-black); /* Removed to allow body::before gradient to show */
 }
 
 h1, h2, h3 {

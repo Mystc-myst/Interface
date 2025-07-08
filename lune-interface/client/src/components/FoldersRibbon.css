@@ -20,7 +20,7 @@
   /* Custom thin purple scrollbar for horizontal scrolling - kept as is */
   scrollbar-width: thin; /* Firefox */
   scrollbar-color: #5B2EFF55 transparent; /* Firefox: thumb, track */
-  overflow: hidden; /* Hide stars that go outside the ::before element during rotation */
+  /* overflow: hidden; */ /* Hide stars that go outside the ::before element during rotation - Temporarily commented out for debugging */
 }
 
 @keyframes galaxy-swirl {
