@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Button } from './ui/button'; // Back to relative path
 import PropTypes from 'prop-types';
 
-const DiaryInput = ({ onSave, initialText = '', clearOnSave = false }) => {
+const DiaryInput = ({ onSave, initialText = '', clearOnSave = false, onChatWithLune }) => {
   const [text, setText] = useState(initialText);
   const textareaRef = useRef(null);
 
@@ -79,6 +79,7 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false }) => {
         </Button>
         <Button
           className="btn-liquid-gold" // Apply the new class
+          onClick={onChatWithLune}
         >
           Chat with Lune
         </Button>
@@ -94,6 +95,12 @@ DiaryInput.propTypes = {
   onSave: PropTypes.func.isRequired,
   initialText: PropTypes.string,
   clearOnSave: PropTypes.bool,
+  onChatWithLune: PropTypes.func, // Added prop type for onChatWithLune
+};
+
+// Add default prop for onChatWithLune to avoid errors if not passed
+DiaryInput.defaultProps = {
+  onChatWithLune: () => {}, // No-op function
 };
 
 export default DiaryInput;
