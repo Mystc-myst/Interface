@@ -1,0 +1,48 @@
+.entries-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensure it takes full viewport height */
+  transition: transform 300ms ease-in-out;
+  background-color: var(--ink-black); /* Or inherit from body, ensures content bg during slide */
+}
+
+.entries-page-wrapper.slide-out-active {
+  transform: translateX(-100%); /* Slide current content to the left */
+}
+
+.entries-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 20px 16px 20px; /* Standard padding */
+  /* background-color: var(--ink-black); Optional: if not sticky or part of a larger sticky container */
+  /* z-index: 20; Ensure header is above FoldersRibbon if not sticky itself and ribbon is */
+}
+
+.entries-page-header h1 {
+  /* Typography for h1 is global (Playfair Display, --moon-mist) */
+  margin: 0; /* Remove default h1 margin */
+  font-size: 2.5rem; /* Example size, adjust as needed */
+}
+
+/* FoldersRibbon styles are in its own CSS file (sticky, etc.) */
+
+.entries-page-main-content {
+  flex-grow: 1; /* Allows main content to fill available space */
+  /* padding for DiaryFeed is handled within DiaryFeed.css (e.g. centering it) */
+}
+
+/* BackToChatButton styles are in its own CSS file (fixed position, etc.) */
+
+/* Reduced motion for slide animation */
+@media (prefers-reduced-motion: reduce) {
+  .entries-page-wrapper {
+    transition: none; /* No transition for page slide */
+  }
+  .entries-page-wrapper.slide-out-active {
+    transform: none; /* No actual slide */
+    /* Consider a very quick fade if any feedback is desired, or simply navigate immediately */
+    /* opacity: 0; */
+    /* transition: opacity 50ms ease-out; */
+  }
+}

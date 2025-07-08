@@ -1,0 +1,37 @@
+.folders-ribbon-container {
+  position: sticky;
+  top: 0;
+  background-color: rgba(var(--ink-black-rgb), 0.8); /* Semi-transparent background to see content scroll under */
+  backdrop-filter: blur(10px); /* Frosted glass effect for modern UIs */
+  -webkit-backdrop-filter: blur(10px);
+  padding: 16px 20px; /* Adjust padding as needed */
+  display: flex;
+  gap: 16px; /* Space between folder chips */
+  overflow-x: auto;
+  z-index: 10; /* Ensure it stays on top of other content */
+
+  /* Hide scrollbar for a cleaner look, but still scrollable */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.folders-ribbon-container::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+/* Styling for individual chips is in FolderChip.css */
+/* This container just manages their layout and scroll behavior. */
+
+/* Responsive: below 480px, convert to swipeable carousel */
+@media (max-width: 480px) {
+  .folders-ribbon-container {
+    scroll-snap-type: x mandatory;
+    /* Add some padding so snapped items don't stick to the very edge */
+    scroll-padding: 0 20px;
+  }
+
+  .folders-ribbon-container > * { /* Target FolderChip components */
+    scroll-snap-align: start; /* Snap to the start of each chip */
+    flex-shrink: 0; /* Prevent chips from shrinking to fit */
+  }
+}

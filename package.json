@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "framer-motion": "^12.23.0"
+  },
+  "devDependencies": {
+    "jest-axe": "^10.0.0"
   }
 }

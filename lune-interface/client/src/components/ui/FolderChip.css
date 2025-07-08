@@ -1,0 +1,67 @@
+.folder-chip {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%; /* Makes it a circle */
+  border: 2px solid var(--violet-deep);
+  background-color: transparent; /* Or a very subtle background if needed */
+  color: var(--moon-mist); /* Default text color */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px; /* Adjust padding as needed for text */
+  box-sizing: border-box;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease-out;
+  /* For prefers-reduced-motion, this transition will be overridden if transform is disabled */
+}
+
+.folder-chip:hover,
+.folder-chip:focus-visible {
+  transform: translateY(-4px);
+  /* Optional: add a subtle shadow or glow for better feedback */
+  box-shadow: 0 2px 8px rgba(var(--violet-deep-rgb, 91, 46, 255), 0.3); /* Use RGB version of violet-deep if available or define one */
+}
+
+.folder-chip:active {
+  transform: translateY(-2px) scale(0.98); /* Click feedback */
+}
+
+.folder-chip-name {
+  font-size: 0.8rem; /* Adjust as needed */
+  font-weight: 600;
+  line-height: 1.2;
+  display: -webkit-box; /* For multi-line ellipsis */
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: calc(0.8rem * 1.2 * 2); /* Max 2 lines */
+}
+
+.folder-chip-count {
+  font-size: 0.7rem; /* Adjust as needed */
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/*
+  The --violet-deep-rgb variable is now defined globally in tokens.css
+  for use in box-shadow rgba().
+*/
+
+@media (prefers-reduced-motion: reduce) {
+  .folder-chip {
+    transition: box-shadow 0.2s ease-out; /* Only transition shadow if it's kept */
+  }
+  .folder-chip:hover,
+  .folder-chip:focus-visible {
+    transform: none; /* Disable translation */
+    box-shadow: none; /* Optionally disable shadow/glow or use a static one */
+  }
+  .folder-chip:active {
+    transform: none; /* Disable click feedback scaling/translation */
+  }
+}

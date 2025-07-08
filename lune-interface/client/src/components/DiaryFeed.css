@@ -1,0 +1,26 @@
+.diary-feed-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive grid */
+  gap: 24px; /* Space between cards */
+  padding: 20px; /* Padding around the feed */
+  max-width: 680px; /* Max width as per spec */
+  margin: 0 auto; /* Center the feed if it's narrower than the viewport */
+}
+
+/* On smaller screens, go to a single column layout */
+@media (max-width: 679px) { /* 680px (max-width) - 1px */
+  .diary-feed-container {
+    /* When max-width is hit, grid-template-columns might only allow one column if 300px + gap > viewport.
+       However, to be explicit for very small screens: */
+    grid-template-columns: 1fr;
+    padding: 16px; /* Slightly less padding on mobile */
+    gap: 16px; /* Slightly less gap on mobile */
+  }
+}
+
+.diary-feed-empty {
+  color: var(--moon-mist);
+  text-align: center;
+  padding: 40px;
+  font-size: 1.1rem;
+}
