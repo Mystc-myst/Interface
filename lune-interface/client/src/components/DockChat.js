@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react'; // Removed useRef
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-import LuneChatModal from './LuneChatModal';
+// LuneChatModal is now imported in App.js
 import HashtagButtons from './HashtagButtons';
 import HashtagEntriesModal from './HashtagEntriesModal'; // Import HashtagEntriesModal
 import DiaryInput from "./DiaryInput"; // Back to relative path
@@ -9,10 +9,9 @@ import DiaryInput from "./DiaryInput"; // Back to relative path
 export default function DockChat({ entries, hashtags, refreshEntries, editingId, setEditingId }) {
   const [input, setInput] = useState(''); // This state will be managed by DiaryInput, but handleSubmit logic relies on it. Consider refactoring.
   const [editing, setEditing] = useState(null);
-  const [showChat, setShowChat] = useState(false);
+  // const [showChat, setShowChat] = useState(false); // Moved to App.js
   const [isHashtagModalOpen, setIsHashtagModalOpen] = useState(false); // State for hashtag modal
   const [selectedHashtag, setSelectedHashtag] = useState(null); // State for selected hashtag
-  const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,33 +62,6 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
     // await handleSave(input); // This `input` is the old state variable
   };
 
-  const handleUpload = async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-      if (Array.isArray(data)) {
-        for (const entry of data) {
-          const bodyText = entry.text || entry.content;
-          if (typeof bodyText === 'string') {
-            await fetch('/diary', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: bodyText })
-            });
-          }
-        }
-        await refreshEntries();
-      } else {
-        alert('Invalid diary JSON.');
-      }
-    } catch (err) {
-      alert('Failed to import diary: ' + err.message);
-    }
-    e.target.value = '';
-  };
-
   const handleHashtagButtonClick = (tag) => {
     setSelectedHashtag(tag);
     setIsHashtagModalOpen(true);
@@ -101,27 +73,6 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
     <div className="p-4 bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
       <h1 className="text-lunePurple text-3xl font-bold mb-4 text-center font-literata">Lune Diary.</h1>
       <div className="flex gap-2 mb-4">
-        <button
-          type="button"
-          onClick={() => setShowChat(true)}
-          className="bg-lunePurple text-white px-4 py-2 rounded flex-1"
-        >
-          Chat with Lune
-        </button>
-        <button
-          type="button"
-          onClick={() => fileInputRef.current && fileInputRef.current.click()}
-          className="bg-lunePurple text-white px-4 py-2 rounded flex-1"
-        >
-          Upload
-        </button>
-        <input
-          type="file"
-          accept="application/json"
-          ref={fileInputRef}
-          onChange={handleUpload}
-          className="hidden"
-        />
       </div>
       {/* Hashtag Buttons Area */}
       <HashtagButtons hashtags={hashtags} onHashtagClick={handleHashtagButtonClick} />
@@ -133,7 +84,7 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
       {/* The visual pulse line below the input might need reconsideration as DiaryInput has its own structure */}
       {/* {input.trim() && <div className="w-full h-[2px] bg-indigo-500/30 mt-1"></div>} */}
       <button onClick={() => navigate('/entries')} className="mt-4 text-lunePurple underline">Go to Entries</button>
-      <LuneChatModal open={showChat} onClose={() => setShowChat(false)} />
+      {/* LuneChatModal is now rendered in App.js */}
       <HashtagEntriesModal
         isOpen={isHashtagModalOpen}
         onClose={() => setIsHashtagModalOpen(false)}

@@ -3,12 +3,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import DockChat from './components/DockChat';
 import EntriesPage from './components/EntriesPage';
 import FolderViewPage from './components/FolderViewPage'; // Import FolderViewPage
+import LuneChatModal from './components/LuneChatModal'; // Import LuneChatModal
 
 function App() {
   const [entries, setEntries] = useState([]);
   const [folders, setFolders] = useState([]);
   const [hashtags, setHashtags] = useState([]); // Add state for hashtags
   const [editingId, setEditingId] = useState(null);
+  const [showChat, setShowChat] = useState(false); // Add showChat state
 
   // Fetch entries from backend
   const fetchEntries = useCallback(async () => {
@@ -65,9 +67,11 @@ function App() {
 
   return (
     <Router>
-      <Routes>
-        <Route
-          path="/chat"
+      <div className="flex flex-col min-h-screen">
+        <div className="flex-grow">
+          <Routes>
+            <Route
+              path="/chat"
           element={
             <DockChat
               entries={entries}
@@ -104,6 +108,18 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/chat" replace />} />
       </Routes>
+        </div>
+        <footer className="w-full flex justify-center items-center p-4">
+          <button
+            type="button"
+            onClick={() => setShowChat(true)} // Use setShowChat from App's state
+            className="bg-lunePurple text-white px-4 py-2 rounded"
+          >
+            Chat with Lune
+          </button>
+        </footer>
+        <LuneChatModal open={showChat} onClose={() => setShowChat(false)} />
+      </div>
     </Router>
   );
 }
