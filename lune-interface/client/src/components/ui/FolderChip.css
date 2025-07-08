@@ -1,62 +1,86 @@
 .folder-chip {
-  width: 60px;
-  height: 60px;
+  width: 56px; /* Changed from 60px */
+  height: 56px; /* Changed from 60px */
   border-radius: 50%; /* Circle */
-  background-color: rgba(var(--moon-mist-rgb), 0.1); /* Idle background: Moon-Mist 10% (subtler than 15% on dark ribbon) */
-  border: 1px solid rgba(var(--moon-mist-rgb), 0.2); /* Subtle border for definition */
-  color: var(--moon-mist);
+  /* background-color: rgba(var(--moon-mist-rgb), 0.1); */ /* Removed old background */
+  /* border: 1px solid rgba(var(--moon-mist-rgb), 0.2); */ /* Removed old border */
+  background-color: rgba(var(--violet-deep-rgb), 0.2); /* Temporary base fill, will be part of pulse */
+  color: var(--moon-mist); /* Text color as per prompt */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px; /* Reduced padding for smaller chip size */
+  padding: 4px;
   box-sizing: border-box;
   cursor: pointer;
   font-family: 'Inter', sans-serif;
   text-align: center;
-  transition: transform 0.2s ease-out, background-color 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
-  position: relative; /* For potential future badge or indicator absolutely positioned */
-  outline: none; /* Remove default button outline, rely on :focus-visible */
+  /* transition: transform 0.2s ease-out, background-color 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out; */
+  transition: transform 300ms ease, box-shadow 300ms ease, background-color 300ms ease; /* Updated transition */
+  position: relative;
+  outline: none;
+  box-shadow: 0 0 8px rgba(var(--violet-deep-rgb), 0.35); /* Base outer glow */
+
+  /* Orbit Pulse Animation will be applied under prefers-reduced-motion: no-preference */
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .folder-chip {
+    animation-name: orbitPulse;
+    animation-duration: 6s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out; /* Smooth pulse */
+    animation-delay: calc(var(--index) * 0.75s); /* Staggered delay */
+  }
 }
 
 .folder-chip:hover,
 .folder-chip:focus-visible {
-  transform: translateY(-3px); /* Lift 3px */
-  background-image: linear-gradient(135deg, var(--moon-mist) 0%, var(--violet-deep) 100%);
-  border-color: transparent; /* Hide border when gradient is active */
-  box-shadow: 0 3px 10px rgba(var(--violet-deep-rgb), 0.3);
-  color: var(--ink-black); /* Change text color for contrast on gradient */
+  /* transform: translateY(-3px); */ /* Replaced by scale */
+  transform: scale(1.08); /* New hover transform */
+  /* background-image: linear-gradient(135deg, var(--moon-mist) 0%, var(--violet-deep) 100%); */ /* Old hover background */
+  /* border-color: transparent; */ /* Old border handling */
+  /* box-shadow: 0 3px 10px rgba(var(--violet-deep-rgb), 0.3); */ /* Old hover shadow */
+  box-shadow: 0 0 12px rgba(var(--violet-deep-rgb), 0.5), /* Enhanced outer glow */
+              0 4px 15px rgba(var(--violet-deep-rgb), 0.3); /* Trailing shadow */
+  /* color: var(--ink-black); */ /* Text color should remain Moon-Mist as per overall requirement */
 }
 
-.folder-chip:hover .folder-chip-count,
-.folder-chip:focus-visible .folder-chip-count {
-  color: rgba(var(--ink-black-rgb), 0.7); /* Adjust count color on hover for gradient */
-}
+/* Keep text color Moon-Mist on hover for name and count unless specified otherwise */
+/* .folder-chip:hover .folder-chip-count, */
+/* .folder-chip:focus-visible .folder-chip-count { */
+  /* color: rgba(var(--ink-black-rgb), 0.7); */ /* Old: Adjust count color on hover for gradient */
+/* } */
 
 .folder-chip:active {
-  transform: translateY(-1px) scale(0.97); /* Subtle active state */
-  box-shadow: 0 1px 5px rgba(var(--violet-deep-rgb), 0.25);
+  /* transform: translateY(-1px) scale(0.97); */ /* Old active state */
+  transform: scale(1.05); /* Slightly reduced scale for active, keeping it above base */
+  box-shadow: 0 0 6px rgba(var(--violet-deep-rgb), 0.25), /* Reduced glow */
+              0 2px 8px rgba(var(--violet-deep-rgb), 0.2);  /* Reduced trailing shadow */
 }
 
-/* Selected state */
+/* Selected state - The prompt doesn't explicitly mention a different selected state visually,
+   other than the pulsing. The aria-selected attribute is still useful.
+   For now, removing specific visual styling for selected, as the pulse will differentiate.
+   If a distinct non-pulsing selected state is needed, it can be added back. */
 .folder-chip[aria-selected="true"] {
-  border: 2px solid var(--violet-deep);
-  background-color: rgba(var(--violet-deep-rgb), 0.15); /* Slight violet tint for selected */
-  /* Keep text color moon-mist for selected, unless also hovered */
+  /* border: 2px solid var(--violet-deep); */ /* Old selected border */
+  /* background-color: rgba(var(--violet-deep-rgb), 0.15); */ /* Old selected background */
+  /* Potentially a slightly brighter static glow or a subtle fill change if pulse is not active */
 }
 
-/* Selected and Hovered/Focused state */
-.folder-chip[aria-selected="true"]:hover,
-.folder-chip[aria-selected="true"]:focus-visible {
-  background-image: linear-gradient(135deg, var(--moon-mist) 0%, var(--violet-deep) 100%);
-  color: var(--ink-black);
-  border: 2px solid var(--violet-deep); /* Maintain border or make it part of shadow */
-  box-shadow: 0 3px 12px rgba(var(--violet-deep-rgb), 0.4);
-}
-.folder-chip[aria-selected="true"]:hover .folder-chip-count,
-.folder-chip[aria-selected="true"]:focus-visible .folder-chip-count {
-   color: rgba(var(--ink-black-rgb), 0.7);
-}
+/* Selected and Hovered/Focused state - will combine with general hover */
+/* .folder-chip[aria-selected="true"]:hover, */
+/* .folder-chip[aria-selected="true"]:focus-visible { */
+  /* background-image: linear-gradient(135deg, var(--moon-mist) 0%, var(--violet-deep) 100%); */
+  /* color: var(--ink-black); */
+  /* border: 2px solid var(--violet-deep); */
+  /* box-shadow: 0 3px 12px rgba(var(--violet-deep-rgb), 0.4); */
+/* } */
+/* .folder-chip[aria-selected="true"]:hover .folder-chip-count, */
+/* .folder-chip[aria-selected="true"]:focus-visible .folder-chip-count { */
+   /* color: rgba(var(--ink-black-rgb), 0.7); */
+/* } */
 
 
 .folder-chip-name {
@@ -67,7 +91,7 @@
                        /* Let's try to fit a slightly larger font, maybe 0.75rem (12px) */
   font-size: 0.7rem; /* 11.2px. Max 1 line for name. */
   line-height: 1.3;
-  color: inherit; /* Inherit from .folder-chip for hover state changes */
+  color: var(--moon-mist); /* Explicitly Moon-Mist, inherits from .folder-chip too */
 
   /* Ellipsis for single line */
   white-space: nowrap;
@@ -78,18 +102,19 @@
 
 .folder-chip-count {
   font-family: 'Inter', sans-serif;
-  font-weight: 400; /* Regular */
+  font-weight: 600; /* Changed from 400 to SemiBold */
   font-size: 0.6rem;  /* 0.7rem is spec. 9.6px */
   line-height: 1.2;
-  color: rgba(var(--moon-mist-rgb), 0.7); /* Inherit won't work as easily for opacity based color */
+  color: var(--moon-mist); /* Changed from rgba(var(--moon-mist-rgb), 0.7) */
   margin-top: 1px; /* Small space between name and count */
-  transition: color 0.2s ease-out; /* For hover state change */
+  transition: color 0.2s ease-out; /* For hover state change - though color doesn't change now */
 }
 
 
 @media (prefers-reduced-motion: reduce) {
   .folder-chip {
-    transition: background-color 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+    /* transition: background-color 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out; */ /* Old transition */
+    transition: box-shadow 300ms ease, background-color 300ms ease; /* Adjusted for new properties, transform removed */
   }
   .folder-chip:hover,
   .folder-chip:focus-visible {

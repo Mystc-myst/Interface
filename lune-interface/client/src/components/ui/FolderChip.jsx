@@ -8,7 +8,8 @@ const FolderChip = ({
   isSelected,
   onClick,
   onDoubleClick,
-  onLongPress
+  onLongPress,
+  itemIndex // Added itemIndex prop
 }) => {
   const longPressTimer = useRef(null);
   const chipRef = useRef(null);
@@ -93,6 +94,7 @@ const FolderChip = ({
       // but here all chips are focusable via arrow keys if tablist handles that.
       // Keeping it simple with tabIndex={0} as all are directly focusable.
       tabIndex={0}
+      style={{ '--index': itemIndex }} // Set CSS custom property for animation delay
     >
       <div className="folder-chip-name" title={name}>{name}</div>
       <div className="folder-chip-count">{count}</div>
