@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import DockChat from './components/DockChat';
 import EntriesPage from './components/EntriesPage';
 import FolderViewPage from './components/FolderViewPage'; // Import FolderViewPage
@@ -65,63 +65,75 @@ function App() {
     await fetchHashtags();
   }, [fetchEntries, fetchFolders, fetchHashtags]);
 
-  return (
-    <Router>
+  // Inner component to access useLocation
+  const AppContent = () => {
+    const location = useLocation();
+    const isChatPage = location.pathname === '/chat';
+
+    return (
       <div className="flex flex-col min-h-screen">
         <div className="flex-grow">
           <Routes>
             <Route
               path="/chat"
-          element={
-            <DockChat
-              entries={entries}
-              hashtags={hashtags} // Pass hashtags
-              refreshEntries={refreshAllData} // Use combined refresh (now includes hashtags)
-              editingId={editingId}
-              setEditingId={setEditingId}
+              element={
+                <DockChat
+                  entries={entries}
+                  hashtags={hashtags} // Pass hashtags
+                  refreshEntries={refreshAllData} // Use combined refresh (now includes hashtags)
+                  editingId={editingId}
+                  setEditingId={setEditingId}
+                />
+              }
             />
-          }
-        />
-        <Route
-          path="/entries"
-          element={
-            <EntriesPage
-              entries={entries}
-              folders={folders} // Pass folders
-              refreshEntries={refreshAllData} // Use combined refresh
-              refreshFolders={fetchFolders} // Or pass fetchFolders if EntriesPage modifies folders directly
-              startEdit={setEditingId}
-              setFolders={setFolders} // Allow EntriesPage to update folders state (e.g., after adding a new folder via API)
+            <Route
+              path="/entries"
+              element={
+                <EntriesPage
+                  entries={entries}
+                  folders={folders} // Pass folders
+                  refreshEntries={refreshAllData} // Use combined refresh
+                  refreshFolders={fetchFolders} // Or pass fetchFolders if EntriesPage modifies folders directly
+                  startEdit={setEditingId}
+                  setFolders={setFolders} // Allow EntriesPage to update folders state (e.g., after adding a new folder via API)
+                />
+              }
             />
-          }
-        />
-        <Route
-          path="/folders/:folderId" // New route for viewing a single folder
-          element={
-            <FolderViewPage
-              allEntries={entries}
-              allFolders={folders}
-              startEdit={setEditingId}
-              refreshEntries={refreshAllData} // Use combined refresh
+            <Route
+              path="/folders/:folderId" // New route for viewing a single folder
+              element={
+                <FolderViewPage
+                  allEntries={entries}
+                  allFolders={folders}
+                  startEdit={setEditingId}
+                  refreshEntries={refreshAllData} // Use combined refresh
+                />
+              }
             />
-          }
-        />
-        <Route path="*" element={<Navigate to="/chat" replace />} />
-      </Routes>
+            <Route path="*" element={<Navigate to="/chat" replace />} />
+          </Routes>
         </div>
-        <footer className="w-full flex justify-center items-center px-4 pb-6"> {/* Changed pb-10 to pb-6 */}
-          <div className="frost rounded-2xl px-6 py-3">
-            <button
-              type="button"
-              onClick={() => setShowChat(true)} // Use setShowChat from App's state
-              className="px-4 py-2 rounded shadow-md shadow-violet-800/40"
-            >
-              Chat with Lune
-            </button>
-          </div>
-        </footer>
+        {isChatPage && (
+          <footer className="w-full flex justify-center items-center px-4 pb-6"> {/* Changed pb-10 to pb-6 */}
+            <div className="frost rounded-2xl px-6 py-3">
+              <button
+                type="button"
+                onClick={() => setShowChat(true)} // Use setShowChat from App's state
+                className="px-4 py-2 rounded shadow-md shadow-violet-800/40"
+              >
+                Chat with Lune
+              </button>
+            </div>
+          </footer>
+        )}
         <LuneChatModal open={showChat} onClose={() => setShowChat(false)} />
       </div>
+    );
+  };
+
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
