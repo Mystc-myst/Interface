@@ -160,6 +160,14 @@ body {
   scrollbar-width: none; /* Firefox */
 }
 
+/* Frost utility class */
+.frost {
+  @apply bg-white/5 backdrop-blur-lg ring-1 ring-white/10 shadow-[0_8px_40px_-16px_rgb(91_33_182/0.35)];
+}
+.frost:hover {
+  @apply bg-white/7;
+}
+
 @keyframes fadeIn {
   to {
     opacity: 1;
