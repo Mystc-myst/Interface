@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import './BackToChatButton.css';
 
 const BackToChatButton = ({ id, onClick }) => { // Added id prop for keyboard shortcut targeting
@@ -62,6 +63,11 @@ const BackToChatButton = ({ id, onClick }) => { // Added id prop for keyboard sh
       <span className="back-to-chat-text">Back to Chat</span>
     </button>
   );
+};
+
+BackToChatButton.propTypes = {
+  id: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default BackToChatButton;
