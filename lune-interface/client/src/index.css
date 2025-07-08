@@ -40,6 +40,7 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   --violet: #6B46C1; /* Added for background gradient */
+  --brazen-gold: #B8860B; /* Added Brazen-Gold */
 }
 
 .dark {
@@ -129,7 +130,7 @@
 
   html, body {
     height: 100%;
-    background: radial-gradient(circle at 50% 40%, #5B2EFF 0%, #050409 60%, #050409 100%);
+    background: radial-gradient(circle at 50% 50%, #5B2EFF 0%, #050409 60%, #050409 100%); /* Centered gradient */
     background-attachment: fixed;      /* keeps centre glow static */
     background-repeat: no-repeat;
     color-scheme: dark;
