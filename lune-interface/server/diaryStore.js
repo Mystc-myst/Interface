@@ -1,8 +1,7 @@
 /**
  * @module diaryStore
- * @description Manages the persistence of diary entries to a JSON file.
- * Handles loading, saving, adding, updating, and removing entries,
- * as well as parsing tags from entry text.
+ * @description Manages the persistence of diary entries and folders to a JSON file.
+ * Handles loading, saving, adding, updating, and removing entries and folders.
  * Includes error handling for corrupted data files and file locking for save operations.
  */
 
@@ -13,21 +12,41 @@ const lockfile = require('proper-lockfile');
 
 const DATA_FILE = path.join(__dirname, '..', '..', 'offline-diary', 'diary.json');
 
-let diary = [];
+let diary = []; // For entries
+let folders = []; // For folders
 
 /**
  * @function load
- * @description Loads diary entries from the DATA_FILE.
- * If the file exists, it's read and parsed.
- * If parsing fails, it attempts to back up the corrupted file and then re-throws the parsing error.
- * If the file doesn't exist, the diary is initialized as an empty array.
- * @throws {Error} Re-throws the JSON parsing error if `diary.json` is corrupted.
+ * @description Loads diary entries and folders from the DATA_FILE.
+ * The file is expected to be a JSON object with 'entries' and 'folders' keys.
+ * Handles file corruption by backing up the corrupted file.
+ * Initializes with empty arrays if the file doesn't exist or is not in the new format.
  */
 function load() {
   if (fs.existsSync(DATA_FILE)) {
     try {
       const raw = fs.readFileSync(DATA_FILE, 'utf8');
-      diary = JSON.parse(raw);
+      const data = JSON.parse(raw);
+
+      if (Array.isArray(data)) {
+        console.log('Old diary format detected. Migrating to new format.');
+        diary = data;
+        folders = [];
+      } else if (data && typeof data === 'object' && data.entries !== undefined && data.folders !== undefined) {
+        diary = data.entries;
+        folders = data.folders;
+      } else {
+        console.warn('Diary.json is in an unexpected format. Initializing with empty data and attempting to back up.');
+        const backupFilename = `${DATA_FILE}.unexpected_format.${Date.now()}`;
+        try {
+            fs.renameSync(DATA_FILE, backupFilename);
+            console.log(`Unexpected format diary file backed up to: ${backupFilename}`);
+        } catch(e) {
+            console.error(`Could not back up unexpected format file: ${e.message}`);
+        }
+        diary = [];
+        folders = [];
+      }
     } catch (parseErr) {
       console.error('Failed to parse diary.json:', parseErr.message);
       try {
@@ -43,44 +62,39 @@ function load() {
         console.log(`Corrupted diary file backed up to: ${backupFilename}`);
       } catch (renameErr) {
         console.error(`Failed to rename corrupted diary.json: ${renameErr.message}`);
-        // Log the rename error, but still prioritize re-throwing the original parsing error
       }
-      throw parseErr; // Re-throw the original JSON parsing error
+      diary = [];
+      folders = [];
     }
   } else {
     diary = [];
+    folders = [];
   }
 }
 
 /**
  * @function save
- * @description Saves the current state of the diary (in-memory `diary` array) to DATA_FILE.
- * Ensures the directory exists and uses file locking to prevent concurrent writes.
- * Errors during saving (e.g., disk full, permissions) are logged to the console.
+ * @description Saves the current state of diary entries and folders to DATA_FILE.
+ * Data is stored as a JSON object: { "entries": [...], "folders": [...] }.
+ * Ensures directory exists and uses file locking.
  */
 function save() {
   try {
-    // Check if the directory exists, create it if it doesn't
     const dir = path.dirname(DATA_FILE);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    // Attempt to acquire lock
     lockfile.lockSync(DATA_FILE, {
-      retries: {
-        retries: 5,
-        factor: 3,
-        minTimeout: 100,
-        maxTimeout: 300,
-        randomize: true,
-      },
-      stale: 5000, // Consider a lock stale after 5 seconds
+      retries: { retries: 5, factor: 3, minTimeout: 100, maxTimeout: 300, randomize: true },
+      stale: 5000,
     });
-    fs.writeFileSync(DATA_FILE, JSON.stringify(diary, null, 2));
+    const dataToSave = {
+      entries: diary,
+      folders: folders,
+    };
+    fs.writeFileSync(DATA_FILE, JSON.stringify(dataToSave, null, 2));
   } catch (err) {
     console.error('Failed to save diary data:', err);
-    // Depending on the error, you might want to throw it or handle it differently
-    // For now, just log it, as the original function didn't throw errors from save
   } finally {
     if (lockfile.checkSync(DATA_FILE)) {
       lockfile.unlockSync(DATA_FILE);
@@ -88,13 +102,37 @@ function save() {
   }
 }
 
-load();
+load(); // Load data on module initialization
+
+// Initial save to ensure file is in the new format if it was newly created or migrated.
+// This check needs to be careful not to cause issues if DATA_FILE doesn't exist yet and load initializes empty arrays.
+let needsInitialSave = !fs.existsSync(DATA_FILE);
+if (fs.existsSync(DATA_FILE)) {
+    try {
+        const rawContent = fs.readFileSync(DATA_FILE, 'utf8');
+        const currentData = JSON.parse(rawContent);
+        if (Array.isArray(currentData)) { // Old format
+            needsInitialSave = true;
+        }
+    } catch (e) {
+        // If parsing fails, it might be corrupted or empty, load() handles initialization.
+        // If it's an empty file that's not valid JSON, it also needs an initial save.
+        if (fs.statSync(DATA_FILE).size === 0) {
+            needsInitialSave = true;
+        }
+    }
+}
+
+if (needsInitialSave) {
+    console.log('Initial save to ensure new format for diary.json.');
+    save();
+}
+
 
 /**
  * @function getAll
  * @description Retrieves all diary entries, sorted by timestamp in descending order.
  * @returns {Promise<Array<Object>>} A promise that resolves to an array of diary entry objects.
- * Each object represents a diary entry.
  */
 exports.getAll = async function() {
   return diary.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -136,11 +174,12 @@ function parseTags(text) {
 /**
  * @function add
  * @description Creates a new diary entry with the given text.
- * Parses tags from the text, assigns a unique ID and timestamp, and saves the diary.
+ * Parses tags, assigns ID, timestamp, optional folderId, and saves.
  * @param {string} text - The content of the diary entry.
+ * @param {string|null} [folderId=null] - Optional ID of the folder for this entry.
  * @returns {Promise<Object>} A promise that resolves to the newly created diary entry object.
  */
-exports.add = async function(text) {
+exports.add = async function(text, folderId = null) {
   const tags = parseTags(text);
   const entry = {
     id: crypto.randomUUID(),
@@ -150,7 +189,8 @@ exports.add = async function(text) {
     states: tags.states,
     loops: tags.loops,
     links: [],
-    agent_logs: {}
+    agent_logs: {},
+    folderId: folderId
   };
   diary.push(entry);
   save();
@@ -170,25 +210,29 @@ exports.findById = async function(id) {
 /**
  * @function updateText
  * @description Updates the text and associated tags of an existing diary entry.
- * Also updates the entry's timestamp.
+ * Also updates the entry's timestamp. Can also update folderId.
  * If the entry is found, changes are saved.
  * @param {string} id - The unique ID of the diary entry to update.
  * @param {string} text - The new text content for the diary entry.
+ * @param {string|null|undefined} [folderId=undefined] - New folder ID. `null` unassigns, `undefined` leaves it unchanged.
  * @returns {Promise<Object|null>} A promise that resolves to the updated diary entry object,
  * or null if no entry with the given ID is found.
  */
-exports.updateText = async function(id, text) {
-  const entry = diary.find(e => e.id === id);
+exports.updateText = async function(id, text, folderId) {
+  const entry = await exports.findById(id);
   if (!entry) return null;
 
   entry.text = text;
-  entry.timestamp = new Date().toISOString();
+  entry.timestamp = new Date().toISOString(); // Always update timestamp on text change
 
-  // Re-parse tags and update entry
   const tags = parseTags(text);
   entry.fields = tags.fields;
   entry.states = tags.states;
   entry.loops = tags.loops;
+
+  if (folderId !== undefined) {
+    entry.folderId = folderId; // folderId can be null here
+  }
 
   save();
   return entry;
@@ -196,25 +240,31 @@ exports.updateText = async function(id, text) {
 
 /**
  * @function saveEntry
- * @description Saves an entire diary entry object.
- * This is typically used when modifications beyond just the text are made to an entry.
- * The entry is identified by its `id` property. If an existing entry with the same ID is found, it's replaced.
+ * @description Saves an entire diary entry object. Replaces based on ID.
  * @param {Object} entry - The diary entry object to save. Must contain an `id` property.
  * @returns {Promise<Object>} A promise that resolves to the saved diary entry object.
  */
-exports.saveEntry = async function(entry) {
-  const index = diary.findIndex(e => e.id === entry.id);
+exports.saveEntry = async function(entryToSave) {
+  const index = diary.findIndex(e => e.id === entryToSave.id);
   if (index !== -1) {
-    diary[index] = entry;
+    diary[index] = entryToSave;
     save();
+  } else {
+    // Optionally handle case where entry to save is new, though 'add' is typical for that.
+    // For now, only updates existing.
+    // Or, if it should add if not found:
+    // diary.push(entryToSave);
+    // save();
+    // return entryToSave;
+    console.warn(`saveEntry called for an id not found: ${entryToSave.id}. Entry not saved.`);
+    return null; // Or throw error
   }
-  return entry;
+  return entryToSave;
 };
 
 /**
  * @function remove
  * @description Removes a diary entry by its ID.
- * If an entry with the given ID is found, it's removed from the diary and changes are saved.
  * @param {string} id - The unique ID of the diary entry to remove.
  * @returns {Promise<boolean>} A promise that resolves to `true` if the entry was found and removed, otherwise `false`.
  */
@@ -226,4 +276,110 @@ exports.remove = async function(id) {
     return true;
   }
   return false;
+};
+
+// --- Folder Management Functions ---
+
+/**
+ * @function getAllFolders
+ * @description Retrieves all folders, sorted by name.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of folder objects.
+ */
+exports.getAllFolders = async function() {
+  return folders.slice().sort((a, b) => a.name.localeCompare(b.name));
+};
+
+/**
+ * @function addFolder
+ * @description Creates a new folder with the given name.
+ * @param {string} name - The name of the new folder.
+ * @returns {Promise<Object>} A promise that resolves to the newly created folder object.
+ * @throws {Error} If name is empty or not a string.
+ */
+exports.addFolder = async function(name) {
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    throw new Error('Folder name cannot be empty.');
+  }
+  const folder = {
+    id: crypto.randomUUID(),
+    name: name.trim(),
+  };
+  folders.push(folder);
+  save();
+  return folder;
+};
+
+/**
+ * @function findFolderById
+ * @description Finds a folder by its ID.
+ * @param {string} id - The unique ID of the folder to find.
+ * @returns {Promise<Object|undefined>} A promise that resolves to the folder object if found, otherwise undefined.
+ */
+exports.findFolderById = async function(id) {
+  return folders.find(f => f.id === id);
+};
+
+/**
+ * @function updateFolder
+ * @description Updates the name of an existing folder.
+ * @param {string} id - The unique ID of the folder to update.
+ * @param {string} name - The new name for the folder.
+ * @returns {Promise<Object|null>} A promise that resolves to the updated folder object,
+ * or null if no folder with the given ID is found.
+ * @throws {Error} If name is empty or not a string.
+ */
+exports.updateFolder = async function(id, name) {
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    throw new Error('Folder name cannot be empty.');
+  }
+  const folder = await exports.findFolderById(id);
+  if (!folder) return null;
+
+  folder.name = name.trim();
+  save();
+  return folder;
+};
+
+/**
+ * @function removeFolder
+ * @description Removes a folder by its ID. Also sets `folderId` to null for all entries formerly in this folder.
+ * @param {string} id - The unique ID of the folder to remove.
+ * @returns {Promise<boolean>} A promise that resolves to `true` if the folder was found and removed, otherwise `false`.
+ */
+exports.removeFolder = async function(id) {
+  const index = folders.findIndex(f => f.id === id);
+  if (index !== -1) {
+    folders.splice(index, 1);
+    diary.forEach(entry => {
+      if (entry.folderId === id) {
+        entry.folderId = null;
+      }
+    });
+    save();
+    return true;
+  }
+  return false;
+};
+
+/**
+ * @function assignEntryToFolder
+ * @description Assigns an entry to a specific folder or unassigns it.
+ * @param {string} entryId - The ID of the entry to assign/unassign.
+ * @param {string|null} folderId - The ID of the folder to assign to, or `null` to unassign the entry from any folder.
+ * @returns {Promise<Object|null>} A promise that resolves to the updated entry, or null if entry not found.
+ */
+exports.assignEntryToFolder = async function(entryId, folderId) {
+  const entry = await exports.findById(entryId);
+  if (!entry) return null;
+
+  // Optional: Validate if folderId (if not null) actually exists in the folders array
+  if (folderId !== null && !folders.find(f => f.id === folderId)) {
+    // console.warn(`Attempted to assign entry ${entryId} to non-existent folder ${folderId}.`);
+    // Depending on desired behavior, either throw an error or proceed to assign (could be a folder to be created later)
+    // For now, allow assignment, assuming frontend/client manages folder existence.
+  }
+
+  entry.folderId = folderId;
+  save();
+  return entry;
 };
