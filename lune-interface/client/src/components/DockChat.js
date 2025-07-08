@@ -74,7 +74,7 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
 
   return (
     <main className="relative">
-      <div className="p-4 bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
+      <div className="p-4 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
         <h1 className="text-lunePurple text-3xl font-bold mb-4 text-center font-literata font-light">Lune Diary.</h1>
         <div className="flex gap-2 mb-4">
         </div>
