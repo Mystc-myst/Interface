@@ -1,0 +1,37 @@
+.primary-button {
+  background-color: var(--brazen-gold);
+  color: var(--ink-black); /* Chosen for contrast with Brazen Gold */
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px; /* A common modern radius */
+  font-family: 'Inter', sans-serif; /* Ensure consistent font */
+  font-weight: 600; /* Slightly bolder text */
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease-out, background-color 0.2s ease-out;
+  text-decoration: none; /* In case it's used as a link styled as a button */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primary-button:hover,
+.primary-button:focus-visible {
+  transform: scale(1.04);
+  /* Consider a slightly darker/lighter shade on hover for accessibility if scale alone is not enough */
+  /* background-color: darken(var(--brazen-gold), 5%); */ /* Example, needs actual color adjustment */
+}
+
+.primary-button:active {
+  transform: scale(0.98); /* Click feedback */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-button:hover,
+  .primary-button:focus-visible {
+    transform: none; /* Disable scaling */
+  }
+  .primary-button:active {
+    transform: none; /* Disable click feedback scaling */
+  }
+}

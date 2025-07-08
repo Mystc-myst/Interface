@@ -1,0 +1,109 @@
+.entry-card {
+  position: relative; /* For positioning the loop dot and trash icon */
+  background-color: #111116;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: inset 0 0 0 4px rgba(var(--moon-mist-rgb), 0.08);
+  color: var(--moon-mist);
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.3s ease-out, box-shadow 0.3s ease-out;
+  overflow: hidden; /* Ensures child elements like loop-dot don't break border-radius */
+}
+
+.entry-card:hover,
+.entry-card:focus-visible {
+  background-color: rgba(var(--violet-deep-rgb), 0.2);
+  box-shadow: inset 0 0 0 4px rgba(var(--moon-mist-rgb), 0.08), /* Keep original inset outline */
+              0 4px 12px rgba(var(--violet-deep-rgb), 0.35);
+  outline: none; /* Remove default focus outline if custom is sufficient */
+}
+
+.entry-card-loop-dot {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 8px;
+  height: 8px;
+  background-color: var(--aqua-loop);
+  border-radius: 50%;
+  animation: pulse-loop-dot 1000ms cubic-bezier(0.4, 0, 0.6, 1) 300ms 1; /* 300ms delay, 1 iteration */
+}
+
+.entry-card-content {
+  /* Normal content flow */
+}
+
+.entry-card-title {
+  font-family: 'Playfair Display', serif; /* As per spec for h1-h3 */
+  font-weight: 600;
+  font-size: 1.25rem; /* Example size */
+  color: var(--moon-mist);
+  margin-top: 0; /* Reset margin if h3 has default */
+  margin-bottom: 8px;
+}
+
+.entry-card-snippet {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(var(--moon-mist-rgb), 0.8); /* Slightly muted snippet */
+  margin-bottom: 8px;
+  /* For multi-line ellipsis: */
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Show 3 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: calc(0.9rem * 1.5 * 3); /* Fallback for max height */
+}
+
+.entry-card-date {
+  font-size: 0.8rem;
+  color: rgba(var(--moon-mist-rgb), 0.6); /* More muted date */
+}
+
+.entry-card-delete-icon {
+  position: absolute;
+  top: 12px; /* Adjust for visual preference */
+  right: 12px; /* Adjust for visual preference */
+  background-color: var(--brazen-gold);
+  color: var(--ink-black); /* For contrast on brazen-gold */
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px; /* Adjust icon size */
+  cursor: pointer;
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  opacity: 1; /* Opacity is handled by JS for reveal, but good to have a base */
+  /* The spec says opacity 0->1 on hover-reveal, which is handled by isHovered in component */
+}
+
+.entry-card-delete-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Reduced motion considerations for animations and transitions will be in motion.css */
+
+@media (prefers-reduced-motion: reduce) {
+  .entry-card {
+    /* Keep background-color transition as it's subtle, or disable if preferred */
+    /* transition: background-color 0.3s ease-out; */
+  }
+  .entry-card:hover,
+  .entry-card:focus-visible {
+    /* Disable hover shadow if it's too much, or use a static one. */
+    /* Keep the inset shadow, remove the outer glow */
+    box-shadow: inset 0 0 0 4px rgba(var(--moon-mist-rgb), 0.08);
+  }
+
+  .entry-card-loop-dot {
+    animation: none; /* Disable pulse animation */
+  }
+
+  .entry-card-delete-icon:hover {
+    transform: none; /* Disable scaling on delete icon */
+  }
+}

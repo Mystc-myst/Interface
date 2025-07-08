@@ -1,9 +1,12 @@
+@import "./styles/tokens.css";
+@import "./styles/motion.css";
+
 /* shadcn/ui theme variables and custom variants */
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #070711; /* Deepest-navy base */
+  /* --background: #070711; */ /* Deepest-navy base - Will be overridden by new gradient */
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -121,35 +124,43 @@
 /* Shadcn base layer customizations AFTER variables are defined and AFTER @tailwind base */
 @layer base {
   * {
-    @apply border-border outline-ring/50; /* Now border-border should be defined */
+    @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    /* @apply bg-background text-foreground; */ /* Replaced by body::before and direct body styles */
+    @apply text-foreground; /* Keep text-foreground from shadcn */
+    font-family: 'Inter', sans-serif; /* Set base body font */
+    color: var(--moon-mist); /* Default text color from our tokens */
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600; /* Corresponds to semibold */
+    color: var(--moon-mist); /* Default heading color, can be overridden */
   }
 }
 
-/* Original app styles */
+/* Original app styles - modified for new design */
 
-/* Lune Diary – mirrored sky band */
+/* Loon Diary Background */
 body::before {
   content: "";
   position: fixed;
-  inset: 0;                         /* cover entire viewport */
-  background:
-    /* top third */
-    linear-gradient(to bottom, rgba(91,33,182,0.25) 0%, transparent 70%) top / 100% 33% no-repeat,
-    /* bottom third */
-    linear-gradient(to top,   rgba(91,33,182,0.25) 0%, transparent 70%) bottom / 100% 33% no-repeat,
-    /* subtle radial halo */
-    radial-gradient(ellipse at 50% 350px, #5b21b6 15%, transparent 60%);
-  pointer-events: none;             /* don’t block clicks */
-  z-index: -1;                      /* sit behind everything */
+  inset: 0;
+  background: radial-gradient(ellipse at center, var(--violet-deep) 0%, var(--ink-black) 70%);
+  pointer-events: none;
+  z-index: -1;
 }
 
+/* The old body rule below is no longer needed as font-family is in @layer base, and color is also set there. */
+/*
 body {
   color: #f8f8f2;
   font-family: 'IBM Plex Sans', sans-serif;
 }
+*/
 
 /* Utility to hide scrollbars while preserving scroll ability */
 .no-scrollbar::-webkit-scrollbar {

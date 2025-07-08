@@ -1,0 +1,55 @@
+.back-to-chat-button {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  background-color: transparent;
+  border: 2px solid var(--violet-deep);
+  color: var(--violet-deep); /* Icon and text color */
+  padding: 8px 16px;
+  border-radius: 9999px; /* Pill shape */
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100; /* Ensure it's above most content */
+
+  opacity: 0;
+  transform: translateY(20px); /* Start slightly lower for fade-in effect */
+  transition: opacity 400ms ease-out, transform 400ms ease-out;
+  pointer-events: none; /* Not interactive when hidden */
+}
+
+.back-to-chat-button.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto; /* Interactive when visible */
+}
+
+.back-to-chat-button:hover,
+.back-to-chat-button:focus-visible {
+  background-color: rgba(var(--violet-deep-rgb), 0.1); /* Subtle hover fill */
+  border-color: var(--violet-deep); /* Ensure border stays */
+  color: var(--violet-deep);
+  outline: none;
+}
+
+.back-to-chat-icon {
+  font-size: 1.2em; /* Make icon slightly larger than text */
+  line-height: 1; /* Prevent extra spacing */
+}
+
+/* Text part can be hidden on very small screens if needed, or icon only */
+/* .back-to-chat-text { ... } */
+
+/* Reduced motion: just fade, no transform */
+@media (prefers-reduced-motion: reduce) {
+  .back-to-chat-button {
+    transform: translateY(0); /* No translate, just fade */
+  }
+  .back-to-chat-button.visible {
+    transform: translateY(0);
+  }
+}

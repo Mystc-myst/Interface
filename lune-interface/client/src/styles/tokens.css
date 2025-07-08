@@ -1,0 +1,43 @@
+/* CSS Color Tokens for Loon Diary */
+:root {
+  --violet-deep: #5B2EFF;
+  --ink-black: #050409;
+  --moon-mist: #E9E7FF;
+  --brazen-gold: #F3B43F;
+  --ember-red: #FF4455;
+  --aqua-loop: #22D4C5;
+
+  /* RGB versions for use in rgba() */
+  --violet-deep-rgb: 91, 46, 255;
+  --ink-black-rgb: 5, 4, 9;
+  --moon-mist-rgb: 233, 231, 255;
+  --brazen-gold-rgb: 243, 180, 63;
+  --ember-red-rgb: 255, 68, 85;
+  --aqua-loop-rgb: 34, 212, 197;
+}
+
+/*
+  Font Definitions for Loon Diary
+  Ideally, these would be .woff2 format for better compression.
+  The view_text_website tool currently retrieves .ttf from Google Fonts.
+  These should be updated to .woff2 if a different method for fetching
+  Google Fonts CSS is available or if fonts are self-hosted.
+*/
+
+/* Inter Regular */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf) format('truetype');
+}
+
+/* Playfair Display Semibold */
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/playfairdisplay/v39/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKebukDQ.ttf) format('truetype');
+}
