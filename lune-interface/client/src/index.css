@@ -129,8 +129,19 @@
 }
 
 /* Original app styles */
-html {
-  background-image: linear-gradient(to bottom, var(--violet) 0%, transparent 33%), linear-gradient(to top, var(--violet) 0%, transparent 33%), var(--background);
+
+/* Lune Diary – mirrored sky band */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;                         /* cover entire viewport */
+  background:
+    /* top third */
+    linear-gradient(to bottom, var(--violet, #5b21b6) 0%, transparent 70%) top / 100% 33% no-repeat,
+    /* bottom third */
+    linear-gradient(to top,   var(--violet, #5b21b6) 0%, transparent 70%) bottom / 100% 33% no-repeat;
+  pointer-events: none;             /* don’t block clicks */
+  z-index: -1;                      /* sit behind everything */
 }
 
 body {
