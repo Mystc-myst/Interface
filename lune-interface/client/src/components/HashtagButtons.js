@@ -7,7 +7,7 @@ function HashtagButtons({ hashtags, onHashtagClick }) {
   }
 
   return (
-    <div className="mb-4 p-3 bg-luneLightGray rounded-md shadow flex flex-wrap gap-2">
+    <div className="mb-4 p-3 bg-luneLightGray rounded-md shadow flex flex-wrap justify-center gap-5">
       {hashtags.map((tag) => (
         <button
           key={tag}
