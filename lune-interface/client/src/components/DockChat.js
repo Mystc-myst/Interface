@@ -73,32 +73,35 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
   const formMarginTop = (hashtags && hashtags.length > 0) ? "mt-16" : "mt-20"; // mt-16 (4rem) if hashtags, mt-20 (5rem) if not. h1 has mb-4. HashtagButtons div has mb-4. Total mt-24 from h1.
 
   return (
-    <div className="p-4 bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
-      <h1 className="text-lunePurple text-3xl font-bold mb-4 text-center font-literata font-light">Lune Diary.</h1>
-      <div className="flex gap-2 mb-4">
-      </div>
-      {/* Hashtag Buttons Area */}
-      <HashtagButtons hashtags={hashtags} onHashtagClick={handleHashtagButtonClick} />
+    <main className="relative">
+      <div className="absolute inset-0 bg-white/4 backdrop-blur-[6px] pointer-events-none rounded-[2rem]" />
+      <div className="p-4 bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
+        <h1 className="text-lunePurple text-3xl font-bold mb-4 text-center font-literata font-light">Lune Diary.</h1>
+        <div className="flex gap-2 mb-4">
+        </div>
+        {/* Hashtag Buttons Area */}
+        <HashtagButtons hashtags={hashtags} onHashtagClick={handleHashtagButtonClick} />
 
-      {/* The form tag is kept for structure but onSubmit might need adjustment if it's meant to trigger save from DiaryInput */}
-      <form onSubmit={handleSubmit} className={`flex flex-col gap-2 ${formMarginTop}`}>
-        <DiaryInput onSave={handleSave} initialText={input} clearOnSave={true} />
-      </form>
-      {/* The visual pulse line below the input might need reconsideration as DiaryInput has its own structure */}
-      {/* {input.trim() && <div className="w-full h-[2px] bg-indigo-500/30 mt-1"></div>} */}
-      <button onClick={() => navigate('/entries')} className="mt-4 text-lunePurple underline">Go to Entries</button>
-      {/* LuneChatModal is now rendered in App.js */}
-      <HashtagEntriesModal
-        isOpen={isHashtagModalOpen}
-        onClose={() => setIsHashtagModalOpen(false)}
-        hashtag={selectedHashtag}
-        entries={entries} // Pass all entries
-        onSelectEntry={(entryId) => {
-          if (setEditingId) setEditingId(entryId); // Ensure setEditingId is callable
-          setIsHashtagModalOpen(false);
-        }}
-      />
-    </div>
+        {/* The form tag is kept for structure but onSubmit might need adjustment if it's meant to trigger save from DiaryInput */}
+        <form onSubmit={handleSubmit} className={`flex flex-col gap-2 ${formMarginTop}`}>
+          <DiaryInput onSave={handleSave} initialText={input} clearOnSave={true} />
+        </form>
+        {/* The visual pulse line below the input might need reconsideration as DiaryInput has its own structure */}
+        {/* {input.trim() && <div className="w-full h-[2px] bg-indigo-500/30 mt-1"></div>} */}
+        <button onClick={() => navigate('/entries')} className="mt-4 text-lunePurple underline">Go to Entries</button>
+        {/* LuneChatModal is now rendered in App.js */}
+        <HashtagEntriesModal
+          isOpen={isHashtagModalOpen}
+          onClose={() => setIsHashtagModalOpen(false)}
+          hashtag={selectedHashtag}
+          entries={entries} // Pass all entries
+          onSelectEntry={(entryId) => {
+            if (setEditingId) setEditingId(entryId); // Ensure setEditingId is callable
+            setIsHashtagModalOpen(false);
+          }}
+        />
+      </div>
+    </main>
   );
 }
 

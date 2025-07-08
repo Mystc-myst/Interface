@@ -73,10 +73,12 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
   const unfiledEntries = entries.filter(entry => !entry.folderId);
 
   return (
-    <div className="p-4 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-lunePurple text-3xl font-bold text-center font-literata font-light">Entries</h1>
-        <button
+    <main className="relative">
+      <div className="absolute inset-0 bg-white/4 backdrop-blur-[6px] pointer-events-none rounded-[2rem]" />
+      <div className="p-4 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-lunePurple text-3xl font-bold text-center font-literata font-light">Entries</h1>
+          <button
           onClick={handleAddFolder}
           className="bg-lunePurple text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-lunePurple-dark transition-colors duration-300"
         >
@@ -112,7 +114,7 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
             key={entry.id}
             draggable // Make entries draggable
             onDragStart={(e) => handleDragStartEntry(e, entry.id)}
-            className="rounded-xl bg-gradient-to-b from-slate-800/30 to-slate-900/60 p-4 shadow-md backdrop-blur-md cursor-grab hover:shadow-[0_0_12px_#fcd34d80] hover:scale-[1.02] focus:scale-[1.02] transition-transform duration-500 ease-in-out"
+            className="rounded-xl bg-white/6 p-4 shadow-md backdrop-blur-lg cursor-grab hover:shadow-[0_0_12px_#fcd34d80] hover:scale-[1.02] focus:scale-[1.02] transition-transform duration-500 ease-in-out"
             onClick={() => { startEdit(entry.id); navigate('/chat'); }}
           >
             <div className="text-xs text-slate-300 italic tracking-wide font-ibmPlexMono uppercase">{new Date(entry.timestamp).toLocaleString()}</div>
@@ -134,7 +136,8 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
         {entries.length > 0 && unfiledEntries.length === 0 && folders.length === 0 && <div className="text-center text-slate-300">All entries are in folders.</div>}
       </div>
       <button onClick={() => navigate('/chat')} className="text-lunePurple underline">Back to Chat</button>
-    </div>
+      </div>
+    </main>
   );
 }
 
