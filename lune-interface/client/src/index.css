@@ -122,6 +122,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom button style for Liquid Gold */
+.btn-liquid-gold {
+  border-radius: 12px;
+  height: 32px;
+  padding: 0 18px;
+  border: 1px solid rgba(var(--brazen-gold-rgb), 0.85);
+  background: linear-gradient(145deg, rgba(var(--brazen-gold-rgb), 0.18) 0%, rgba(var(--brazen-gold-rgb), 0.06) 100%);
+  backdrop-filter: blur(14px) saturate(180%);
+  box-shadow: 0 0 12px 4px rgba(var(--brazen-gold-rgb), 0.22) inset, 0 0 8px rgba(255, 255, 255, 0.12) inset;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600; /* Added for consistency with other buttons, can be adjusted */
+  color: var(--brazen-gold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none; /* Remove underline if it's an <a> tag styled as button */
+  cursor: pointer;
+  transition: filter 0.2s ease-out, transform 0.2s ease-out, box-shadow 0.2s ease-out; /* Added box-shadow transition */
+}
+
+.btn-liquid-gold:hover {
+  filter: brightness(1.15);
+  /* Optional: slightly enhance shadow on hover if desired */
+  /* box-shadow: 0 0 14px 5px rgba(var(--brazen-gold-rgb), 0.25) inset, 0 0 10px rgba(255,255,255,.15) inset; */
+}
+
+.btn-liquid-gold:active {
+  transform: scale(0.97);
+}
+
+/* Ensure kbd elements within the button inherit text color or have a compatible one */
+.btn-liquid-gold kbd {
+  color: var(--brazen-gold); /* Or a slightly less bright version if needed for contrast */
+  opacity: 0.8; /* Soften the kbd text a bit */
+}
+
 /* Shadcn base layer customizations AFTER variables are defined and AFTER @tailwind base */
 @layer base {
   * {

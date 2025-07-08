@@ -115,15 +115,14 @@ function App() {
         </div>
         {isChatPage && (
           <footer className="w-full flex justify-center items-center px-4 pb-6"> {/* Changed pb-10 to pb-6 */}
-            <div className="frost rounded-2xl px-6 py-3">
-              <button
-                type="button"
-                onClick={() => setShowChat(true)} // Use setShowChat from App's state
-                className="px-4 py-2 rounded shadow-md shadow-violet-800/40"
-              >
-                Chat with Lune
-              </button>
-            </div>
+            {/* The div with frost styling has been removed */}
+            <button
+              type="button"
+              onClick={() => setShowChat(true)} // Use setShowChat from App's state
+              className="btn-liquid-gold" // Apply the new class
+            >
+              Chat with Lune
+            </button>
           </footer>
         )}
         <LuneChatModal open={showChat} onClose={() => setShowChat(false)} />
