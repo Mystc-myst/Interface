@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button'; // Adjusted path
+import { Button } from './ui/button'; // Back to relative path
+import PropTypes from 'prop-types';
 
 const DiaryInput = ({ onSave, initialText = '', clearOnSave = false }) => {
   const [text, setText] = useState(initialText);
@@ -82,6 +83,12 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false }) => {
       </div>
     </motion.div>
   );
+};
+
+DiaryInput.propTypes = {
+  onSave: PropTypes.func.isRequired,
+  initialText: PropTypes.string,
+  clearOnSave: PropTypes.bool,
 };
 
 export default DiaryInput;
