@@ -37,7 +37,6 @@ const ActionButtons = ({ onSave, navigate, openInternetModal }) => {
         // Textarea starts at (50% - 30ch). We want buttons to be to the left of this.
         // Buttons are 64px wide.
         // Let's try: left: 'calc(50% - 30ch - 64px - 16px)' where 16px is the gap.
-        left: 'calc(50% - 30ch - 64px - 16px)', // 60ch is textarea, 64px is button width, 16px is gap
         // The above calculation positions the left edge of the button stack.
         // The parent div in DockChat is `flex items-center relative`.
         // The textarea (DiaryInput) is the central element.
