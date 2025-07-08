@@ -75,14 +75,13 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
 
   // const startEdit = (id) => setEditing(id);
 
-  // Calculate margin for the form based on whether hashtags are present
-  const formMarginTop = (hashtags && hashtags.length > 0) ? "mt-16" : "mt-20"; // mt-16 (4rem) if hashtags, mt-20 (5rem) if not. h1 has mb-4. HashtagButtons div has mb-4. Total mt-24 from h1.
+  // Set form margin: mt-4 (1rem). Combined with HashtagButtons' mb-4 (1rem), this creates ~2rem space above the textarea.
+  const formMarginTop = "mt-4";
 
   return (
     <main className="relative">
       {/* Removed opacity-0 and animate-fadeIn from the div below */}
       <div className="p-4 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out">
-        <h1 className="text-lunePurple text-3xl font-bold mb-4 text-center font-literata font-light">Lune Diary.</h1>
         <div className="flex gap-2 mb-4">
         </div>
         {/* Hashtag Buttons Area */}
