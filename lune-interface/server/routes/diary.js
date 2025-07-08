@@ -125,6 +125,9 @@ router.put('/folders/:id', async (req, res) => {
     res.json(folder);
   } catch (err) {
     // diaryStore.updateFolder might throw an error for empty name
+    if (err.message === 'Folder name cannot be empty.') {
+      return res.status(400).json({ error: err.message });
+    }
     res.status(500).json({ error: err.message });
   }
 });
