@@ -1,69 +1,82 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react'; // Removed useState as folders are now props
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-import Folder from './Folder'; // Import the Folder component
+import Folder from './Folder';
 
-export default function EntriesPage({ entries, refreshEntries, startEdit }) {
+// Updated to use folders prop from App.js
+export default function EntriesPage({ entries, folders, refreshEntries, refreshFolders, startEdit, setFolders }) {
   const navigate = useNavigate();
-  const [folders, setFolders] = useState([]); // State for folders
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this entry?')) return;
     await fetch(`/diary/${id}`, { method: 'DELETE' });
-    await refreshEntries();
-    // Also remove the entry from any folder it might be in
-    setFolders(prevFolders => prevFolders.map(f => ({
-      ...f,
-      entries: f.entries.filter(entryId => entryId !== id)
-    })));
+    await refreshEntries(); // This will refresh both entries and folders from App.js
+    // No need to manually update local folder state as it's now managed by App.js
   };
 
-  const handleAddFolder = () => {
+  const handleAddFolder = async () => {
     const folderName = prompt('Enter folder name:');
-    if (folderName) {
-      const newFolder = {
-        id: `folder-${Date.now()}`, // Simple unique ID
-        name: folderName,
-        entries: [],
-      };
-      setFolders(prevFolders => [...prevFolders, newFolder]);
+    if (folderName && folderName.trim() !== '') {
+      try {
+        const response = await fetch('/diary/folders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: folderName.trim() }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create folder');
+        }
+        // const newFolder = await response.json(); // The new folder object from backend
+        // Instead of setFolders directly, call refreshFolders to get the latest list from App.js
+        if (refreshFolders) {
+          await refreshFolders();
+        } else if (refreshEntries) { // Fallback if only refreshEntries (which refreshes all) is available
+          await refreshEntries();
+        }
+      } catch (error) {
+        console.error('Error adding folder:', error);
+        alert(`Error: ${error.message}`);
+      }
     }
   };
 
-  const handleDropEntryIntoFolder = useCallback((folderId, entryId) => {
-    // Find the entry
+  const handleDropEntryIntoFolder = useCallback(async (folderId, entryId) => {
     const entry = entries.find(e => e.id === entryId);
     if (!entry) return;
 
-    setFolders(prevFolders => {
-      // Remove entry from its old folder (if any)
-      const updatedFolders = prevFolders.map(f => {
-        if (f.entries.includes(entryId)) {
-          return { ...f, entries: f.entries.filter(id => id !== entryId) };
-        }
-        return f;
+    // Optimistic UI update can be tricky here if relying on parent state.
+    // Best to make API call then refresh.
+    try {
+      const response = await fetch(`/diary/${entryId}/folder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folderId: folderId }), // folderId can be null to unassign
       });
-
-      // Add entry to the new folder
-      return updatedFolders.map(f => {
-        if (f.id === folderId) {
-          // Avoid adding duplicates if it's somehow already there
-          if (!f.entries.includes(entryId)) {
-            return { ...f, entries: [...f.entries, entryId] };
-          }
-        }
-        return f;
-      });
-    });
-  }, [entries]); // `entries` is a dependency
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to move entry to folder');
+      }
+      await refreshEntries(); // Refresh all data to reflect the change
+    } catch (error) {
+      console.error('Error moving entry to folder:', error);
+      alert(`Error: ${error.message}`);
+      // Optionally, revert optimistic update if one was made
+    }
+  }, [entries, refreshEntries]); // refreshEntries from App.js now refreshes both entries and folders
 
   const handleDragStartEntry = (e, entryId) => {
     e.dataTransfer.setData('text/plain', entryId);
   };
 
-  // Filter out entries that are already in folders
-  const entriesInFolders = folders.reduce((acc, folder) => [...acc, ...folder.entries], []);
-  const unfiledEntries = entries.filter(entry => !entriesInFolders.includes(entry.id));
+  // Calculate which entries are unfiled based on the `folderId` property of each entry
+  const unfiledEntries = entries.filter(entry => !entry.folderId);
+
+  // For Folder component, it needs an array of entry IDs that belong to it.
+  // We can compute this from the main `entries` list.
+  const getEntryIdsForFolder = (folderId) => {
+    return entries.filter(entry => entry.folderId === folderId).map(entry => entry.id);
+  };
 
   return (
     <div className="p-4 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
