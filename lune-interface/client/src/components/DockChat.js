@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import HashtagButtons from './HashtagButtons';
 import HashtagEntriesModal from './HashtagEntriesModal'; // Import HashtagEntriesModal
 import DiaryInput from "./DiaryInput"; // Back to relative path
+import GoToEntriesButton from './ui/GoToEntriesButton'; // Import the new button
 
 export default function DockChat({ entries, hashtags, refreshEntries, editingId, setEditingId }) {
   const [input, setInput] = useState('');
@@ -81,7 +82,8 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
 
   return (
     <main className="relative">
-      <div className="p-4 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
+      {/* Removed opacity-0 and animate-fadeIn from the div below */}
+      <div className="p-4 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out">
         <h1 className="text-lunePurple text-3xl font-bold mb-4 text-center font-literata font-light">Lune Diary.</h1>
         <div className="flex gap-2 mb-4">
         </div>
@@ -94,7 +96,7 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
         </form>
         {/* The visual pulse line below the input might need reconsideration as DiaryInput has its own structure */}
         {/* {input.trim() && <div className="w-full h-[2px] bg-indigo-500/30 mt-1"></div>} */}
-        <button onClick={() => navigate('/entries')} className="mt-4 text-lunePurple underline">Go to Entries</button>
+        {/* Removed old text button, new GoToEntriesButton will be added */}
         {/* LuneChatModal is now rendered in App.js */}
         <HashtagEntriesModal
           isOpen={isHashtagModalOpen}
@@ -106,6 +108,7 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
             setIsHashtagModalOpen(false);
           }}
         />
+        <GoToEntriesButton /> {/* Add the new button here */}
       </div>
     </main>
   );
