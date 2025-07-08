@@ -16,7 +16,13 @@ module.exports = {
     extend: {
       colors: {
         // Custom project colors (can be kept or integrated with CSS vars if desired)
-        lunePurple: '#6B46C1',
+        lunePurple: 'var(--violet-deep)', // Using variable from tokens.css
+        inkBlack: 'var(--ink-black)', // Using variable from tokens.css (#050409)
+        moonMist: 'var(--moon-mist)', // Using variable from tokens.css (#E9E7FF)
+        brazenGold: 'var(--brazen-gold)', // Using variable from tokens.css (#F3B43F)
+        galaxyCore: 'rgba(91, 46, 255, 0.082)', // #5B2EFF15 (approx 8.2% opacity)
+        textareaBg: '#111116', // For the textarea background
+
         luneLightPurple: '#9F7AEA',
         luneDarkPurple: '#553C9A',
         luneGreen: '#68D391',

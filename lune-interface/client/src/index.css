@@ -129,15 +129,18 @@
 
   html, body {
     height: 100%;
-    background: radial-gradient(circle at 50% 40%, #5B2EFF 0%, #050409 60%, #050409 100%);
-    background-attachment: fixed;      /* keeps centre glow static */
-    background-repeat: no-repeat;
+    /* background: radial-gradient(circle at 50% 40%, #5B2EFF 0%, #050409 60%, #050409 100%); Removed */
+    /* background-attachment: fixed; */
+    /* background-repeat: no-repeat; */
     color-scheme: dark;
   }
 
   @media print {
     html, body {
       background: none;
+    }
+    body::before {
+      display: none; /* Hide galaxy background when printing */
     }
   }
 
@@ -147,8 +150,36 @@
     @apply text-foreground; /* Keep text-foreground from shadcn */
     font-family: 'Inter', sans-serif; /* Set base body font */
     color: var(--moon-mist); /* Default text color from our tokens */
+    background-color: #000000; /* Pure black for corners */
     /* min-height: 100vh; /* Covered by height: 100% on html, body */
     margin: 0;
+    position: relative; /* Needed for z-index stacking if body::before is used directly on body */
+    overflow-x: hidden; /* Prevent horizontal scroll from large ::before */
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: -20vmax; /* Make it larger than viewport to ensure coverage */
+    background: radial-gradient(circle, var(--galaxyCore, rgba(91, 46, 255, 0.082)) 0%, transparent 60%);
+    animation: spin 45s linear infinite;
+    z-index: -1; /* Place it behind all content */
+    pointer-events: none; /* Make sure it doesn't interfere with interactions */
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body::before {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   h1, h2, h3 {
