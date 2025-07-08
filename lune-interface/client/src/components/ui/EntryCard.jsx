@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import './EntryCard.css';
 
 // Using a simple SVG for the three-dot icon.
@@ -135,6 +136,25 @@ const EntryCard = ({
       )}
     </div>
   );
+};
+
+EntryCard.propTypes = {
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  title: PropTypes.string.isRequired,
+  snippet: PropTypes.string.isRequired,
+  date: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
+  onDeleteRequest: PropTypes.func,
+  onRemoveFromFolderRequest: PropTypes.func,
+  isHighlighted: PropTypes.bool,
+  onSetHighlight: PropTypes.func,
+};
+
+EntryCard.defaultProps = {
+  onDeleteRequest: null,
+  onRemoveFromFolderRequest: null,
+  isHighlighted: false,
+  onSetHighlight: () => {},
 };
 
 export default EntryCard;
