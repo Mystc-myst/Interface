@@ -78,7 +78,7 @@ const FoldersRibbon = ({
 
   return (
     <div className="folders-ribbon-container" role="tablist" aria-label="Folder categories">
-      {displayFolders.map(folder => (
+      {displayFolders.map((folder, index) => ( // Added index
         <FolderChip
           key={folder.id}
           folderId={folder.id} // Pass folderId for ARIA attributes if needed inside FolderChip
@@ -88,6 +88,7 @@ const FoldersRibbon = ({
           onClick={() => handleChipClick(folder.id)}
           onDoubleClick={() => handleChipDoubleClick(folder)} // Pass the folder object
           onLongPress={() => handleChipLongPress(folder)}   // Pass the folder object
+          itemIndex={index} // Pass index as a prop
           // The FolderChip itself should have role="tab"
           // aria-selected is managed via isSelected prop
         />

@@ -149,7 +149,8 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at center, var(--violet-deep) 0%, var(--ink-black) 70%);
+  /* background: radial-gradient(ellipse at center, var(--violet-deep) 0%, var(--ink-black) 70%); */ /* Old gradient */
+  background: radial-gradient(ellipse at center, rgba(var(--violet-deep-rgb), 0.1) 0%, transparent 70%); /* New page body gradient */
   pointer-events: none;
   z-index: -1;
 }

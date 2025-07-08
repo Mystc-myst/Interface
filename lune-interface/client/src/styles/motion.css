@@ -11,4 +11,13 @@
   }
 }
 
+@keyframes orbitPulse {
+  0%, 100% {
+    background-color: rgba(var(--violet-deep-rgb), 0.2); /* Corresponds to opacity 0.6 (relative) */
+  }
+  50% {
+    background-color: rgba(var(--violet-deep-rgb), 0.5); /* Corresponds to opacity 1.0 (relative) */
+  }
+}
+
 /* preferes-reduced-motion will be added later as per plan */
