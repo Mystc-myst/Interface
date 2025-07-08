@@ -5,55 +5,51 @@
 
 .entry-card {
   position: relative;
-  background-color: #111116;
-  border-radius: 12px; /* Spec: 12px */
-  padding: 12px 20px; /* Spec: 12px vertical, 20px horizontal */
+  background-color: #111116; /* Spec */
+  border-radius: 12px; /* Spec */
+  padding: 12px 20px; /* Spec */
   box-shadow: inset 0 0 0 2px var(--moon-mist); /* Spec: 2px Moon-Mist inset */
   color: var(--moon-mist);
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: background-color 0.2s ease-out, box-shadow 0.2s ease-out, transform 0.2s ease-out;
-  overflow: hidden;
-  max-width: 640px; /* Spec: max-width 640px */
-  margin-left: auto; /* For centering if DiaryFeed is wider */
-  margin-right: auto; /* For centering if DiaryFeed is wider */
+  overflow: visible; /* Allow menu to overflow */
+  max-width: 640px; /* Spec */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .entry-card:hover,
 .entry-card:focus-visible {
-  background-color: rgba(var(--violet-deep-rgb), 0.15); /* Spec: Violet-Deep 15% */
-  /* Spec shadow: 0 2px 8px rgba(91,46,255,.25) */
-  /* Important: Keep the inset shadow while adding the outer shadow */
+  background-color: rgba(var(--violet-deep-rgb), 0.15);
   box-shadow: inset 0 0 0 2px var(--moon-mist),
               0 2px 8px rgba(var(--violet-deep-rgb), 0.25);
   outline: none;
 }
 
 .entry-card:active {
-  transform: scale(0.98); /* Subtle click feedback */
+  transform: scale(0.98);
 }
 
 .entry-card-loop-dot {
   position: absolute;
-  top: 12px; /* Relative to new padding */
-  left: 12px;  /* Relative to new padding */
-  width: var(--loop-dot-size); /* Spec: 6px, from CSS var */
+  top: 12px;
+  left: 12px;
+  width: var(--loop-dot-size); /* Spec: 6px */
   height: var(--loop-dot-size);
   background-color: var(--aqua-loop);
   border-radius: 50%;
-  /* Spec: pulses once on mount. Current animation has 300ms delay. */
   animation: pulse-loop-dot-anim 700ms cubic-bezier(0.4, 0, 0.6, 1) 300ms 1 forwards;
-  /* 'forwards' keeps the end state if it's different, e.g. if it fades out */
 }
 
 .entry-card-content {
-  /* No specific styles needed, normal flow */
+  /* Normal flow, menu is positioned absolutely relative to .entry-card */
 }
 
 .entry-card-title {
   font-family: 'Playfair Display', serif;
   font-weight: 600;
-  font-size: 1.2rem; /* Adjusted slightly from 1.25rem for new padding */
+  font-size: 1.2rem;
   color: var(--moon-mist);
   margin-top: 0;
   margin-bottom: 8px;
@@ -69,7 +65,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-height: calc(0.9rem * 1.5 * 3);
+  max-height: calc(0.9rem * 1.5 * 3); /* Approx 3 lines */
 }
 
 .entry-card-date {
@@ -77,37 +73,87 @@
   color: rgba(var(--moon-mist-rgb), 0.6);
 }
 
-.entry-card-delete-icon {
+/* Three-dot Menu Styling */
+.entry-card-menu-container {
   position: absolute;
-  top: 10px; /* Adjusted for new padding */
-  right: 10px; /* Adjusted for new padding */
-  background-color: var(--brazen-gold);
-  color: var(--ink-black);
-  width: 28px; /* Keep size, or adjust if too large for card padding */
-  height: 28px;
+  top: 8px; /* Adjust to align nicely */
+  right: 8px; /* Adjust to align nicely */
+  z-index: 10;
+}
+
+.entry-card-menu-button {
+  background-color: transparent;
+  color: var(--brazen-gold); /* Spec: Brazen-Gold */
+  border: none;
+  padding: 4px;
   border-radius: 50%;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px; /* Icon size */
-  cursor: pointer;
-  opacity: 0; /* Spec: opacity 0 -> 1 */
-  transition: opacity 120ms ease-out, transform 120ms ease-out; /* Spec: 120ms opacity transition */
-  transform: scale(0.9); /* Start slightly small for pop effect */
-  pointer-events: none; /* Not interactive when hidden */
+  opacity: 0; /* Hidden by default */
+  transition: opacity 120ms ease-out, background-color 0.2s ease-out;
+  pointer-events: none;
 }
 
-.entry-card:hover .entry-card-delete-icon,
-.entry-card:focus-within .entry-card-delete-icon { /* Show on focus-within card too */
+.entry-card:hover .entry-card-menu-button,
+.entry-card:focus-within .entry-card-menu-button, /* Show when card or button itself is focused */
+.entry-card-menu-button:focus, /* Keep visible if button itself is focused */
+.entry-card-menu-container:hover .entry-card-menu-button { /* Keep visible if menu is open and hovered */
   opacity: 1;
-  transform: scale(1);
   pointer-events: auto;
 }
 
-.entry-card-delete-icon:hover {
-  transform: scale(1.15); /* Slightly larger hover effect on icon itself */
-  filter: brightness(0.95); /* Subtle darken */
+.entry-card-menu-button:hover,
+.entry-card-menu-button:focus {
+  background-color: rgba(var(--brazen-gold-rgb), 0.15); /* Subtle hover/focus background */
+  outline: none;
 }
+
+.entry-card-menu {
+  position: absolute;
+  top: calc(100% + 4px); /* Position below the button */
+  right: 0;
+  background-color: #1A1A20; /* Slightly lighter than card bg for distinction */
+  border-radius: 8px;
+  border: 1px solid rgba(var(--moon-mist-rgb), 0.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  padding: 6px 0;
+  min-width: 180px; /* Ensure enough width for items */
+  z-index: 20; /* Above card content */
+  display: flex;
+  flex-direction: column;
+}
+
+.entry-card-menu-item {
+  background-color: transparent;
+  border: none;
+  color: var(--moon-mist);
+  padding: 8px 12px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.entry-card-menu-item:hover,
+.entry-card-menu-item:focus {
+  background-color: rgba(var(--violet-deep-rgb), 0.2);
+  color: var(--moon-mist);
+  outline: none;
+}
+
+.entry-card-menu-item-delete {
+  color: var(--ember-red); /* Destructive action color */
+}
+
+.entry-card-menu-item-delete:hover,
+.entry-card-menu-item-delete:focus {
+  background-color: rgba(var(--ember-red-rgb), 0.15);
+  color: var(--ember-red);
+}
+
 
 /* Highlighted state for keyboard navigation selection */
 .entry-card.highlighted {
@@ -126,26 +172,13 @@
   .entry-card:active {
     transform: none;
   }
-  .entry-card:hover,
-  .entry-card:focus-visible {
-    /* Keep specified background and shadow changes as they are not purely motion */
-  }
 
   .entry-card-loop-dot {
     animation: none;
   }
 
-  .entry-card-delete-icon {
-    transition: opacity 120ms ease-out; /* No transform */
-    transform: scale(1); /* Keep at normal size */
-  }
-  .entry-card:hover .entry-card-delete-icon,
-  .entry-card:focus-within .entry-card-delete-icon {
-    transform: scale(1);
-  }
-  .entry-card-delete-icon:hover {
-    transform: scale(1); /* No hover scale on icon */
-    filter: none;
+  .entry-card-menu-button {
+    transition: opacity 120ms ease-out, background-color 0.2s ease-out;
   }
 }
 
@@ -155,7 +188,16 @@
   right: 12px;
 }
 
-[dir="rtl"] .entry-card-delete-icon {
+[dir="rtl"] .entry-card-menu-container {
   right: auto;
-  left: 10px;
+  left: 8px;
+}
+
+[dir="rtl"] .entry-card-menu {
+  right: auto;
+  left: 0;
+}
+
+[dir="rtl"] .entry-card-menu-item {
+  text-align: right;
 }

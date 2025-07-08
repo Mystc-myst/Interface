@@ -109,7 +109,7 @@ function App() {
         <Route path="*" element={<Navigate to="/chat" replace />} />
       </Routes>
         </div>
-        <footer className="w-full flex justify-center items-center px-4 pb-10">
+        <footer className="w-full flex justify-center items-center px-4 pb-6"> {/* Changed pb-10 to pb-6 */}
           <div className="frost rounded-2xl px-6 py-3">
             <button
               type="button"

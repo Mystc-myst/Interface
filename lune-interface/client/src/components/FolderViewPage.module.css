@@ -1,0 +1,89 @@
+.backButton {
+  background-color: rgba(91, 46, 255, 0.12); /* var(--violet-deep-rgb) with 0.12 alpha */
+  border: 1px solid var(--moon-mist);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* For Safari */
+  color: var(--moon-mist);
+  padding: 0.5rem 1rem; /* Equivalent to 8px 16px, adjust as needed for 0.9rem font */
+  border-radius: 9999px; /* Pill shape */
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* Medium weight, consistent with BackToChatButton */
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem; /* 8px gap */
+  text-decoration: none; /* Remove underline from Link */
+  transition: background-color 0.2s ease-out, border-color 0.2s ease-out;
+}
+
+.backButton:hover,
+.backButton:focus-visible {
+  background-color: rgba(91, 46, 255, 0.25); /* var(--violet-deep-rgb) with 0.25 alpha */
+  border-color: rgba(233, 231, 255, 0.8); /* var(--moon-mist-rgb) with 0.8 alpha */
+  outline: none;
+}
+
+.backButtonIcon {
+  font-size: 1.1em; /* Make icon slightly larger */
+  line-height: 1;
+}
+
+/* Sticky header container */
+.stickyHeader {
+  position: sticky;
+  top: 0;
+  z-index: 10; /* Ensure it's above content but below modals etc. */
+  padding-top: 1rem; /* Add some padding so content below doesn't jump right under it */
+  padding-bottom: 1rem;
+  /* Background for the sticky header bar itself to avoid content showing through during scroll,
+     especially if the page itself doesn't have a solid background at the very top
+     Matching the glassmorphism of the button for consistency, but less blur to avoid performance issues.
+     This can be a subtle version or just a solid color if preferred.
+  */
+  background-color: rgba(5, 4, 9, 0.5); /* var(--ink-black-rgb) with some transparency */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  /* Attempt to make it take full viewport height.
+     App.js's <div className="flex-grow"> on a flex-col min-h-screen body
+     should allow this main to expand.
+     If not, explicit height: 100vh or similar might be needed,
+     but that can sometimes conflict with other page structures.
+     Let's rely on flex-grow from App.js structure first.
+  */
+   min-height: 0; /* Fix for flex children overflowing */
+}
+
+.contentWrapper {
+  flex-grow: 1; /* Allows this div to take available space in flex column */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1rem; /* Consistent with previous p-4 */
+  /* The animate-fadeIn was on this div, ensure it's still applied or moved if necessary */
+  opacity: 0; /* for animate-fadeIn */
+  animation: fadeIn 0.7s ease-in-out forwards; /* from index.css */
+}
+
+@keyframes fadeIn { /* Copied from index.css for self-containment if needed, though global is fine */
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contentWrapper {
+    animation: none; /* Disable fadeIn animation */
+    opacity: 1; /* Ensure it's visible if animation is disabled */
+  }
+  /* Transitions on .backButton (background-color, border-color) are generally
+     considered safe for reduced motion. If they needed to be disabled:
+  .backButton {
+    transition: none;
+  }
+  */
+}
