@@ -1,67 +1,106 @@
 .folder-chip {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%; /* Makes it a circle */
-  border: 2px solid var(--violet-deep);
-  background-color: transparent; /* Or a very subtle background if needed */
-  color: var(--moon-mist); /* Default text color */
+  width: 60px;
+  height: 60px;
+  border-radius: 50%; /* Circle */
+  background-color: rgba(var(--moon-mist-rgb), 0.1); /* Idle background: Moon-Mist 10% (subtler than 15% on dark ribbon) */
+  border: 1px solid rgba(var(--moon-mist-rgb), 0.2); /* Subtle border for definition */
+  color: var(--moon-mist);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px; /* Adjust padding as needed for text */
+  padding: 4px; /* Reduced padding for smaller chip size */
   box-sizing: border-box;
   cursor: pointer;
   font-family: 'Inter', sans-serif;
   text-align: center;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease-out;
-  /* For prefers-reduced-motion, this transition will be overridden if transform is disabled */
+  transition: transform 0.2s ease-out, background-color 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+  position: relative; /* For potential future badge or indicator absolutely positioned */
+  outline: none; /* Remove default button outline, rely on :focus-visible */
 }
 
 .folder-chip:hover,
 .folder-chip:focus-visible {
-  transform: translateY(-4px);
-  /* Optional: add a subtle shadow or glow for better feedback */
-  box-shadow: 0 2px 8px rgba(var(--violet-deep-rgb, 91, 46, 255), 0.3); /* Use RGB version of violet-deep if available or define one */
+  transform: translateY(-3px); /* Lift 3px */
+  background-image: linear-gradient(135deg, var(--moon-mist) 0%, var(--violet-deep) 100%);
+  border-color: transparent; /* Hide border when gradient is active */
+  box-shadow: 0 3px 10px rgba(var(--violet-deep-rgb), 0.3);
+  color: var(--ink-black); /* Change text color for contrast on gradient */
+}
+
+.folder-chip:hover .folder-chip-count,
+.folder-chip:focus-visible .folder-chip-count {
+  color: rgba(var(--ink-black-rgb), 0.7); /* Adjust count color on hover for gradient */
 }
 
 .folder-chip:active {
-  transform: translateY(-2px) scale(0.98); /* Click feedback */
+  transform: translateY(-1px) scale(0.97); /* Subtle active state */
+  box-shadow: 0 1px 5px rgba(var(--violet-deep-rgb), 0.25);
 }
 
+/* Selected state */
+.folder-chip[aria-selected="true"] {
+  border: 2px solid var(--violet-deep);
+  background-color: rgba(var(--violet-deep-rgb), 0.15); /* Slight violet tint for selected */
+  /* Keep text color moon-mist for selected, unless also hovered */
+}
+
+/* Selected and Hovered/Focused state */
+.folder-chip[aria-selected="true"]:hover,
+.folder-chip[aria-selected="true"]:focus-visible {
+  background-image: linear-gradient(135deg, var(--moon-mist) 0%, var(--violet-deep) 100%);
+  color: var(--ink-black);
+  border: 2px solid var(--violet-deep); /* Maintain border or make it part of shadow */
+  box-shadow: 0 3px 12px rgba(var(--violet-deep-rgb), 0.4);
+}
+.folder-chip[aria-selected="true"]:hover .folder-chip-count,
+.folder-chip[aria-selected="true"]:focus-visible .folder-chip-count {
+   color: rgba(var(--ink-black-rgb), 0.7);
+}
+
+
 .folder-chip-name {
-  font-size: 0.8rem; /* Adjust as needed */
-  font-weight: 600;
-  line-height: 1.2;
-  display: -webkit-box; /* For multi-line ellipsis */
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600; /* SemiBold */
+  font-size: 0.625rem; /* 10px, (1rem is target, but 1rem is too large for 60px circle with count) */
+                       /* The prompt states 1rem label, this is tricky in 60px. */
+                       /* Let's try to fit a slightly larger font, maybe 0.75rem (12px) */
+  font-size: 0.7rem; /* 11.2px. Max 1 line for name. */
+  line-height: 1.3;
+  color: inherit; /* Inherit from .folder-chip for hover state changes */
+
+  /* Ellipsis for single line */
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-height: calc(0.8rem * 1.2 * 2); /* Max 2 lines */
+  max-width: calc(100% - 4px); /* Prevent text touching edges */
 }
 
 .folder-chip-count {
-  font-size: 0.7rem; /* Adjust as needed */
-  opacity: 0.8;
-  margin-top: 2px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400; /* Regular */
+  font-size: 0.6rem;  /* 0.7rem is spec. 9.6px */
+  line-height: 1.2;
+  color: rgba(var(--moon-mist-rgb), 0.7); /* Inherit won't work as easily for opacity based color */
+  margin-top: 1px; /* Small space between name and count */
+  transition: color 0.2s ease-out; /* For hover state change */
 }
 
-/*
-  The --violet-deep-rgb variable is now defined globally in tokens.css
-  for use in box-shadow rgba().
-*/
 
 @media (prefers-reduced-motion: reduce) {
   .folder-chip {
-    transition: box-shadow 0.2s ease-out; /* Only transition shadow if it's kept */
+    transition: background-color 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
   }
   .folder-chip:hover,
   .folder-chip:focus-visible {
-    transform: none; /* Disable translation */
-    box-shadow: none; /* Optionally disable shadow/glow or use a static one */
+    transform: none;
+    /* Keep gradient and shadow for visual feedback if desired, or simplify */
+    /* For max reduction: */
+    /* background-image: none; */
+    /* background-color: rgba(var(--moon-mist-rgb), 0.25); /* Slightly lighter idle */
+    /* box-shadow: none; */
   }
   .folder-chip:active {
-    transform: none; /* Disable click feedback scaling/translation */
+    transform: none;
   }
 }

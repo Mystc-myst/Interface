@@ -14,14 +14,14 @@
   --brazen-gold-rgb: 243, 180, 63;
   --ember-red-rgb: 255, 68, 85;
   --aqua-loop-rgb: 34, 212, 197;
+
+  /* UI Element Sizes */
+  --loop-dot-size: 6px;
 }
 
 /*
   Font Definitions for Loon Diary
-  Ideally, these would be .woff2 format for better compression.
-  The view_text_website tool currently retrieves .ttf from Google Fonts.
-  These should be updated to .woff2 if a different method for fetching
-  Google Fonts CSS is available or if fonts are self-hosted.
+  Fetched from Google Fonts.
 */
 
 /* Inter Regular */
@@ -33,6 +33,15 @@
   src: url(https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf) format('truetype');
 }
 
+/* Inter SemiBold */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYMZg.ttf) format('truetype');
+}
+
 /* Playfair Display Semibold */
 @font-face {
   font-family: 'Playfair Display';
@@ -40,4 +49,23 @@
   font-weight: 600;
   font-display: swap;
   src: url(https://fonts.gstatic.com/s/playfairdisplay/v39/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKebukDQ.ttf) format('truetype');
+}
+
+/* JetBrains Mono Regular */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/jetbrainsmono/v23/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxjPQ.ttf) format('truetype');
+}
+
+body {
+  font-family: 'Inter', sans-serif; /* Default body font */
+  color: var(--moon-mist);
+  background-color: var(--ink-black);
+}
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', serif; /* Default heading font */
 }

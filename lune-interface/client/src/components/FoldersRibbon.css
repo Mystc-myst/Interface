@@ -1,23 +1,52 @@
+/* Estimated header height. In a real app, this might be a CSS variable or dynamically calculated if header height is not fixed. */
+:root {
+  --header-height-estimate: 88px; /* Roughly 24px + 16px padding + ~48px for 2.5rem h1 */
+}
+
 .folders-ribbon-container {
   position: sticky;
-  top: 0;
-  background-color: rgba(var(--ink-black-rgb), 0.8); /* Semi-transparent background to see content scroll under */
-  backdrop-filter: blur(10px); /* Frosted glass effect for modern UIs */
+  /* top: 0; /* Original value */
+  top: var(--header-height-estimate); /* Stick below the .entries-page-header */
+  background-color: rgba(var(--ink-black-rgb), 0.85); /* Slightly more opaque for better text legibility */
+  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  padding: 16px 20px; /* Adjust padding as needed */
+  padding: 12px 20px; /* Adjusted padding */
   display: flex;
-  gap: 16px; /* Space between folder chips */
+  align-items: center; /* Vertically align chips if their heights vary slightly due to content */
+  gap: 12px; /* Adjusted gap for 60px chips */
   overflow-x: auto;
-  z-index: 10; /* Ensure it stays on top of other content */
+  overflow-y: hidden; /* Prevent vertical scrollbar if chips have hover effects that increase height */
+  z-index: 20; /* Above main content, below header (header is z-index 30) */
+  height: 90px; /* Container height: 60px chip + 2*12px padding + 6px buffer for hover lift */
+                /* Or 60px chip height + 12px top/bottom padding = 84px. Add a bit for hover lift. */
+                /* Let's make it flexible: min-height to contain chips */
+  min-height: calc(60px + 2 * 12px + 3px); /* chip height + padding + hover lift allowance */
 
-  /* Hide scrollbar for a cleaner look, but still scrollable */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
+
+  /* Custom thin purple scrollbar for horizontal scrolling */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #5B2EFF55 transparent; /* Firefox: thumb, track */
 }
 
 .folders-ribbon-container::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
+  height: 8px; /* Height of the horizontal scrollbar */
+  /* display: none; /* Original: Hide scrollbar */
 }
+
+.folders-ribbon-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.folders-ribbon-container::-webkit-scrollbar-thumb {
+  background-color: #5B2EFF55; /* Violet-Deep with 55 alpha */
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.folders-ribbon-container::-webkit-scrollbar-thumb:hover {
+  background-color: #5B2EFF88;
+}
+
 
 /* Styling for individual chips is in FolderChip.css */
 /* This container just manages their layout and scroll behavior. */
@@ -26,12 +55,13 @@
 @media (max-width: 480px) {
   .folders-ribbon-container {
     scroll-snap-type: x mandatory;
-    /* Add some padding so snapped items don't stick to the very edge */
-    scroll-padding: 0 20px;
+    scroll-padding: 0 20px; /* Keep this for snap behavior */
+    gap: 10px; /* Slightly reduce gap on mobile */
+    padding: 12px 10px; /* Adjust padding for mobile */
   }
 
   .folders-ribbon-container > * { /* Target FolderChip components */
-    scroll-snap-align: start; /* Snap to the start of each chip */
-    flex-shrink: 0; /* Prevent chips from shrinking to fit */
+    scroll-snap-align: start;
+    flex-shrink: 0;
   }
 }

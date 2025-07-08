@@ -2,24 +2,31 @@
   position: fixed;
   bottom: 24px;
   left: 24px;
-  background-color: transparent;
-  border: 2px solid var(--violet-deep);
-  color: var(--violet-deep); /* Icon and text color */
-  padding: 8px 16px;
+
+  /* Glassmorphism styles */
+  background-color: rgba(var(--violet-deep-rgb), 0.12); /* Spec: rgba(91,46,255,.12) bg */
+  border: 1px solid rgba(var(--moon-mist-rgb), 0.3); /* Spec: Moon-Mist 30% border (changed from 2px to 1px for a sleeker look) */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* For Safari */
+
+  color: var(--moon-mist); /* Text and icon color on the blurred bg */
+  padding: 6px 18px; /* Spec: pad 6 18 */
   border-radius: 9999px; /* Pill shape */
   font-family: 'Inter', sans-serif;
-  font-weight: 500;
+  font-weight: 500; /* Medium weight */
   font-size: 0.9rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  z-index: 100; /* Ensure it's above most content */
+  z-index: 1000; /* Ensure it's above most content, including other fixed/sticky elements */
 
   opacity: 0;
   transform: translateY(20px); /* Start slightly lower for fade-in effect */
-  transition: opacity 400ms ease-out, transform 400ms ease-out;
+  transition: opacity 400ms ease-out, transform 400ms ease-out,
+              background-color 0.2s ease-out, border-color 0.2s ease-out;
   pointer-events: none; /* Not interactive when hidden */
+  outline: none;
 }
 
 .back-to-chat-button.visible {
@@ -30,11 +37,17 @@
 
 .back-to-chat-button:hover,
 .back-to-chat-button:focus-visible {
-  background-color: rgba(var(--violet-deep-rgb), 0.1); /* Subtle hover fill */
-  border-color: var(--violet-deep); /* Ensure border stays */
-  color: var(--violet-deep);
-  outline: none;
+  background-color: rgba(var(--violet-deep-rgb), 0.25); /* Slightly more opaque violet on hover */
+  border-color: rgba(var(--moon-mist-rgb), 0.5); /* Brighter border on hover */
+  color: var(--moon-mist); /* Keep text color */
+  outline: none; /* Ensure no default outline interferes with custom styling */
 }
+/* Specific focus-visible style for accessibility if different from hover */
+.back-to-chat-button:focus-visible {
+  outline: 2px solid var(--aqua-loop); /* Example focus outline */
+  outline-offset: 2px;
+}
+
 
 .back-to-chat-icon {
   font-size: 1.2em; /* Make icon slightly larger than text */
@@ -48,8 +61,15 @@
 @media (prefers-reduced-motion: reduce) {
   .back-to-chat-button {
     transform: translateY(0); /* No translate, just fade */
+    transition: opacity 400ms ease-out, background-color 0.2s ease-out, border-color 0.2s ease-out;
   }
   .back-to-chat-button.visible {
     transform: translateY(0);
   }
+}
+
+/* RTL Support */
+[dir="rtl"] .back-to-chat-button {
+  left: auto;
+  right: 24px;
 }

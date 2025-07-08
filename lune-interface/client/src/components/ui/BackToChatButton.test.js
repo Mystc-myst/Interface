@@ -9,6 +9,8 @@ jest.mock('./BackToChatButton.css', () => ({}));
 expect.extend(toHaveNoViolations);
 
 describe('BackToChatButton', () => {
+  const buttonId = "back-to-chat-button";
+
   // Helper to simulate scroll event
   const simulateScroll = (scrollY) => {
     global.window.scrollY = scrollY;
@@ -21,54 +23,54 @@ describe('BackToChatButton', () => {
   });
 
   afterEach(() => {
+    // Ensure all timers are cleared and real timers are restored
     jest.clearAllTimers();
     jest.useRealTimers();
   });
 
-  test('renders button with correct text and icon, and has no a11y violations initially hidden', async () => {
-    const { container } = render(<BackToChatButton />);
+  test('renders button with correct id, text, icon, and has no a11y violations initially hidden', async () => {
+    const { container } = render(<BackToChatButton id={buttonId} />);
     const button = screen.getByRole('button', { name: /Back to Chat/i });
     expect(button).toBeInTheDocument();
+    expect(button).toHaveAttribute('id', buttonId);
     expect(screen.getByText('↩')).toBeInTheDocument(); // Icon
-    expect(button).not.toHaveClass('visible'); // Initially hidden or starts transition from hidden
+    expect(button).not.toHaveClass('visible');
 
     const results = await axe(container);
-    // jest-axe might report issues on initially hidden interactive elements if not handled carefully.
-    // We expect it to be not visible to pointer events initially.
-    // Depending on CSS, it might be fine. Let's check.
     expect(results).toHaveNoViolations();
   });
 
-  test('becomes visible after scrolling and delay', () => {
-    render(<BackToChatButton />);
+  test('becomes visible after scrolling >100px and 1000ms delay, and has no a11y violations when visible', async () => {
+    const { container } = render(<BackToChatButton id={buttonId} />);
     const button = screen.getByRole('button', { name: /Back to Chat/i });
 
     expect(button).not.toHaveClass('visible');
 
-    act(() => {
-      simulateScroll(200); // Scroll down
-    });
-    // Wait for the timeout inside the component (e.g., 600ms)
-    act(() => {
-      jest.advanceTimersByTime(599);
-    });
+    // Simulate scroll down
+    act(() => { simulateScroll(200); });
+
+    // Advance time by 999ms
+    act(() => { jest.advanceTimersByTime(999); });
     expect(button).not.toHaveClass('visible'); // Still not visible
 
-    act(() => {
-      jest.advanceTimersByTime(1); // Cross the 600ms threshold
-    });
+    // Advance time by 1ms to cross the 1000ms threshold
+    act(() => { jest.advanceTimersByTime(1); });
     expect(button).toHaveClass('visible');
+
+    // Check a11y when visible
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 
-  test('calls onClick handler when clicked', () => {
+  test('calls onClick handler when clicked (after becoming visible)', () => {
     const handleClick = jest.fn();
-    render(<BackToChatButton onClick={handleClick} />);
+    render(<BackToChatButton id={buttonId} onClick={handleClick} />);
     const button = screen.getByRole('button', { name: /Back to Chat/i });
 
-    // Make it visible for the click test
+    // Make it visible
     act(() => {
       simulateScroll(200);
-      jest.advanceTimersByTime(600);
+      jest.advanceTimersByTime(1000); // Advance by the full delay
     });
     expect(button).toHaveClass('visible');
 
@@ -76,23 +78,36 @@ describe('BackToChatButton', () => {
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  test('hides again when scrolled to top', () => {
-    render(<BackToChatButton />);
+  test('hides again when scrolled to top (scrollY <= 100)', () => {
+    render(<BackToChatButton id={buttonId} />);
     const button = screen.getByRole('button', { name: /Back to Chat/i });
 
     // Make it visible
     act(() => {
       simulateScroll(200);
-      jest.advanceTimersByTime(600);
+      jest.advanceTimersByTime(1000);
     });
     expect(button).toHaveClass('visible');
 
     // Scroll back to top
     act(() => {
-      simulateScroll(0);
-      // Visibility change should be immediate if scrollY < 100, timeout is cleared
-      // jest.advanceTimersByTime(100); // Ensure any potential debounce/throttle has passed
+      simulateScroll(50); // scrollY <= 100
+      // The component should set isVisible to false immediately,
+      // and clear the timeout. The fade-out animation is CSS based.
     });
-     expect(button).not.toHaveClass('visible');
+    expect(button).not.toHaveClass('visible');
+  });
+
+  test('clears timeout on unmount', () => {
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+    const { unmount } = render(<BackToChatButton id={buttonId} />);
+
+    // Trigger the timeout setup
+    act(() => { simulateScroll(200); });
+
+    unmount();
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(1); // Or more, if multiple timeouts were set and cleared.
+                                                     // The important part is that it's called on unmount for the active timer.
+    clearTimeoutSpy.mockRestore();
   });
 });

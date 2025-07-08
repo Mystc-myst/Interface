@@ -1,10 +1,37 @@
 .entries-page-wrapper {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Ensure it takes full viewport height */
+  /* min-height: 100vh; /* Replaced by max-height for scroll containment */
+  max-height: 100vh; /* Limit height to viewport */
+  overflow-y: auto; /* Enable vertical scroll within the wrapper */
+  overscroll-behavior: contain; /* Prevent full-page bounce and white flashes */
   transition: transform 300ms ease-in-out;
   background-color: var(--ink-black); /* Or inherit from body, ensures content bg during slide */
+
+  /* Custom scrollbar styling */
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #5B2EFF55 transparent; /* For Firefox: thumb color, track color */
 }
+
+/* Custom scrollbar styling for WebKit browsers (Chrome, Safari, Edge) */
+.entries-page-wrapper::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.entries-page-wrapper::-webkit-scrollbar-track {
+  background: transparent; /* Or var(--ink-black) if a visible track is preferred */
+}
+
+.entries-page-wrapper::-webkit-scrollbar-thumb {
+  background-color: #5B2EFF55; /* Violet-Deep with 55 alpha */
+  border-radius: 10px;
+  border: 2px solid var(--ink-black); /* Creates padding around thumb, matching page background */
+  background-clip: padding-box; /* Ensures border is outside the thumb's background */
+}
+.entries-page-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #5B2EFF88; /* Slightly more opaque on hover */
+}
+
 
 .entries-page-wrapper.slide-out-active {
   transform: translateX(-100%); /* Slide current content to the left */
@@ -14,22 +41,56 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 20px 16px 20px; /* Standard padding */
-  /* background-color: var(--ink-black); Optional: if not sticky or part of a larger sticky container */
-  /* z-index: 20; Ensure header is above FoldersRibbon if not sticky itself and ribbon is */
+  padding: 24px 20px 16px 20px;
+  background-color: var(--ink-black); /* Ensure header bg doesn't become transparent if wrapper scrolls */
+  position: sticky; /* Make header sticky */
+  top: 0;
+  z-index: 30; /* Ensure header is above FoldersRibbon (FoldersRibbon has z-index 10) */
 }
 
 .entries-page-header h1 {
-  /* Typography for h1 is global (Playfair Display, --moon-mist) */
-  margin: 0; /* Remove default h1 margin */
+  margin: 0;
   font-size: 2.5rem; /* Example size, adjust as needed */
+  color: var(--moon-mist); /* Ensuring text color from tokens */
 }
 
-/* FoldersRibbon styles are in its own CSS file (sticky, etc.) */
+/* Styling for the "Add Folder +" button via its ID */
+.entries-page-header #add-folder-button {
+  background-color: var(--brazen-gold);
+  color: var(--ink-black); /* For contrast */
+  padding: 6px 18px;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* Or 600 for SemiBold as per typical button styles */
+  font-size: 0.9rem; /* Adjust as needed */
+  border: none;
+  cursor: pointer;
+  transition: filter 0.2s ease-out; /* Smooth brightness transition */
+  line-height: normal; /* Ensure text is centered */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.entries-page-header #add-folder-button:hover,
+.entries-page-header #add-folder-button:focus-visible {
+  filter: brightness(0.9); /* Slight darken on hover/focus */
+  outline: 2px solid var(--moon-mist); /* Accessibility focus outline */
+  outline-offset: 2px;
+}
+
+
+/* FoldersRibbon will be sticky under the header. It needs top value adjusted. */
+/* Current FoldersRibbon.css has top:0, which will make it sit under the sticky header. */
+/* If header height is variable, FoldersRibbon might need JS to adjust its top value. */
+/* For now, assuming fixed header height or that overlap is acceptable/handled. */
 
 .entries-page-main-content {
-  flex-grow: 1; /* Allows main content to fill available space */
-  /* padding for DiaryFeed is handled within DiaryFeed.css (e.g. centering it) */
+  flex-grow: 1;
+  /* Add some padding to prevent content from hiding under a potentially fixed BackToChatButton */
+  /* Also accounts for bottom of scrollbar if it reaches edge */
+  padding-left: 20px; /* Match header padding */
+  padding-right: 20px; /* Match header padding */
+  padding-bottom: 80px; /* Example padding, adjust based on BackToChatButton height + some buffer */
 }
 
 /* BackToChatButton styles are in its own CSS file (fixed position, etc.) */
@@ -41,8 +102,18 @@
   }
   .entries-page-wrapper.slide-out-active {
     transform: none; /* No actual slide */
-    /* Consider a very quick fade if any feedback is desired, or simply navigate immediately */
-    /* opacity: 0; */
-    /* transition: opacity 50ms ease-out; */
   }
+
+  .entries-page-wrapper::-webkit-scrollbar-thumb {
+    transition: none; /* Disable hover effect on scrollbar thumb if any */
+  }
+  .entries-page-header #add-folder-button:hover,
+  .entries-page-header #add-folder-button:focus-visible {
+    filter: none; /* Disable hover/focus brightness change */
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .entries-page-wrapper.slide-out-active {
+  transform: translateX(100%);
 }

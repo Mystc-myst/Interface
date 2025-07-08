@@ -1,109 +1,161 @@
+@keyframes pulse-loop-dot-anim { /* Renamed for clarity and to avoid conflict if another exists */
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.7; }
+}
+
 .entry-card {
-  position: relative; /* For positioning the loop dot and trash icon */
+  position: relative;
   background-color: #111116;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: inset 0 0 0 4px rgba(var(--moon-mist-rgb), 0.08);
+  border-radius: 12px; /* Spec: 12px */
+  padding: 12px 20px; /* Spec: 12px vertical, 20px horizontal */
+  box-shadow: inset 0 0 0 2px var(--moon-mist); /* Spec: 2px Moon-Mist inset */
   color: var(--moon-mist);
   font-family: 'Inter', sans-serif;
   cursor: pointer;
-  transition: background-color 0.3s ease-out, box-shadow 0.3s ease-out;
-  overflow: hidden; /* Ensures child elements like loop-dot don't break border-radius */
+  transition: background-color 0.2s ease-out, box-shadow 0.2s ease-out, transform 0.2s ease-out;
+  overflow: hidden;
+  max-width: 640px; /* Spec: max-width 640px */
+  margin-left: auto; /* For centering if DiaryFeed is wider */
+  margin-right: auto; /* For centering if DiaryFeed is wider */
 }
 
 .entry-card:hover,
 .entry-card:focus-visible {
-  background-color: rgba(var(--violet-deep-rgb), 0.2);
-  box-shadow: inset 0 0 0 4px rgba(var(--moon-mist-rgb), 0.08), /* Keep original inset outline */
-              0 4px 12px rgba(var(--violet-deep-rgb), 0.35);
-  outline: none; /* Remove default focus outline if custom is sufficient */
+  background-color: rgba(var(--violet-deep-rgb), 0.15); /* Spec: Violet-Deep 15% */
+  /* Spec shadow: 0 2px 8px rgba(91,46,255,.25) */
+  /* Important: Keep the inset shadow while adding the outer shadow */
+  box-shadow: inset 0 0 0 2px var(--moon-mist),
+              0 2px 8px rgba(var(--violet-deep-rgb), 0.25);
+  outline: none;
+}
+
+.entry-card:active {
+  transform: scale(0.98); /* Subtle click feedback */
 }
 
 .entry-card-loop-dot {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 8px;
-  height: 8px;
+  top: 12px; /* Relative to new padding */
+  left: 12px;  /* Relative to new padding */
+  width: var(--loop-dot-size); /* Spec: 6px, from CSS var */
+  height: var(--loop-dot-size);
   background-color: var(--aqua-loop);
   border-radius: 50%;
-  animation: pulse-loop-dot 1000ms cubic-bezier(0.4, 0, 0.6, 1) 300ms 1; /* 300ms delay, 1 iteration */
+  /* Spec: pulses once on mount. Current animation has 300ms delay. */
+  animation: pulse-loop-dot-anim 700ms cubic-bezier(0.4, 0, 0.6, 1) 300ms 1 forwards;
+  /* 'forwards' keeps the end state if it's different, e.g. if it fades out */
 }
 
 .entry-card-content {
-  /* Normal content flow */
+  /* No specific styles needed, normal flow */
 }
 
 .entry-card-title {
-  font-family: 'Playfair Display', serif; /* As per spec for h1-h3 */
+  font-family: 'Playfair Display', serif;
   font-weight: 600;
-  font-size: 1.25rem; /* Example size */
+  font-size: 1.2rem; /* Adjusted slightly from 1.25rem for new padding */
   color: var(--moon-mist);
-  margin-top: 0; /* Reset margin if h3 has default */
+  margin-top: 0;
   margin-bottom: 8px;
 }
 
 .entry-card-snippet {
   font-size: 0.9rem;
   line-height: 1.5;
-  color: rgba(var(--moon-mist-rgb), 0.8); /* Slightly muted snippet */
+  color: rgba(var(--moon-mist-rgb), 0.8);
   margin-bottom: 8px;
-  /* For multi-line ellipsis: */
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* Show 3 lines */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-height: calc(0.9rem * 1.5 * 3); /* Fallback for max height */
+  max-height: calc(0.9rem * 1.5 * 3);
 }
 
 .entry-card-date {
   font-size: 0.8rem;
-  color: rgba(var(--moon-mist-rgb), 0.6); /* More muted date */
+  color: rgba(var(--moon-mist-rgb), 0.6);
 }
 
 .entry-card-delete-icon {
   position: absolute;
-  top: 12px; /* Adjust for visual preference */
-  right: 12px; /* Adjust for visual preference */
+  top: 10px; /* Adjusted for new padding */
+  right: 10px; /* Adjusted for new padding */
   background-color: var(--brazen-gold);
-  color: var(--ink-black); /* For contrast on brazen-gold */
-  width: 28px;
+  color: var(--ink-black);
+  width: 28px; /* Keep size, or adjust if too large for card padding */
   height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px; /* Adjust icon size */
+  font-size: 14px; /* Icon size */
   cursor: pointer;
-  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-  opacity: 1; /* Opacity is handled by JS for reveal, but good to have a base */
-  /* The spec says opacity 0->1 on hover-reveal, which is handled by isHovered in component */
+  opacity: 0; /* Spec: opacity 0 -> 1 */
+  transition: opacity 120ms ease-out, transform 120ms ease-out; /* Spec: 120ms opacity transition */
+  transform: scale(0.9); /* Start slightly small for pop effect */
+  pointer-events: none; /* Not interactive when hidden */
+}
+
+.entry-card:hover .entry-card-delete-icon,
+.entry-card:focus-within .entry-card-delete-icon { /* Show on focus-within card too */
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
 }
 
 .entry-card-delete-icon:hover {
-  transform: scale(1.1);
+  transform: scale(1.15); /* Slightly larger hover effect on icon itself */
+  filter: brightness(0.95); /* Subtle darken */
 }
 
-/* Reduced motion considerations for animations and transitions will be in motion.css */
+/* Highlighted state for keyboard navigation selection */
+.entry-card.highlighted {
+  outline: 2px solid var(--aqua-loop); /* Or another highlight color */
+  outline-offset: 2px;
+  box-shadow: inset 0 0 0 2px var(--moon-mist),
+              0 2px 8px rgba(var(--violet-deep-rgb), 0.25),
+              0 0 0 4px var(--aqua-loop); /* Example combined effect */
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   .entry-card {
-    /* Keep background-color transition as it's subtle, or disable if preferred */
-    /* transition: background-color 0.3s ease-out; */
+    transition: background-color 0.2s ease-out, box-shadow 0.2s ease-out; /* No transform */
+  }
+  .entry-card:active {
+    transform: none;
   }
   .entry-card:hover,
   .entry-card:focus-visible {
-    /* Disable hover shadow if it's too much, or use a static one. */
-    /* Keep the inset shadow, remove the outer glow */
-    box-shadow: inset 0 0 0 4px rgba(var(--moon-mist-rgb), 0.08);
+    /* Keep specified background and shadow changes as they are not purely motion */
   }
 
   .entry-card-loop-dot {
-    animation: none; /* Disable pulse animation */
+    animation: none;
   }
 
-  .entry-card-delete-icon:hover {
-    transform: none; /* Disable scaling on delete icon */
+  .entry-card-delete-icon {
+    transition: opacity 120ms ease-out; /* No transform */
+    transform: scale(1); /* Keep at normal size */
   }
+  .entry-card:hover .entry-card-delete-icon,
+  .entry-card:focus-within .entry-card-delete-icon {
+    transform: scale(1);
+  }
+  .entry-card-delete-icon:hover {
+    transform: scale(1); /* No hover scale on icon */
+    filter: none;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .entry-card-loop-dot {
+  left: auto;
+  right: 12px;
+}
+
+[dir="rtl"] .entry-card-delete-icon {
+  right: auto;
+  left: 10px;
 }
