@@ -6,10 +6,10 @@ import HashtagEntriesModal from './HashtagEntriesModal'; // Import HashtagEntrie
 import DiaryInput from "./DiaryInput"; // Back to relative path
 import GoToEntriesButton from './ui/GoToEntriesButton'; // Import the new button
 
-export default function DockChat({ entries, hashtags, refreshEntries, editingId, setEditingId }) {
+export default function DockChat({ entries, hashtags, refreshEntries, editingId, setEditingId, setShowChat }) { // Added setShowChat
   const [input, setInput] = useState('');
   // const [editing, setEditing] = useState(null); // Removed internal 'editing' state
-  // const [showChat, setShowChat] = useState(false); // Moved to App.js
+  // const [showChat, setShowChat] = useState(false); // Moved to App.js - this line was already commented
   const [isHashtagModalOpen, setIsHashtagModalOpen] = useState(false); // State for hashtag modal
   const [selectedHashtag, setSelectedHashtag] = useState(null); // State for selected hashtag
 
@@ -90,7 +90,12 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
 
         {/* The form tag is kept for structure but onSubmit might need adjustment if it's meant to trigger save from DiaryInput */}
         <form onSubmit={handleSubmit} className={`flex flex-col gap-2 ${formMarginTop}`}>
-          <DiaryInput onSave={handleSave} initialText={input} clearOnSave={true} />
+          <DiaryInput
+            onSave={handleSave}
+            initialText={input}
+            clearOnSave={true}
+            onChatWithLune={() => setShowChat(true)} // Pass setShowChat to open modal
+          />
         </form>
         {/* The visual pulse line below the input might need reconsideration as DiaryInput has its own structure */}
         {/* {input.trim() && <div className="w-full h-[2px] bg-indigo-500/30 mt-1"></div>} */}
@@ -118,4 +123,5 @@ DockChat.propTypes = {
   refreshEntries: PropTypes.func.isRequired,
   editingId: PropTypes.any, // Can be null or string
   setEditingId: PropTypes.func, // Can be undefined if not passed from a route that supports editing
+  setShowChat: PropTypes.func.isRequired, // Added prop type for setShowChat
 };

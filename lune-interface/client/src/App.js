@@ -83,6 +83,8 @@ function App() {
                   refreshEntries={refreshAllData} // Use combined refresh (now includes hashtags)
                   editingId={editingId}
                   setEditingId={setEditingId}
+                  showChat={showChat} // Pass showChat state
+                  setShowChat={setShowChat} // Pass setShowChat function
                 />
               }
             />
@@ -116,13 +118,7 @@ function App() {
         {isChatPage && (
           <footer className="w-full flex justify-center items-center px-4 pb-6"> {/* Changed pb-10 to pb-6 */}
             {/* The div with frost styling has been removed */}
-            <button
-              type="button"
-              onClick={() => setShowChat(true)} // Use setShowChat from App's state
-              className="btn-liquid-gold" // Apply the new class
-            >
-              Chat with Lune
-            </button>
+            {/* Button removed from here */}
           </footer>
         )}
         <LuneChatModal open={showChat} onClose={() => setShowChat(false)} />
