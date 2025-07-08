@@ -110,7 +110,7 @@ function App() {
       </Routes>
         </div>
         <footer className="w-full flex justify-center items-center px-4 pb-10">
-          <div className="rounded-2xl bg-white/6 backdrop-blur-lg px-6 py-3 shadow-[0_6px_18px_-6px_rgb(91_33_182/0.35)]">
+          <div className="frost rounded-2xl px-6 py-3">
             <button
               type="button"
               onClick={() => setShowChat(true)} // Use setShowChat from App's state
