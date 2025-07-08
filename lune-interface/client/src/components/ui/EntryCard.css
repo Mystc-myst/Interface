@@ -1,126 +1,161 @@
-@keyframes pulse-loop-dot-anim { /* Renamed for clarity and to avoid conflict if another exists */
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.5); opacity: 0.7; }
+/* Define CSS variables for colors and sizes for easy maintenance and consistency */
+:root {
+  --entry-card-bg: #111116;
+  --moon-mist: #DBDDE0; /* Assuming this is the color for text and inset border */
+  --moon-mist-rgb: 219, 221, 224; /* RGB version for rgba() */
+  --violet-deep-rgb: 91, 46, 255; /* RGB for hover effect */
+  --brazen-gold: #FCD34D; /* For trash icon, assuming this is the color */
+  --brazen-gold-rgb: 252, 211, 77;
+  --aqua-loop: #40E0D0; /* For loop dot and highlight */
+  --ember-red: #D9534F;
+  --ember-red-rgb: 217, 83, 79;
+  --loop-dot-size: 6px; /* Spec for loop dot */
+}
+
+@keyframes pulse-loop-dot-anim {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.65); opacity: 0.5; } /* Adjusted for more noticeable pulse */
 }
 
 .entry-card {
   position: relative;
-  background-color: #111116; /* Spec */
+  background-color: var(--entry-card-bg);
   border-radius: 12px; /* Spec */
   padding: 12px 20px; /* Spec */
   box-shadow: inset 0 0 0 2px var(--moon-mist); /* Spec: 2px Moon-Mist inset */
   color: var(--moon-mist);
   font-family: 'Inter', sans-serif;
   cursor: pointer;
-  transition: background-color 0.2s ease-out, box-shadow 0.2s ease-out, transform 0.2s ease-out;
+  /* Updated transition for transform to 250ms cubic-bezier */
+  transition: background-color 0.2s ease-out,
+              box-shadow 0.2s ease-out,
+              transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* Example cubic-bezier */
   overflow: visible; /* Allow menu to overflow */
   max-width: 640px; /* Spec */
-  margin-left: auto;
-  margin-right: auto;
+  margin-left: auto; /* Center the card if container is wider */
+  margin-right: auto; /* Center the card if container is wider */
 }
 
 .entry-card:hover,
-.entry-card:focus-visible {
-  background-color: rgba(var(--violet-deep-rgb), 0.15);
-  box-shadow: inset 0 0 0 2px var(--moon-mist),
-              0 2px 8px rgba(var(--violet-deep-rgb), 0.25);
-  outline: none;
+.entry-card:focus-visible { /* Added focus-visible for accessibility */
+  background-color: rgba(var(--violet-deep-rgb), 0.15); /* Spec: Violet-Deep 15% */
+  box-shadow: inset 0 0 0 2px var(--moon-mist), /* Keep inset border */
+              0 2px 8px rgba(var(--violet-deep-rgb), 0.25); /* Spec: shadow */
+  outline: none; /* Remove default focus outline, rely on box-shadow or other indicators */
 }
 
+/* Active state for click feedback */
 .entry-card:active {
-  transform: scale(0.98);
+  transform: scale(0.98); /* Slight scale down on click, transition handled by .entry-card */
 }
 
 .entry-card-loop-dot {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 12px; /* Position relative to padding */
+  left: -3px; /* Positioned to be exactly on the left edge, half in/half out if desired, or adjust to be fully inside */
+  /* Making it align with the card edge, considering the card's padding */
+  /* If the dot is to be outside the padding, adjust 'left'. For inside, it'd be relative to content box. */
+  /* Let's assume it should be aligned just inside the padding area, near the edge */
+  /* Corrected positioning: The dot should be inside the padding. Given padding: 12px 20px;
+     If it's 6px diam, and we want it near top-left corner of the content area:
+     top: 12px (same as card padding-top) + some offset if needed
+     left: 20px (same as card padding-left) + some offset if needed
+     The request "6 px loop-dot pulse" implies the dot itself.
+     Let's place it near the visual edge of the card content area, slightly offset from the corner.
+  */
+  left: 12px; /* Aligned with padding */
   width: var(--loop-dot-size); /* Spec: 6px */
   height: var(--loop-dot-size);
   background-color: var(--aqua-loop);
   border-radius: 50%;
-  animation: pulse-loop-dot-anim 700ms cubic-bezier(0.4, 0, 0.6, 1) 300ms 1 forwards;
+  /* Animation: name duration timing-function delay iteration-count direction fill-mode play-state */
+  animation: pulse-loop-dot-anim 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; /* Continuous pulse */
+  /* Removed 'forwards' as it's infinite. Adjusted duration and timing for a smoother, continuous pulse. */
 }
 
+
 .entry-card-content {
-  /* Normal flow, menu is positioned absolutely relative to .entry-card */
+  /* padding-left to make space for the loop dot if it's absolutely positioned to the left of content */
+  /* margin-left: 15px; /* Example: if dot is 6px wide + 9px spacing */
+  /* No specific margin needed if dot is positioned within overall card padding */
 }
 
 .entry-card-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Playfair Display', serif; /* Assuming this is desired */
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 1.2rem; /* Check if this needs adjustment based on visual weight reqs */
   color: var(--moon-mist);
   margin-top: 0;
   margin-bottom: 8px;
 }
 
 .entry-card-snippet {
-  font-size: 0.9rem;
+  font-size: 0.9rem; /* Check visual weight */
   line-height: 1.5;
   color: rgba(var(--moon-mist-rgb), 0.8);
   margin-bottom: 8px;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 3; /* Show 3 lines of snippet */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-height: calc(0.9rem * 1.5 * 3); /* Approx 3 lines */
+  max-height: calc(0.9rem * 1.5 * 3); /* Ensure this matches line-clamp */
 }
 
 .entry-card-date {
-  font-size: 0.8rem;
+  font-size: 0.8rem; /* Check visual weight */
   color: rgba(var(--moon-mist-rgb), 0.6);
 }
 
-/* Three-dot Menu Styling */
+/* Three-dot Menu (includes trash icon functionality) */
 .entry-card-menu-container {
   position: absolute;
-  top: 8px; /* Adjust to align nicely */
-  right: 8px; /* Adjust to align nicely */
+  top: 10px; /* Fine-tune for vertical alignment */
+  right: 10px; /* Fine-tune for horizontal alignment */
   z-index: 10;
 }
 
 .entry-card-menu-button {
   background-color: transparent;
-  color: var(--brazen-gold); /* Spec: Brazen-Gold */
+  color: var(--brazen-gold); /* Spec: Brazen-Gold for the icon */
   border: none;
-  padding: 4px;
+  padding: 6px; /* Slightly larger touch target */
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0; /* Hidden by default */
-  transition: opacity 120ms ease-out, background-color 0.2s ease-out;
-  pointer-events: none;
+  opacity: 0; /* Hidden by default, shown on card hover */
+  transition: opacity 150ms ease-out, background-color 0.2s ease-out;
+  pointer-events: none; /* Not interactive until card is hovered */
 }
 
+/* Show menu button (trash icon container) on card hover/focus-within */
 .entry-card:hover .entry-card-menu-button,
-.entry-card:focus-within .entry-card-menu-button, /* Show when card or button itself is focused */
+.entry-card:focus-within .entry-card-menu-button,
 .entry-card-menu-button:focus, /* Keep visible if button itself is focused */
 .entry-card-menu-container:hover .entry-card-menu-button { /* Keep visible if menu is open and hovered */
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: auto; /* Make it interactive */
 }
 
 .entry-card-menu-button:hover,
 .entry-card-menu-button:focus {
-  background-color: rgba(var(--brazen-gold-rgb), 0.15); /* Subtle hover/focus background */
+  background-color: rgba(var(--brazen-gold-rgb), 0.2); /* Subtle hover/focus for the button */
   outline: none;
 }
 
 .entry-card-menu {
   position: absolute;
-  top: calc(100% + 4px); /* Position below the button */
+  top: calc(100% + 6px); /* Position below the button with a small gap */
   right: 0;
-  background-color: #1A1A20; /* Slightly lighter than card bg for distinction */
+  background-color: #1E1E24; /* Slightly different from card for layering */
   border-radius: 8px;
-  border: 1px solid rgba(var(--moon-mist-rgb), 0.2);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border: 1px solid rgba(var(--moon-mist-rgb), 0.25);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.35); /* Enhanced shadow */
   padding: 6px 0;
-  min-width: 180px; /* Ensure enough width for items */
-  z-index: 20; /* Above card content */
+  min-width: 180px;
+  z-index: 20; /* Ensure menu is above other card content */
   display: flex;
   flex-direction: column;
 }
@@ -129,39 +164,46 @@
   background-color: transparent;
   border: none;
   color: var(--moon-mist);
-  padding: 8px 12px;
+  padding: 10px 15px; /* Increased padding for easier interaction */
   text-align: left;
   width: 100%;
   cursor: pointer;
   font-size: 0.9rem;
   font-family: 'Inter', sans-serif;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out;
 }
 
 .entry-card-menu-item:hover,
 .entry-card-menu-item:focus {
-  background-color: rgba(var(--violet-deep-rgb), 0.2);
-  color: var(--moon-mist);
+  background-color: rgba(var(--violet-deep-rgb), 0.25); /* Consistent hover with card */
+  color: var(--moon-mist); /* Ensure text color remains readable */
   outline: none;
 }
 
 .entry-card-menu-item-delete {
-  color: var(--ember-red); /* Destructive action color */
+  color: var(--ember-red);
 }
 
 .entry-card-menu-item-delete:hover,
 .entry-card-menu-item-delete:focus {
   background-color: rgba(var(--ember-red-rgb), 0.15);
-  color: var(--ember-red);
+  color: var(--ember-red); /* Keep text color consistent on hover/focus */
 }
 
-
-/* Highlighted state for keyboard navigation selection */
+/* Highlighted state for keyboard navigation selection (if used) */
+/* This can be kept or removed if not part of the core identical rendering requirement */
 .entry-card.highlighted {
-  outline: 2px solid var(--aqua-loop); /* Or another highlight color */
-  outline-offset: 2px;
+  /* The main hover/focus styles already provide visual feedback.
+     If a distinct "selected via keyboard" state is needed, this can be customized.
+     For identical rendering, this might not be needed unless specifically requested for both contexts.
+     Let's use a subtle outline that complements the hover effect. */
+  outline: 2px solid var(--aqua-loop);
+  outline-offset: 2px; /* Ensures outline is outside the card */
+  /* box-shadow is already defined for hover/focus, so this might override or add to it.
+     Let's ensure it combines well. */
   box-shadow: inset 0 0 0 2px var(--moon-mist),
-              0 2px 8px rgba(var(--violet-deep-rgb), 0.25),
-              0 0 0 4px var(--aqua-loop); /* Example combined effect */
+              0 2px 8px rgba(var(--violet-deep-rgb), 0.25), /* From hover */
+              0 0 0 2px var(--aqua-loop); /* Add aqua ring */
 }
 
 
@@ -174,23 +216,26 @@
   }
 
   .entry-card-loop-dot {
-    animation: none;
+    animation: none; /* Disable pulse animation */
   }
 
   .entry-card-menu-button {
     transition: opacity 120ms ease-out, background-color 0.2s ease-out;
   }
+  .entry-card-menu-item {
+    transition: background-color 0.15s ease-out; /* No color transition if not desired */
+  }
 }
 
-/* RTL Support */
+/* RTL Support (ensure these are still valid if any structural changes were made) */
 [dir="rtl"] .entry-card-loop-dot {
   left: auto;
-  right: 12px;
+  right: 12px; /* Match LTR 'left' positioning for consistency */
 }
 
 [dir="rtl"] .entry-card-menu-container {
   right: auto;
-  left: 8px;
+  left: 10px; /* Match LTR 'right' positioning */
 }
 
 [dir="rtl"] .entry-card-menu {

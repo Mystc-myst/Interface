@@ -1,119 +1,120 @@
-.entries-page-wrapper {
-  display: flex;
-  flex-direction: column;
-  /* min-height: 100vh; /* Replaced by max-height for scroll containment */
-  max-height: 100vh; /* Limit height to viewport */
-  overflow-y: auto; /* Enable vertical scroll within the wrapper */
-  overscroll-behavior: contain; /* Prevent full-page bounce and white flashes */
-  transition: transform 300ms ease-in-out;
-  background-color: var(--ink-black); /* Or inherit from body, ensures content bg during slide */
+/* EntriesPage.css */
 
-  /* Custom scrollbar styling */
-  scrollbar-width: thin; /* For Firefox */
-  scrollbar-color: #5B2EFF55 transparent; /* For Firefox: thumb color, track color */
+.entries-page-main {
+  position: relative; /* Existing style */
 }
 
-/* Custom scrollbar styling for WebKit browsers (Chrome, Safari, Edge) */
-.entries-page-wrapper::-webkit-scrollbar {
-  width: 8px; /* Width of the scrollbar */
+.entries-page-content {
+  padding: 1rem; /* Equivalent to p-4 */
+  opacity: 0;
+  animation: fadeIn 0.7s ease-in-out forwards; /* Existing animation */
 }
 
-.entries-page-wrapper::-webkit-scrollbar-track {
-  background: transparent; /* Or var(--ink-black) if a visible track is preferred */
-}
-
-.entries-page-wrapper::-webkit-scrollbar-thumb {
-  background-color: #5B2EFF55; /* Violet-Deep with 55 alpha */
-  border-radius: 10px;
-  border: 2px solid var(--ink-black); /* Creates padding around thumb, matching page background */
-  background-clip: padding-box; /* Ensures border is outside the thumb's background */
-}
-.entries-page-wrapper::-webkit-scrollbar-thumb:hover {
-  background-color: #5B2EFF88; /* Slightly more opaque on hover */
-}
-
-
-.entries-page-wrapper.slide-out-active {
-  transform: translateX(-100%); /* Slide current content to the left */
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
 }
 
 .entries-page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 20px 16px 20px;
-  background-color: var(--ink-black); /* Ensure header bg doesn't become transparent if wrapper scrolls */
-  position: sticky; /* Make header sticky */
-  top: 0;
-  z-index: 30; /* Ensure header is above FoldersRibbon (FoldersRibbon has z-index 10) */
+  margin-bottom: 1rem; /* Equivalent to mb-4 */
 }
 
-.entries-page-header h1 {
-  margin: 0;
-  font-size: 2.5rem; /* Example size, adjust as needed */
-  color: var(--moon-mist); /* Ensuring text color from tokens */
+.entries-page-title {
+  color: var(--lunePurple, #7C3AED); /* Fallback color */
+  font-size: 1.875rem; /* Equivalent to text-3xl */
+  font-weight: 700; /* Equivalent to font-bold */
+  font-family: 'Literata', serif; /* Assuming font-literata */
+  font-weight: 300; /* Equivalent to font-light */
+  /* text-center was on the h1, but header is flex justify-between, so text-center on title itself might not be needed */
 }
 
-/* Styling for the "Add Folder +" button via its ID */
-.entries-page-header #add-folder-button {
-  background-color: var(--brazen-gold);
-  color: var(--ink-black); /* For contrast */
-  padding: 6px 18px;
-  border-radius: 10px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500; /* Or 600 for SemiBold as per typical button styles */
-  font-size: 0.9rem; /* Adjust as needed */
-  border: none;
-  cursor: pointer;
-  transition: filter 0.2s ease-out; /* Smooth brightness transition */
-  line-height: normal; /* Ensure text is centered */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.entries-page-header #add-folder-button:hover,
-.entries-page-header #add-folder-button:focus-visible {
-  filter: brightness(0.9); /* Slight darken on hover/focus */
-  outline: 2px solid var(--moon-mist); /* Accessibility focus outline */
-  outline-offset: 2px;
+.entries-page-add-folder-button {
+  background-color: var(--lunePurple, #7C3AED);
+  color: white;
+  font-weight: 700;
+  padding: 0.5rem 1rem; /* py-2 px-4 */
+  border-radius: 0.5rem; /* rounded-lg */
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); /* shadow-md */
+  transition: background-color 0.3s;
 }
 
-
-/* FoldersRibbon will be sticky under the header. It needs top value adjusted. */
-/* Current FoldersRibbon.css has top:0, which will make it sit under the sticky header. */
-/* If header height is variable, FoldersRibbon might need JS to adjust its top value. */
-/* For now, assuming fixed header height or that overlap is acceptable/handled. */
-
-.entries-page-main-content {
-  flex-grow: 1;
-  /* Add some padding to prevent content from hiding under a potentially fixed BackToChatButton */
-  /* Also accounts for bottom of scrollbar if it reaches edge */
-  padding-left: 20px; /* Match header padding */
-  padding-right: 20px; /* Match header padding */
-  padding-bottom: 80px; /* Example padding, adjust based on BackToChatButton height + some buffer */
+.entries-page-add-folder-button:hover {
+  background-color: var(--lunePurple-dark, #6D28D9); /* Assuming a darker shade */
 }
 
-/* BackToChatButton styles are in its own CSS file (fixed position, etc.) */
-
-/* Reduced motion for slide animation */
-@media (prefers-reduced-motion: reduce) {
-  .entries-page-wrapper {
-    transition: none; /* No transition for page slide */
-  }
-  .entries-page-wrapper.slide-out-active {
-    transform: none; /* No actual slide */
-  }
-
-  .entries-page-wrapper::-webkit-scrollbar-thumb {
-    transition: none; /* Disable hover effect on scrollbar thumb if any */
-  }
-  .entries-page-header #add-folder-button:hover,
-  .entries-page-header #add-folder-button:focus-visible {
-    filter: none; /* Disable hover/focus brightness change */
-  }
+.entries-page-folders-section {
+  margin-bottom: 1.5rem; /* mb-6 */
 }
 
-/* RTL Support */
-[dir="rtl"] .entries-page-wrapper.slide-out-active {
-  transform: translateX(100%);
+.entries-page-section-title {
+  font-size: 1.25rem; /* text-xl */
+  color: var(--luneLightGray, #D1D5DB); /* Fallback */
+  margin-bottom: 0.75rem; /* mb-3 */
+  font-family: 'Literata', serif;
+  font-weight: 300;
+}
+
+.entries-page-folders-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem; /* gap-4 */
+  padding: 0.5rem; /* p-2 */
+  background-color: rgba(13, 13, 15, 0.5); /* bg-[#0d0d0f]/50 */
+  border-radius: 0.5rem; /* rounded-lg */
+  box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.06); /* shadow-inner */
+}
+
+/* This is the container for EntryCard components */
+.entries-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Replaces space-y-4. Equivalent to 16px. EntryCard itself has margin auto for horizontal centering. */
+  margin-bottom: 1rem; /* mb-4 */
+  max-height: 70vh;
+  overflow-y: auto;
+  /* The following are for the container, not the cards themselves */
+  /* background-color: #0d0d0f; */ /* This was on the old container, EntryCard has its own bg */
+  /* ring-1 ring-slate-800; */ /* This created an outline on the container */
+  /* box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.06); */ /* shadow-inner */
+  /* Removing direct background, ring, and shadow from the list container to let EntryCards define their appearance */
+  /* Add padding if direct children (draggable divs) don't have their own vertical margin */
+  padding: 4px; /* Small padding to ensure scrollbar doesn't overlap content, and visual separation */
+}
+
+/* Styling for the draggable div wrapper around EntryCard, if needed */
+.entries-list-container > div[draggable="true"] {
+  /* This div should not add any visual styling like padding or borders itself,
+     as EntryCard is designed to be self-contained.
+     It can be used for layout if EntryCards aren't full width or need specific alignment.
+     EntryCard itself has max-width and margin: auto, so it will center.
+     If the draggable div needs to be explicitly full-width for some reason:
+     width: 100%;
+  */
+}
+
+
+/* Scrollbar styling (no-scrollbar equivalent) */
+.entries-list-container::-webkit-scrollbar {
+  display: none;
+}
+.entries-list-container {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.entries-page-empty-message {
+  text-align: center;
+  color: var(--slate-300, #D1D5DB); /* Fallback */
+  padding: 1rem;
+}
+
+.entries-page-back-link {
+  color: var(--lunePurple, #7C3AED);
+  text-decoration: underline;
+  display: inline-block; /* For margin if needed */
+  margin-top: 1rem;
 }
