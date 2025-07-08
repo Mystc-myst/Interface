@@ -37,4 +37,26 @@ if (require.main === module) {
   });
 }
 
+// --- 404 Handler (Not Found) ---
+// This middleware should be placed after all your routes
+app.use((req, res, next) => {
+  res.status(404).json({ error: `Not Found - ${req.method} ${req.originalUrl}` });
+});
+
+// --- Global Error Handler ---
+// This middleware should be the last one.
+// Express recognizes it as an error handler by its four arguments.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error('Global error handler caught:', err);
+  // Set a default status code if not already set (e.g., from an error object)
+  const statusCode = err.statusCode || 500;
+  // Send a JSON response
+  res.status(statusCode).json({
+    error: err.message || 'An unexpected error occurred.',
+    // Optionally, include stack trace in development
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+  });
+});
+
 module.exports = app;
