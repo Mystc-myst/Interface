@@ -1,1 +1,40 @@
-[]
+{
+  "entries": [
+    {
+      "id": "bb0c476c-cdd7-464f-9270-cea1b51fba4a",
+      "text": "whats on your mind baby girl i once had a thought of cray #hood ",
+      "timestamp": "2025-07-08T12:20:30.415Z",
+      "fields": [],
+      "states": [],
+      "loops": [],
+      "hashtags": [
+        "#hood"
+      ],
+      "links": [],
+      "agent_logs": {},
+      "folderId": "1528d93e-2c01-4617-ab5b-562162f31878"
+    },
+    {
+      "id": "2df286f9-35f2-4d7b-8a38-ed55bb9c8222",
+      "text": "idek",
+      "timestamp": "2025-07-08T12:21:48.971Z",
+      "fields": [],
+      "states": [],
+      "loops": [],
+      "hashtags": [],
+      "links": [],
+      "agent_logs": {},
+      "folderId": "34896f35-a1af-4d68-8b70-142faa248eb7"
+    }
+  ],
+  "folders": [
+    {
+      "id": "34896f35-a1af-4d68-8b70-142faa248eb7",
+      "name": "wassup"
+    },
+    {
+      "id": "1528d93e-2c01-4617-ab5b-562162f31878",
+      "name": "barely it"
+    }
+  ]
+}
