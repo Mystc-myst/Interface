@@ -1,1 +1,62 @@
-[]
+{
+  "entries": [
+    {
+      "id": "06a10bdd-7b21-4eb6-93a9-d06b63d5a070",
+      "text": "whats up this looks alotttt better\n\n",
+      "timestamp": "2025-07-08T09:00:27.575Z",
+      "fields": [],
+      "states": [],
+      "loops": [],
+      "hashtags": [],
+      "links": [],
+      "agent_logs": {},
+      "folderId": "5c0b220b-e62c-45c1-9b90-a4f613739aa7"
+    },
+    {
+      "id": "5bdd98bd-86c7-453d-bcfc-daa539d90362",
+      "text": "#delete \n\n\n\nthis cant be how are we even supposed to make sumn happen",
+      "timestamp": "2025-07-08T09:01:29.744Z",
+      "fields": [],
+      "states": [],
+      "loops": [],
+      "hashtags": [
+        "#delete"
+      ],
+      "links": [],
+      "agent_logs": {},
+      "folderId": null
+    },
+    {
+      "id": "7a17b996-9612-4bf0-bdac-6ed12cf5a390",
+      "text": "jjjjjjj    ifuzlgk",
+      "timestamp": "2025-07-08T10:21:31.079Z",
+      "fields": [],
+      "states": [],
+      "loops": [],
+      "hashtags": [],
+      "links": [],
+      "agent_logs": {},
+      "folderId": null
+    },
+    {
+      "id": "dc93fa83-79e8-43be-97b1-e6f1ca168056",
+      "text": "#idgaf\n\nuzfuz",
+      "timestamp": "2025-07-08T10:21:49.929Z",
+      "fields": [],
+      "states": [],
+      "loops": [],
+      "hashtags": [
+        "#idgaf"
+      ],
+      "links": [],
+      "agent_logs": {},
+      "folderId": null
+    }
+  ],
+  "folders": [
+    {
+      "id": "5c0b220b-e62c-45c1-9b90-a4f613739aa7",
+      "name": "aint no wayyy"
+    }
+  ]
+}
