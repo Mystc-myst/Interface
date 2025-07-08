@@ -2,11 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import LuneChatModal from './LuneChatModal';
+import HashtagButtons from './HashtagButtons';
+import HashtagEntriesModal from './HashtagEntriesModal'; // Import HashtagEntriesModal
 
-export default function DockChat({ entries, refreshEntries, editingId, setEditingId }) {
+export default function DockChat({ entries, hashtags, refreshEntries, editingId, setEditingId }) {
   const [input, setInput] = useState('');
   const [editing, setEditing] = useState(null);
   const [showChat, setShowChat] = useState(false);
+  const [isHashtagModalOpen, setIsHashtagModalOpen] = useState(false); // State for hashtag modal
+  const [selectedHashtag, setSelectedHashtag] = useState(null); // State for selected hashtag
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -72,6 +76,11 @@ export default function DockChat({ entries, refreshEntries, editingId, setEditin
     e.target.value = '';
   };
 
+  const handleHashtagButtonClick = (tag) => {
+    setSelectedHashtag(tag);
+    setIsHashtagModalOpen(true);
+  };
+
   // const startEdit = (id) => setEditing(id);
 
   return (
@@ -100,6 +109,9 @@ export default function DockChat({ entries, refreshEntries, editingId, setEditin
           className="hidden"
         />
       </div>
+      {/* Hashtag Buttons Area */}
+      <HashtagButtons hashtags={hashtags} onHashtagClick={handleHashtagButtonClick} />
+
       <form onSubmit={handleSubmit} className="flex gap-2">
         <textarea
           className={`flex-1 border rounded p-2 ring-1 ring-slate-800 shadow-inner bg-[#0d0d0f] text-[#f8f8f2] ${input.trim() ? 'animate-pulse' : ''}`}
@@ -112,13 +124,24 @@ export default function DockChat({ entries, refreshEntries, editingId, setEditin
       {input.trim() && <div className="w-full h-[2px] bg-indigo-500/30 mt-1"></div>}
       <button onClick={() => navigate('/entries')} className="mt-4 text-lunePurple underline">Go to Entries</button>
       <LuneChatModal open={showChat} onClose={() => setShowChat(false)} />
+      <HashtagEntriesModal
+        isOpen={isHashtagModalOpen}
+        onClose={() => setIsHashtagModalOpen(false)}
+        hashtag={selectedHashtag}
+        entries={entries} // Pass all entries
+        onSelectEntry={(entryId) => {
+          if (setEditingId) setEditingId(entryId); // Ensure setEditingId is callable
+          setIsHashtagModalOpen(false);
+        }}
+      />
     </div>
   );
 }
 
 DockChat.propTypes = {
   entries: PropTypes.array.isRequired,
+  hashtags: PropTypes.arrayOf(PropTypes.string).isRequired,
   refreshEntries: PropTypes.func.isRequired,
-  editingId: PropTypes.any,
-  setEditingId: PropTypes.func,
+  editingId: PropTypes.any, // Can be null or string
+  setEditingId: PropTypes.func, // Can be undefined if not passed from a route that supports editing
 };

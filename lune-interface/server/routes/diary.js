@@ -140,4 +140,16 @@ router.delete('/folders/:id', async (req, res) => {
   }
 });
 
+// --- Hashtag Routes ---
+
+// Get all unique hashtags
+router.get('/hashtags', async (req, res) => {
+  try {
+    const hashtags = await diaryStore.getAllUniqueHashtags();
+    res.json(hashtags);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

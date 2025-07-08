@@ -156,6 +156,25 @@ exports.getAll = async function() {
 };
 
 /**
+ * @function parseHashtags
+ * @description Parses a string of text to extract hashtags (e.g., #example).
+ * @param {string} text - The text to parse for hashtags.
+ * @returns {Array<string>} An array of unique hashtag strings.
+ */
+function parseHashtags(text) {
+  if (typeof text !== 'string') {
+    return [];
+  }
+  const regex = /#(\w+)/g;
+  const hashtags = new Set();
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    hashtags.add(`#${match[1]}`);
+  }
+  return Array.from(hashtags);
+}
+
+/**
  * @function parseTags
  * @description Parses a string of text to extract tags based on the `[[tag]]` pattern.
  * Categorizes tags into fields, states (if "state" is in the tag), and loops (if "loop" is in the tag).
@@ -197,14 +216,16 @@ function parseTags(text) {
  * @returns {Promise<Object>} A promise that resolves to the newly created diary entry object.
  */
 exports.add = async function(text, folderId = null) {
-  const tags = parseTags(text);
+  const oldTags = parseTags(text); // Existing tag parsing
+  const hashtags = parseHashtags(text); // New hashtag parsing
   const entry = {
     id: crypto.randomUUID(),
     text,
     timestamp: new Date().toISOString(),
-    fields: tags.fields,
-    states: tags.states,
-    loops: tags.loops,
+    fields: oldTags.fields,
+    states: oldTags.states,
+    loops: oldTags.loops,
+    hashtags: hashtags, // Add new hashtags field
     links: [],
     agent_logs: {},
     folderId: folderId
@@ -212,6 +233,21 @@ exports.add = async function(text, folderId = null) {
   diary.push(entry);
   save();
   return entry;
+};
+
+/**
+ * @function getAllUniqueHashtags
+ * @description Retrieves all unique hashtags from all diary entries, sorted alphabetically.
+ * @returns {Promise<Array<string>>} A promise that resolves to an array of unique hashtag strings.
+ */
+exports.getAllUniqueHashtags = async function() {
+  const allHashtags = new Set();
+  diary.forEach(entry => {
+    if (entry.hashtags && Array.isArray(entry.hashtags)) {
+      entry.hashtags.forEach(tag => allHashtags.add(tag));
+    }
+  });
+  return Array.from(allHashtags).sort();
 };
 
 /**
@@ -242,10 +278,13 @@ exports.updateText = async function(id, text, folderId) {
   entry.text = text;
   entry.timestamp = new Date().toISOString(); // Always update timestamp on text change
 
-  const tags = parseTags(text);
-  entry.fields = tags.fields;
-  entry.states = tags.states;
-  entry.loops = tags.loops;
+  const oldTags = parseTags(text); // Existing tag parsing
+  entry.fields = oldTags.fields;
+  entry.states = oldTags.states;
+  entry.loops = oldTags.loops;
+
+  const hashtags = parseHashtags(text); // New hashtag parsing
+  entry.hashtags = hashtags; // Update hashtags field
 
   if (folderId !== undefined) {
     entry.folderId = folderId; // folderId can be null here
