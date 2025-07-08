@@ -46,6 +46,14 @@ jest.mock('./ui/BackToChatButton.css', () => ({}));
 jest.mock('./EntriesPage.css', () => ({}));
 jest.mock('../styles/motion.css', () => ({}));
 
+// Mock BackToChatButton as it has its own complex logic and tests
+jest.mock('./ui/BackToChatButton', () => ({ id, onClick }) => (
+  <button id={id} onClick={onClick} aria-label="Return to the moment">
+    <span aria-hidden="true">↩</span>
+    <span>Back to Chat</span> {/* Visual text, aria-label is for screen readers */}
+  </button>
+));
+
 
 expect.extend(toHaveNoViolations);
 
@@ -84,7 +92,10 @@ describe('EntriesPage', () => {
     expect(screen.getByRole('tablist', { name: /Folder categories/i })).toBeInTheDocument();
     expect(screen.getByRole('list', { name: /Diary entries/i })).toBeInTheDocument();
     expect(screen.getByText(mockInitialEntries[0].title)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Back to Chat/i })).toHaveAttribute('id', 'back-to-chat-button');
+    // Updated to reflect the mocked BackToChatButton's aria-label and the new ID passed from EntriesPage
+    const backButton = screen.getByRole('button', { name: /Return to the moment/i });
+    expect(backButton).toBeInTheDocument();
+    expect(backButton).toHaveAttribute('id', 'entries-page-back-to-chat'); // ID passed from EntriesPage
 
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -206,7 +217,8 @@ describe('EntriesPage', () => {
 
   test('handles "Back to Chat" button click via direct click', () => {
     render(<EntriesPage initialEntries={mockInitialEntries} initialFolders={mockInitialFolders} />);
-    const backToChatButton = screen.getByRole('button', { name: /Back to Chat/i });
+    // Updated to reflect the mocked BackToChatButton's aria-label
+    const backToChatButton = screen.getByRole('button', { name: /Return to the moment/i });
     fireEvent.click(backToChatButton);
     expect(window.location.href).toBe('/chat');
   });

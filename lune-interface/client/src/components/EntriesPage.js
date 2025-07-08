@@ -3,10 +3,15 @@ import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import Folder from './Folder';
 import EntryCard from './ui/EntryCard'; // Import EntryCard
+import BackToChatButton from './ui/BackToChatButton'; // Import the new button
 import './EntriesPage.css'; // Import specific styles for EntriesPage if any are still needed (e.g., layout)
 
 export default function EntriesPage({ entries, folders, refreshEntries, refreshFolders, startEdit }) {
   const navigate = useNavigate();
+
+  const handleBackToChat = () => {
+    navigate('/chat');
+  };
 
   // handleDelete is now passed to EntryCard, which calls it with entryId
   const handleDeleteEntry = async (id) => {
@@ -134,15 +139,16 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
               />
             </div>
           ))}
-          {entries.length === 0 && <div className="entries-page-empty-message">No entries.</div>}
+          {entries.length === 0 && <div className="entries-page-empty-message">Every echo has found its nest.</div>}
           {entries.length > 0 && unfiledEntries.length === 0 && folders.length > 0 && (
-            <div className="entries-page-empty-message">All entries are in folders.</div>
+            <div className="entries-page-empty-message">This space awaits a new ripple.</div>
           )}
            {entries.length > 0 && unfiledEntries.length === 0 && folders.length === 0 && (
-            <div className="entries-page-empty-message">No unfiled entries. Add some or check folders.</div>
+            <div className="entries-page-empty-message">This space awaits a new ripple.</div>
           )}
         </div>
-        <button onClick={() => navigate('/chat')} className="entries-page-back-link">Back to Chat</button>
+        {/* Replace the old button with the new BackToChatButton component */}
+        <BackToChatButton id="entries-page-back-to-chat" onClick={handleBackToChat} />
       </div>
     </main>
   );
