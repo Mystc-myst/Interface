@@ -84,10 +84,11 @@ function save() {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    lockfile.lockSync(DATA_FILE, {
-      retries: { retries: 5, factor: 3, minTimeout: 100, maxTimeout: 300, randomize: true },
-      stale: 5000,
-    });
+    // lockSync does not support the `retries` option. Including it causes
+    // `Error: Cannot use retries with the sync api` which prevents saving
+    // diary data. The sync variant is sufficient here since writes are small
+    // and infrequent.
+    lockfile.lockSync(DATA_FILE, { stale: 5000 });
     const dataToSave = {
       entries: diary,
       folders: folders,
