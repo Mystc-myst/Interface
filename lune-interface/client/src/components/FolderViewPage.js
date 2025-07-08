@@ -34,6 +34,28 @@ export default function FolderViewPage({ allEntries, allFolders, startEdit, refr
     // No need to manually filter here if allEntries prop updates, useEffect will handle it.
   };
 
+  const handleRemoveFromFolder = async (entryId) => {
+    if (!window.confirm('Remove this entry from the folder?')) return;
+    try {
+      const response = await fetch(`/diary/${entryId}/folder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folderId: null }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to remove entry from folder');
+      }
+      if (refreshEntries) {
+        await refreshEntries();
+      }
+      // After refresh, the entry will no longer be in this folder, and UI will update.
+    } catch (error) {
+      console.error('Error removing entry from folder:', error);
+      alert(`Error: ${error.message}`);
+    }
+  };
+
   if (!currentFolder) {
     // Could show a loading indicator or a "Folder not found" message
     return <div className="p-4 text-center">Loading folder details or folder not found...</div>;
@@ -67,12 +89,20 @@ export default function FolderViewPage({ allEntries, allFolders, startEdit, refr
                   <span className="font-semibold">Lune:</span> {entry.agent_logs.Lune.reflection}
                 </div>
               )}
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
-                className="text-sm text-red-600 hover:text-red-400"
-              >
-                Delete
-              </button>
+              <div className="mt-2 flex space-x-2">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleRemoveFromFolder(entry.id); }}
+                  className="text-sm text-luneGold hover:text-yellow-400 px-2 py-1 rounded hover:bg-slate-700/60 transition-colors"
+                >
+                  Remove from Folder
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
+                  className="text-sm text-red-500 hover:text-red-400 px-2 py-1 rounded hover:bg-slate-700/60 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))
         ) : (
