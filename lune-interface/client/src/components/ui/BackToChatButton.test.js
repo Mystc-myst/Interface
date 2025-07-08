@@ -30,7 +30,7 @@ describe('BackToChatButton', () => {
 
   test('renders button with correct id, text, icon, and has no a11y violations initially hidden', async () => {
     const { container } = render(<BackToChatButton id={buttonId} />);
-    const button = screen.getByRole('button', { name: /Back to Chat/i });
+    const button = screen.getByRole('button', { name: /Return to the moment/i }); // Updated name
     expect(button).toBeInTheDocument();
     expect(button).toHaveAttribute('id', buttonId);
     expect(screen.getByText('↩')).toBeInTheDocument(); // Icon
@@ -40,20 +40,20 @@ describe('BackToChatButton', () => {
     expect(results).toHaveNoViolations();
   });
 
-  test('becomes visible after scrolling >100px and 1000ms delay, and has no a11y violations when visible', async () => {
+  test('becomes visible after scrolling >100px and 500ms delay, and has no a11y violations when visible', async () => {
     const { container } = render(<BackToChatButton id={buttonId} />);
-    const button = screen.getByRole('button', { name: /Back to Chat/i });
+    const button = screen.getByRole('button', { name: /Return to the moment/i }); // Updated name
 
     expect(button).not.toHaveClass('visible');
 
     // Simulate scroll down
     act(() => { simulateScroll(200); });
 
-    // Advance time by 999ms
-    act(() => { jest.advanceTimersByTime(999); });
+    // Advance time by 499ms
+    act(() => { jest.advanceTimersByTime(499); });
     expect(button).not.toHaveClass('visible'); // Still not visible
 
-    // Advance time by 1ms to cross the 1000ms threshold
+    // Advance time by 1ms to cross the 500ms threshold
     act(() => { jest.advanceTimersByTime(1); });
     expect(button).toHaveClass('visible');
 
@@ -65,12 +65,12 @@ describe('BackToChatButton', () => {
   test('calls onClick handler when clicked (after becoming visible)', () => {
     const handleClick = jest.fn();
     render(<BackToChatButton id={buttonId} onClick={handleClick} />);
-    const button = screen.getByRole('button', { name: /Back to Chat/i });
+    const button = screen.getByRole('button', { name: /Return to the moment/i }); // Updated name
 
     // Make it visible
     act(() => {
       simulateScroll(200);
-      jest.advanceTimersByTime(1000); // Advance by the full delay
+      jest.advanceTimersByTime(500); // Advance by the full delay
     });
     expect(button).toHaveClass('visible');
 
@@ -80,12 +80,12 @@ describe('BackToChatButton', () => {
 
   test('hides again when scrolled to top (scrollY <= 100)', () => {
     render(<BackToChatButton id={buttonId} />);
-    const button = screen.getByRole('button', { name: /Back to Chat/i });
+    const button = screen.getByRole('button', { name: /Return to the moment/i }); // Updated name
 
     // Make it visible
     act(() => {
       simulateScroll(200);
-      jest.advanceTimersByTime(1000);
+      jest.advanceTimersByTime(500); // Updated delay
     });
     expect(button).toHaveClass('visible');
 
