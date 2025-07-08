@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import LuneChatModal from './LuneChatModal';
 import HashtagButtons from './HashtagButtons';
 import HashtagEntriesModal from './HashtagEntriesModal'; // Import HashtagEntriesModal
+import DiaryInput from "@/components/DiaryInput";
 
 export default function DockChat({ entries, hashtags, refreshEntries, editingId, setEditingId }) {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(''); // This state will be managed by DiaryInput, but handleSubmit logic relies on it. Consider refactoring.
   const [editing, setEditing] = useState(null);
   const [showChat, setShowChat] = useState(false);
   const [isHashtagModalOpen, setIsHashtagModalOpen] = useState(false); // State for hashtag modal
@@ -24,29 +25,42 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
     }
   }, [editingId, editing, entries, setEditingId]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+  const handleSave = async (text) => {
+    if (!text.trim()) return;
     try {
       if (editing) {
         await fetch(`/diary/${editing}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: input })
+          body: JSON.stringify({ text })
         });
       } else {
         await fetch('/diary', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: input })
+          body: JSON.stringify({ text })
         });
       }
-      setInput('');
-      setEditing(null);
+      // setInput(''); // DiaryInput will clear its own text if needed, or we can pass a prop to clear it
+      setEditing(null); // Reset editing state
       await refreshEntries();
     } catch (err) {
       console.error('Failed to save entry', err);
     }
+  };
+
+  // This function is kept to preserve the form's onSubmit behavior if needed,
+  // but DiaryInput's internal save logic (Ctrl+Enter, button) will use handleSave directly.
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // This 'input' state is currently not updated by DiaryInput.
+    // For direct form submission (e.g. if user presses Enter in a different form field if one existed),
+    // we might need to get the text from DiaryInput, perhaps via a ref or by lifting state further.
+    // However, the primary interaction is through DiaryInput's own save mechanisms.
+    // For now, let's assume handleSave is the main path.
+    // If direct form submission needs to work with DiaryInput's text, this needs more thought.
+    // Consider removing this if DiaryInput is the sole way to submit.
+    // await handleSave(input); // This `input` is the old state variable
   };
 
   const handleUpload = async (e) => {
@@ -112,16 +126,12 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
       {/* Hashtag Buttons Area */}
       <HashtagButtons hashtags={hashtags} onHashtagClick={handleHashtagButtonClick} />
 
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <textarea
-          className={`flex-1 border rounded p-2 ring-1 ring-slate-800 shadow-inner bg-[#0d0d0f] text-[#f8f8f2] ${input.trim() ? 'animate-pulse' : ''}`}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="Write your thoughts..."
-        />
-        <button type="submit" className="bg-animusRed hover:bg-red-600 text-white px-4 py-2 rounded">{editing ? 'Update' : 'Add'}</button>
+      {/* The form tag is kept for structure but onSubmit might need adjustment if it's meant to trigger save from DiaryInput */}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+        <DiaryInput onSave={handleSave} initialText={input} clearOnSave={true} />
       </form>
-      {input.trim() && <div className="w-full h-[2px] bg-indigo-500/30 mt-1"></div>}
+      {/* The visual pulse line below the input might need reconsideration as DiaryInput has its own structure */}
+      {/* {input.trim() && <div className="w-full h-[2px] bg-indigo-500/30 mt-1"></div>} */}
       <button onClick={() => navigate('/entries')} className="mt-4 text-lunePurple underline">Go to Entries</button>
       <LuneChatModal open={showChat} onClose={() => setShowChat(false)} />
       <HashtagEntriesModal
