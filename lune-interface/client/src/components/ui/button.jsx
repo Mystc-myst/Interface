@@ -1,8 +1,9 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority"
+import PropTypes from 'prop-types'; // Added PropTypes
 
-import { cn } from "@/lib/utils"
+import { cn } from "../../lib/utils" // Back to relative path
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
@@ -42,6 +43,16 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
       {...props} />
   )
 })
+
+Button.propTypes = {
+  className: PropTypes.string,
+  variant: PropTypes.oneOf([
+    'default', 'destructive', 'outline', 'secondary', 'ghost', 'link'
+  ]),
+  size: PropTypes.oneOf(['default', 'sm', 'lg', 'icon']),
+  asChild: PropTypes.bool,
+};
+
 Button.displayName = "Button"
 
 export { Button, buttonVariants }

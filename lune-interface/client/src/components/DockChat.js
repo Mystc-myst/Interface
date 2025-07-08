@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import LuneChatModal from './LuneChatModal';
 import HashtagButtons from './HashtagButtons';
 import HashtagEntriesModal from './HashtagEntriesModal'; // Import HashtagEntriesModal
-import DiaryInput from "@/components/DiaryInput";
+import DiaryInput from "./DiaryInput"; // Back to relative path
 
 export default function DockChat({ entries, hashtags, refreshEntries, editingId, setEditingId }) {
   const [input, setInput] = useState(''); // This state will be managed by DiaryInput, but handleSubmit logic relies on it. Consider refactoring.

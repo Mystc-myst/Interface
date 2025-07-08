@@ -1,5 +1,4 @@
 /* shadcn/ui theme variables and custom variants */
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
