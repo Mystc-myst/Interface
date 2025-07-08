@@ -26,9 +26,9 @@
 .entries-page-title {
   color: var(--lunePurple, #7C3AED); /* Fallback color */
   font-size: 1.875rem; /* Equivalent to text-3xl */
-  font-weight: 700; /* Equivalent to font-bold */
-  font-family: 'Literata', serif; /* Assuming font-literata */
-  font-weight: 300; /* Equivalent to font-light */
+  /* font-weight is handled by global H1 style in index.css */
+  font-family: 'Playfair Display', 'Times New Roman', serif; /* As per request */
+  letter-spacing: -0.5px; /* As per request */
   /* text-center was on the h1, but header is flex justify-between, so text-center on title itself might not be needed */
 }
 
@@ -51,11 +51,22 @@
 }
 
 .entries-page-section-title {
-  font-size: 1.25rem; /* text-xl */
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* Medium */
+  font-size: 1.05rem;
+  line-height: 1.55;
+  letter-spacing: -0.1px;
   color: var(--luneLightGray, #D1D5DB); /* Fallback */
   margin-bottom: 0.75rem; /* mb-3 */
-  font-family: 'Literata', serif;
-  font-weight: 300;
+}
+
+.folder-label-style { /* For text within Folder.js component */
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* Medium */
+  font-size: 1.05rem;
+  line-height: 1.55; /* This might be tight for multi-line folder names in small circles, adjust if needed */
+  letter-spacing: -0.1px;
+  /* color: inherit; /* Or set explicitly if needed */
 }
 
 .entries-page-folders-grid {
@@ -107,6 +118,11 @@
 }
 
 .entries-page-empty-message {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* Medium */
+  font-size: 1.05rem;
+  line-height: 1.55;
+  letter-spacing: -0.1px;
   text-align: center;
   color: var(--slate-300, #D1D5DB); /* Fallback */
   padding: 1rem;

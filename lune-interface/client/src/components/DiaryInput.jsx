@@ -56,7 +56,7 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false }) => {
       <textarea
         ref={textareaRef}
         rows={1}
-        placeholder="Write what’s on your mind…"
+        placeholder="Write what stirs beneath …"
         value={text}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}

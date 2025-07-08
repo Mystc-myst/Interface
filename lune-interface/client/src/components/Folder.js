@@ -42,14 +42,14 @@ const Folder = ({ folder, onDropEntry }) => {
 
   return (
     <div
-      className="rounded-full w-32 h-32 flex flex-col items-center justify-center text-white font-bold text-lg shadow-lg cursor-pointer transition-all duration-300 ease-in-out border-2 hover:shadow-xl hover:scale-105"
+      className="rounded-full w-32 h-32 flex flex-col items-center justify-center text-white shadow-lg cursor-pointer transition-all duration-300 ease-in-out border-2 hover:shadow-xl hover:scale-105"
       style={folderStyle}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onClick={handleClick}
       title={`Open folder: ${folder.name} (${entryCount} ${entryCount === 1 ? 'entry' : 'entries'})`}
     >
-      <span className="block text-center break-words max-w-[80%] leading-tight">{folder.name}</span>
+      <span className="folder-label-style block text-center break-words max-w-[80%]">{folder.name}</span>
       <span className="text-xs font-normal mt-1">({entryCount})</span>
     </div>
   );

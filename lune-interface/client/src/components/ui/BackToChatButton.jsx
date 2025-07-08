@@ -14,10 +14,10 @@ const BackToChatButton = ({ id, onClick }) => { // Added id prop for keyboard sh
       }
 
       if (window.scrollY > 100) { // User has scrolled down a bit
-        // Set a timeout to make the button visible after 1 second
+        // Set a timeout to make the button visible after 0.5 seconds
         scrollTimeoutRef.current = setTimeout(() => {
           setIsVisible(true);
-        }, 1000); // Animation starts after 1000ms (1s)
+        }, 500); // Animation starts after 500ms (0.5s)
       } else {
         // If scrolled back to top, hide the button immediately (or after its fade-out animation)
         setIsVisible(false);
@@ -54,7 +54,7 @@ const BackToChatButton = ({ id, onClick }) => { // Added id prop for keyboard sh
       ref={buttonRef}
       className={`back-to-chat-button ${isVisible ? 'visible' : ''}`}
       onClick={handleClick}
-      aria-label="Back to Chat"
+      aria-label="Return to the moment" // Updated aria-label
       // aria-hidden={!isVisible} // Hide from screen readers when not visible
       // pointer-events are handled by CSS, so aria-hidden might be redundant if CSS fully hides it.
     >
