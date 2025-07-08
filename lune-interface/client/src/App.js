@@ -6,7 +6,8 @@ import FolderViewPage from './components/FolderViewPage'; // Import FolderViewPa
 
 function App() {
   const [entries, setEntries] = useState([]);
-  const [folders, setFolders] = useState([]); // Add state for folders
+  const [folders, setFolders] = useState([]);
+  const [hashtags, setHashtags] = useState([]); // Add state for hashtags
   const [editingId, setEditingId] = useState(null);
 
   // Fetch entries from backend
@@ -35,17 +36,32 @@ function App() {
     }
   }, []);
 
-  // Initial load for entries and folders
+  // Fetch hashtags from backend
+  const fetchHashtags = useCallback(async () => {
+    try {
+      const res = await fetch('/diary/hashtags');
+      if (!res.ok) throw new Error(`Failed to fetch hashtags: ${res.status}`);
+      const data = await res.json();
+      setHashtags(data);
+    } catch (error) {
+      console.error("Error fetching hashtags:", error);
+      setHashtags([]); // Set to empty array on error
+    }
+  }, []);
+
+  // Initial load for entries, folders, and hashtags
   useEffect(() => {
     fetchEntries();
     fetchFolders();
-  }, [fetchEntries, fetchFolders]);
+    fetchHashtags();
+  }, [fetchEntries, fetchFolders, fetchHashtags]);
 
   // Combined refresh function
   const refreshAllData = useCallback(async () => {
     await fetchEntries();
     await fetchFolders();
-  }, [fetchEntries, fetchFolders]);
+    await fetchHashtags();
+  }, [fetchEntries, fetchFolders, fetchHashtags]);
 
   return (
     <Router>
@@ -55,7 +71,8 @@ function App() {
           element={
             <DockChat
               entries={entries}
-              refreshEntries={refreshAllData} // Use combined refresh
+              hashtags={hashtags} // Pass hashtags
+              refreshEntries={refreshAllData} // Use combined refresh (now includes hashtags)
               editingId={editingId}
               setEditingId={setEditingId}
             />
