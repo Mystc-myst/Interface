@@ -3,7 +3,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
+  --background: #070711; /* Deepest-navy base */
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -40,7 +40,7 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: #070711; /* Deepest-navy base */
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.145 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -137,9 +137,11 @@ body::before {
   inset: 0;                         /* cover entire viewport */
   background:
     /* top third */
-    linear-gradient(to bottom, var(--violet, #5b21b6) 0%, transparent 70%) top / 100% 33% no-repeat,
+    linear-gradient(to bottom, var(--violet, #5b21b64D) 0%, transparent 70%) top / 100% 33% no-repeat,
     /* bottom third */
-    linear-gradient(to top,   var(--violet, #5b21b6) 0%, transparent 70%) bottom / 100% 33% no-repeat;
+    linear-gradient(to top,   var(--violet, #5b21b64D) 0%, transparent 70%) bottom / 100% 33% no-repeat,
+    /* subtle radial halo */
+    radial-gradient(ellipse at 50% 350px, #5b21b6 15%, transparent 60%);
   pointer-events: none;             /* don’t block clicks */
   z-index: -1;                      /* sit behind everything */
 }

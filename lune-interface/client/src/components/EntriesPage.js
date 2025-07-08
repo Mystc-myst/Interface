@@ -75,7 +75,7 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
   return (
     <div className="p-4 transition-opacity duration-700 ease-in-out opacity-0 animate-fadeIn">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-lunePurple text-3xl font-bold text-center font-literata">Entries</h1>
+        <h1 className="text-lunePurple text-3xl font-bold text-center font-literata font-light">Entries</h1>
         <button
           onClick={handleAddFolder}
           className="bg-lunePurple text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-lunePurple-dark transition-colors duration-300"
@@ -87,7 +87,7 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
       {/* Folders Section */}
       {folders.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-xl text-luneLightGray font-semibold mb-3 font-literata">Folders</h2>
+          <h2 className="text-xl text-luneLightGray mb-3 font-literata font-light">Folders</h2>
           <div className="flex flex-wrap gap-4 p-2 bg-[#0d0d0f]/50 rounded-lg shadow-inner">
             {folders.map(folder => (
               <Folder
@@ -115,7 +115,7 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
             className="rounded-xl bg-gradient-to-b from-slate-800/30 to-slate-900/60 p-4 shadow-md backdrop-blur-md cursor-grab hover:shadow-[0_0_12px_#fcd34d80] hover:scale-[1.02] focus:scale-[1.02] transition-transform duration-500 ease-in-out"
             onClick={() => { startEdit(entry.id); navigate('/chat'); }}
           >
-            <div className="text-xs text-slate-400 italic tracking-wide font-ibmPlexMono uppercase">{new Date(entry.timestamp).toLocaleString()}</div>
+            <div className="text-xs text-slate-300 italic tracking-wide font-ibmPlexMono uppercase">{new Date(entry.timestamp).toLocaleString()}</div>
             <div className="whitespace-pre-wrap mb-2">{entry.text}</div>
             {entry.agent_logs?.Lune && (
               <div className="mb-2 p-2 bg-luneGray rounded">
@@ -130,8 +130,8 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
             </button>
           </div>
         ))}
-        {entries.length === 0 && <div className="text-center text-luneDarkGray">No entries.</div>}
-        {entries.length > 0 && unfiledEntries.length === 0 && folders.length === 0 && <div className="text-center text-luneDarkGray">All entries are in folders.</div>}
+        {entries.length === 0 && <div className="text-center text-slate-300">No entries.</div>}
+        {entries.length > 0 && unfiledEntries.length === 0 && folders.length === 0 && <div className="text-center text-slate-300">All entries are in folders.</div>}
       </div>
       <button onClick={() => navigate('/chat')} className="text-lunePurple underline">Back to Chat</button>
     </div>

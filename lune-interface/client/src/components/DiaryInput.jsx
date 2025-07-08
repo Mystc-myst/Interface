@@ -60,10 +60,10 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false }) => {
         value={text}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        className="w-full min-h-[8rem] resize-none overflow-hidden rounded-2xl bg-white/5 backdrop-blur-md p-4 md:p-6 text-lg leading-relaxed text-slate-100 placeholder:text-slate-400 outline-none ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-violet-400 transition"
+        className="w-full min-h-[8rem] resize-none overflow-hidden rounded-2xl bg-white/5 backdrop-blur-md p-4 md:p-6 text-lg leading-loose text-slate-100 placeholder:text-slate-400 outline-none ring-1 ring-inset ring-white/5 focus:ring-2 focus:ring-violet-300/60 transition shadow-[0_6px_30px_-12px_rgb(91_33_182/0.3)]"
       />
-      <div className="mt-2 flex items-center justify-between">
-        <span className="text-xs text-slate-500">
+      <div className="mt-8 flex items-center justify-between">
+        <span className="text-xs text-slate-300">
           {wordCount} word{wordCount === 1 ? '' : 's'}
         </span>
         <Button

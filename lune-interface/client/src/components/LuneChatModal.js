@@ -74,7 +74,7 @@ export default function LuneChatModal({ open, onClose }) {
     <div className={`fixed inset-0 z-50 flex items-center justify-center bg-animaPink backdrop-blur-md transition-opacity duration-700 ease-in-out ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
       <div className={`rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border-l-[1px] border-zinc-700/60 transition-all duration-700 ease-in-out transform ${open ? 'opacity-100 translate-y-0 translate-x-0' : 'opacity-0 translate-y-10 translate-x-10'}`}>
         <div className="flex justify-between items-center mb-2">
-          <h2 className="font-bold text-xl text-lunePurple font-literata">Chat with Lune</h2>
+          <h2 className="font-bold text-xl text-lunePurple font-literata font-light">Chat with Lune</h2>
           <button onClick={handleClose} className="text-lunePurple font-bold text-2xl">&times;</button>
         </div>
         <div className="flex-1 overflow-y-auto mb-4 space-y-2 max-h-80 border rounded p-2 bg-luneGray/30 ring-1 ring-slate-800 shadow-inner bg-[#0d0d0f] no-scrollbar">
@@ -87,12 +87,12 @@ export default function LuneChatModal({ open, onClose }) {
                   : 'italic bg-zinc-700/60 border border-indigo-800/20 backdrop-blur text-indigo-200 rounded-lg p-3 shadow-inner'
               }`}
             >
-              <span className="block text-xs">{msg.sender === 'user' ? 'You' : 'Lune'}</span>
+              <span className="block text-xs text-slate-300">{msg.sender === 'user' ? 'You' : 'Lune'}</span>
               {msg.text}
             </div>
           ))}
           {loading && (
-            <div className="flex items-center text-luneGray">
+            <div className="flex items-center text-slate-300">
               <div className="w-4 h-4 mr-2 border-2 border-lunePurple border-t-transparent rounded-full animate-spin"></div>
               Lune is thinking…
             </div>

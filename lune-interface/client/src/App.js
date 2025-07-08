@@ -109,11 +109,11 @@ function App() {
         <Route path="*" element={<Navigate to="/chat" replace />} />
       </Routes>
         </div>
-        <footer className="w-full flex justify-center items-center p-4">
+        <footer className="w-full flex justify-center items-center px-4 pb-10 bg-white/5 backdrop-blur">
           <button
             type="button"
             onClick={() => setShowChat(true)} // Use setShowChat from App's state
-            className="bg-lunePurple text-white px-4 py-2 rounded"
+            className="px-4 py-2 rounded shadow-md shadow-violet-800/40"
           >
             Chat with Lune
           </button>
