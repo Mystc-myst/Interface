@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
 // LuneChatModal is now imported in App.js
 import HashtagButtons from './HashtagButtons';
 import HashtagEntriesModal from './HashtagEntriesModal'; // Import HashtagEntriesModal
@@ -13,7 +12,6 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
   // const [showChat, setShowChat] = useState(false); // Moved to App.js
   const [isHashtagModalOpen, setIsHashtagModalOpen] = useState(false); // State for hashtag modal
   const [selectedHashtag, setSelectedHashtag] = useState(null); // State for selected hashtag
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (editingId) {

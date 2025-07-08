@@ -6,7 +6,6 @@
 
 .entries-page-content {
   padding: 1rem; /* Equivalent to p-4 */
-  /*
   opacity: 0;
   animation: fadeIn 0.7s ease-in-out forwards; /* Existing animation */
 }
