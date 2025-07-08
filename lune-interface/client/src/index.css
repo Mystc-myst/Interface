@@ -126,12 +126,28 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html, body {
+    height: 100%;
+    background: radial-gradient(circle at 50% 40%, #5B2EFF 0%, #050409 60%, #050409 100%);
+    background-attachment: fixed;      /* keeps centre glow static */
+    background-repeat: no-repeat;
+    color-scheme: dark;
+  }
+
+  @media print {
+    html, body {
+      background: none;
+    }
+  }
+
   body {
     /* @apply bg-background text-foreground; */ /* Replaced by body::before and direct body styles */
+    /* Ensure body doesn't override html's height if it was set to min-height only */
     @apply text-foreground; /* Keep text-foreground from shadcn */
     font-family: 'Inter', sans-serif; /* Set base body font */
     color: var(--moon-mist); /* Default text color from our tokens */
-    min-height: 100vh;
+    /* min-height: 100vh; /* Covered by height: 100% on html, body */
     margin: 0;
   }
 
@@ -145,15 +161,18 @@
 /* Original app styles - modified for new design */
 
 /* Loon Diary Background */
+/*
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   /* background: radial-gradient(ellipse at center, var(--violet-deep) 0%, var(--ink-black) 70%); */ /* Old gradient */
   /* background: radial-gradient(ellipse at center, rgba(var(--violet-deep-rgb), 0.1) 0%, transparent 70%); */ /* New page body gradient - Commented out */
+/*
   pointer-events: none;
   z-index: -1;
 }
+*/
 
 /* The old body rule below is no longer needed as font-family is in @layer base, and color is also set there. */
 /*
