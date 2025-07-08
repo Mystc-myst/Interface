@@ -165,7 +165,7 @@ body {
   @apply bg-white/5 backdrop-blur-lg ring-1 ring-white/10 shadow-[0_8px_40px_-16px_rgb(91_33_182/0.35)];
 }
 .frost:hover {
-  @apply bg-white/7;
+  @apply bg-white bg-opacity-10; /* Increased opacity slightly for better visibility on hover */
 }
 
 @keyframes fadeIn {
