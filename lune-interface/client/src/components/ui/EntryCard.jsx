@@ -1,14 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './EntryCard.css';
 
-// Using a simple SVG for the trash icon for now.
-// In a real app, this might come from an icon library or a dedicated SVG component.
-const TrashIconSVG = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6H3ZM5 8H19V20H5V8ZM16 10L15.2929 10.7071L12.7071 13.2929L10.1213 10.7071L9.41421 10L12 12.5858L14.5858 10H16ZM7 2H17V4H7V2Z" />
+// Using a simple SVG for the three-dot icon.
+const ThreeDotsIconSVG = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 3C10.9 3 10 3.9 10 5C10 6.1 10.9 7 12 7C13.1 7 14 6.1 14 5C14 3.9 13.1 3 12 3ZM12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10ZM12 17C10.9 17 10 17.9 10 19C10 20.1 10.9 21 12 21C13.1 21 14 20.1 14 19C14 17.9 13.1 17 12 17Z" />
   </svg>
 );
-
 
 const EntryCard = ({
   id, // Entry ID
@@ -16,20 +14,18 @@ const EntryCard = ({
   snippet,
   date,
   onClick, // For navigating to the entry
-  onDeleteRequest, // To request deletion (e.g., show confirmation)
+  onDeleteRequest, // To request deletion of the entry
+  onRemoveFromFolderRequest, // To request removal from folder
   isHighlighted, // Boolean, if this card is the one selected by keyboard
   onSetHighlight, // Function to call to set this card as highlighted
-  // onDelete prop is removed, replaced by onDeleteRequest and page-level Delete key handling
+  // Removed direct onDelete prop, actions are now part of the menu
 }) => {
   const cardRef = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
-  // Pulse animation for loop-dot is handled by CSS on mount.
-  // The `useEffect` below is for when `isHighlighted` changes.
   useEffect(() => {
     if (isHighlighted && cardRef.current) {
-      // Optional: Scroll into view if highlighted and off-screen
-      // cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      // For now, focus is enough, as user is likely using keyboard to navigate items.
       cardRef.current.focus();
     }
   }, [isHighlighted]);
@@ -40,14 +36,34 @@ const EntryCard = ({
     }
   };
 
-  const handleDeleteClick = (e) => {
+  const handleMenuToggle = (e) => {
     e.stopPropagation(); // Prevent card click (navigation)
-    if (onDeleteRequest) {
-      onDeleteRequest(id); // Pass entry ID to the delete request handler
-    }
+    setMenuOpen(prev => !prev);
   };
 
-  // Combine className for highlighted state
+  const handleActionClick = (e, action) => {
+    e.stopPropagation();
+    action(id);
+    setMenuOpen(false); // Close menu after action
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        // Check if the click target is not the menu button itself
+        if (cardRef.current && !cardRef.current.querySelector('.entry-card-menu-button')?.contains(event.target)) {
+          setMenuOpen(false);
+        }
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuRef]);
+
+
   const cardClassName = `entry-card ${isHighlighted ? 'highlighted' : ''}`;
 
   return (
@@ -55,11 +71,11 @@ const EntryCard = ({
       ref={cardRef}
       id={`entry-card-${id}`}
       className={cardClassName}
-      onClick={onClick} // Main click action (navigation)
-      onFocus={handleFocus} // Set highlight when card receives focus
+      onClick={onClick}
+      onFocus={handleFocus}
       role="listitem"
-      tabIndex={0} // Make it focusable
-      aria-current={isHighlighted ? "true" : undefined} // Indicate highlighted item
+      tabIndex={0}
+      aria-current={isHighlighted ? "true" : undefined}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           if (onClick) {
@@ -67,9 +83,10 @@ const EntryCard = ({
             onClick();
           }
         }
-        // Note: 'Delete' key is handled at Page level for highlighted card.
-        // If individual cards need their own delete shortcut (e.g. if trash icon is focused),
-        // that could be added here.
+        // Consider adding Escape key to close menu if open
+        if (e.key === 'Escape' && menuOpen) {
+          setMenuOpen(false);
+        }
       }}
     >
       <div className="entry-card-loop-dot"></div>
@@ -78,19 +95,43 @@ const EntryCard = ({
         <p className="entry-card-snippet">{snippet}</p>
         <p className="entry-card-date">{date}</p>
       </div>
-      {/* Trash icon is shown/hidden via CSS based on .entry-card:hover or .entry-card:focus-within */}
-      {onDeleteRequest && ( // Only render if delete functionality is provided
-        <button
-          type="button"
-          aria-label={`Delete entry: ${title}`}
-          className="entry-card-delete-icon"
-          onClick={handleDeleteClick}
-          // Prevent focus on this button itself if card focus handles delete icon visibility
-          // Or allow focus if specific icon actions are needed
-          tabIndex={-1} // Keep focus on the card itself, trash appears on hover/focus-within
-        >
-          <TrashIconSVG />
-        </button>
+
+      {/* Three-dot menu */}
+      {(onDeleteRequest || onRemoveFromFolderRequest) && (
+        <div className="entry-card-menu-container" ref={menuRef}>
+          <button
+            type="button"
+            aria-label="More actions"
+            aria-haspopup="true"
+            aria-expanded={menuOpen}
+            className="entry-card-menu-button"
+            onClick={handleMenuToggle}
+          >
+            <ThreeDotsIconSVG />
+          </button>
+          {menuOpen && (
+            <div className="entry-card-menu" role="menu">
+              {onRemoveFromFolderRequest && (
+                <button
+                  role="menuitem"
+                  className="entry-card-menu-item"
+                  onClick={(e) => handleActionClick(e, onRemoveFromFolderRequest)}
+                >
+                  Remove from Folder
+                </button>
+              )}
+              {onDeleteRequest && (
+                <button
+                  role="menuitem"
+                  className="entry-card-menu-item entry-card-menu-item-delete"
+                  onClick={(e) => handleActionClick(e, onDeleteRequest)}
+                >
+                  Delete Entry
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

@@ -1,7 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Routes, Route, Link as RouterLink } from 'react-router-dom';
 import FolderViewPage from './FolderViewPage';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 // Mock react-router-dom hooks
 const mockedNavigate = jest.fn();
@@ -11,15 +15,25 @@ jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockedNavigate,
   useParams: () => mockParams,
-  Link: ({ children, to }) => <a href={to}>{children}</a>, // Simple mock for Link
+  // Keep actual Link for navigation testing, but MemoryRouter will catch it.
 }));
+
+// Mock fetch
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({ message: 'Success' }),
+  })
+);
+// Mock window.confirm
+window.confirm = jest.fn(() => true);
+
 
 describe('FolderViewPage Component', () => {
   const mockAllEntries = [
-    { id: 'entry1', text: 'Entry 1 in Folder 1', folderId: 'folder1', timestamp: new Date().toISOString(), agent_logs: {} },
-    { id: 'entry2', text: 'Entry 2 in Folder 1', folderId: 'folder1', timestamp: new Date().toISOString(), agent_logs: {} },
+    { id: 'entry1', text: 'Entry 1 in Folder 1 content. This is a long entry to test snippet generation.', folderId: 'folder1', timestamp: new Date(2024, 0, 15).toISOString(), agent_logs: {} },
+    { id: 'entry2', text: 'Entry 2 in Folder 1 content.', folderId: 'folder1', timestamp: new Date(2024, 0, 10).toISOString(), agent_logs: {} },
     { id: 'entry3', text: 'Entry in Another Folder', folderId: 'folder2', timestamp: new Date().toISOString(), agent_logs: {} },
-    { id: 'entry4', text: 'Unfiled Entry', folderId: null, timestamp: new Date().toISOString(), agent_logs: {} },
   ];
 
   const mockAllFolders = [
@@ -27,20 +41,23 @@ describe('FolderViewPage Component', () => {
     { id: 'folder2', name: 'Test Folder Two' },
   ];
 
-  const mockStartEdit = jest.fn();
-  const mockRefreshEntries = jest.fn();
+  let mockStartEdit;
+  let mockRefreshEntries;
 
-  const renderComponent = (currentParams = { folderId: 'folder1' }) => {
-    mockParams = currentParams; // Update mockParams before render
+  const renderComponentWithRouter = (currentFolderId = 'folder1', entries = mockAllEntries, folders = mockAllFolders) => {
+    mockParams = { folderId: currentFolderId };
+    mockStartEdit = jest.fn();
+    mockRefreshEntries = jest.fn();
+
     return render(
-      <MemoryRouter initialEntries={[`/folders/${currentParams.folderId}`]}>
+      <MemoryRouter initialEntries={[`/folders/${currentFolderId}`]}>
         <Routes>
           <Route
             path="/folders/:folderId"
             element={
               <FolderViewPage
-                allEntries={mockAllEntries}
-                allFolders={mockAllFolders}
+                allEntries={entries}
+                allFolders={folders}
                 startEdit={mockStartEdit}
                 refreshEntries={mockRefreshEntries}
               />
@@ -55,112 +72,149 @@ describe('FolderViewPage Component', () => {
 
   beforeEach(() => {
     mockedNavigate.mockClear();
-    mockStartEdit.mockClear();
-    mockRefreshEntries.mockClear();
-  });
-
-  test('renders folder name and its entries', () => {
-    renderComponent();
-    expect(screen.getByText(`Folder: ${mockAllFolders[0].name}`)).toBeInTheDocument();
-    expect(screen.getByText('Entry 1 in Folder 1')).toBeInTheDocument();
-    expect(screen.getByText('Entry 2 in Folder 1')).toBeInTheDocument();
-    expect(screen.queryByText('Entry in Another Folder')).not.toBeInTheDocument();
-    expect(screen.queryByText('Unfiled Entry')).not.toBeInTheDocument();
-  });
-
-  test('displays "folder is empty" message if no entries belong to the folder', () => {
-    renderComponent({ folderId: 'folder2' }); // folder2 has one entry by mockAllEntries setup, let's change that for the test
-
-    const entriesForFolder2Only = [ // Override mockAllEntries for this specific test case
-        { id: 'entry3', text: 'Entry in Another Folder', folderId: 'folder2', timestamp: new Date().toISOString(), agent_logs: {} },
-    ];
-    const foldersForFolder2Only = [mockAllFolders[1]];
-
-    mockParams = { folderId: 'folder2' }; // Ensure params are set for this specific render
-    render(
-        <MemoryRouter initialEntries={[`/folders/folder2`]}>
-          <Routes>
-            <Route
-              path="/folders/:folderId"
-              element={
-                <FolderViewPage
-                  allEntries={mockAllEntries.filter(e => e.id !== 'entry1' && e.id !== 'entry2')} // Remove folder1 entries
-                  allFolders={mockAllFolders} // Keep all folders for lookup
-                  startEdit={mockStartEdit}
-                  refreshEntries={mockRefreshEntries}
-                />
-              }
-            />
-          </Routes>
-        </MemoryRouter>
-      );
-    // Re-render with specific empty folder scenario
-    const folderWithNoEntries = { id: 'folder3', name: 'Empty Folder' };
-    mockParams = { folderId: 'folder3' };
-    render(
-      <MemoryRouter initialEntries={['/folders/folder3']}>
-        <Routes>
-            <Route path="/folders/:folderId" element={
-                <FolderViewPage
-                    allEntries={mockAllEntries}
-                    allFolders={[...mockAllFolders, folderWithNoEntries]}
-                    startEdit={mockStartEdit}
-                    refreshEntries={mockRefreshEntries}
-                />}
-            />
-        </Routes>
-      </MemoryRouter>
+    jest.clearAllMocks(); // Clears fetch, confirm, and other mocks
+    // Reset window.confirm to default true for most tests, can be overridden per test
+    window.confirm = jest.fn(() => true);
+    global.fetch.mockClear().mockImplementation(() =>
+        Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ message: 'Success' }),
+        })
     );
-    expect(screen.getByText(`Folder: ${folderWithNoEntries.name}`)).toBeInTheDocument();
+  });
+
+  test('renders folder name and its entries (titles/snippets)', async () => {
+    renderComponentWithRouter();
+    // Wait for fadeIn animation to complete if it affects element presence
+    await waitFor(() => expect(screen.getByText(`Folder: ${mockAllFolders[0].name}`)).toBeVisible());
+
+    expect(screen.getByText(`Folder: ${mockAllFolders[0].name}`)).toBeInTheDocument();
+    // EntryCard generates title from first 50 chars + ...
+    expect(screen.getByText('Entry 1 in Folder 1 content. This is a long entr...')).toBeInTheDocument();
+    expect(screen.getByText('Entry 2 in Folder 1 content.')).toBeInTheDocument();
+    expect(screen.queryByText('Entry in Another Folder')).not.toBeInTheDocument();
+  });
+
+  test('displays "folder is empty" message if no entries belong to the folder', async () => {
+    const folderWithNoEntries = { id: 'folder3', name: 'Empty Folder' };
+    renderComponentWithRouter('folder3', mockAllEntries, [...mockAllFolders, folderWithNoEntries]);
+    await waitFor(() => expect(screen.getByText(`Folder: ${folderWithNoEntries.name}`)).toBeVisible());
     expect(screen.getByText('This folder is empty.')).toBeInTheDocument();
   });
 
-  test('navigates to chat page on entry click', () => {
-    renderComponent();
-    const entryElement = screen.getByText('Entry 1 in Folder 1');
+  test('navigates to chat page on entry card click', async () => {
+    renderComponentWithRouter();
+    await waitFor(() => expect(screen.getByText('Entry 1 in Folder 1 content. This is a long entr...')).toBeVisible());
+    const entryElement = screen.getByText('Entry 1 in Folder 1 content. This is a long entr...');
     fireEvent.click(entryElement);
     expect(mockStartEdit).toHaveBeenCalledWith('entry1');
     expect(mockedNavigate).toHaveBeenCalledWith('/chat');
   });
 
-  test('navigates to /entries on "Back to All Entries" link click', () => {
-    renderComponent();
-    // Since Link is mocked as a simple <a>, we find by text and check href or simulate click
-    const backLink = screen.getByText('Back to All Entries');
-    expect(backLink).toHaveAttribute('href', '/entries');
-    // To test navigation with mocked Link, usually you'd check mockedNavigate
-    // For a simple href check, this is fine. If actual navigation needs testing:
-    // fireEvent.click(backLink);
-    // expect(mockedNavigate).toHaveBeenCalledWith('/entries'); // This depends on how Link mock interacts
+  test('navigates to /entries on "Back to All Entries" pill click', async () => {
+    renderComponentWithRouter();
+    await waitFor(() => expect(screen.getByLabelText('Back to all entries')).toBeVisible()); // Wait for fadeIn
+
+    const backLink = screen.getByLabelText('Back to all entries');
+    expect(backLink).toBeInTheDocument();
+    expect(backLink).toHaveAttribute('href', '/entries'); // It's a Link component
+
+    // Use userEvent for more realistic click simulation
+    await userEvent.click(backLink);
+
+    // Check if navigation occurred to /entries.
+    // Since we are using MemoryRouter, the URL change is internal.
+    // We can verify by checking if the content of the /entries route is displayed.
+    expect(screen.getByText('All Entries Page')).toBeInTheDocument();
+    // Or, if useNavigate was called from within the Link's logic (less common for standard Link)
+    // expect(mockedNavigate).toHaveBeenCalledWith('/entries');
   });
 
+
   test('handles folder not found by navigating to /entries', async () => {
-    renderComponent({ folderId: 'nonexistentfolder' });
-    // It should navigate away. Check if the "Loading" or "not found" text briefly appears,
-    // then navigation occurs. useNavigate is called within useEffect.
+    renderComponentWithRouter('nonexistentfolder');
     await waitFor(() => {
-      expect(mockedNavigate).toHaveBeenCalledWith('/entries');
+      // Check that the target page content is rendered
+      expect(screen.getByText('All Entries Page')).toBeInTheDocument();
+    });
+    // Also ensure the navigate function was called correctly
+    expect(mockedNavigate).toHaveBeenCalledWith('/entries');
+  });
+
+  describe('EntryCard actions menu', () => {
+    test('reveals actions on three-dot menu click and calls remove/delete handlers', async () => {
+      const user = userEvent.setup();
+      renderComponentWithRouter('folder1');
+
+      // Wait for cards to be visible
+      await waitFor(() => {
+        expect(screen.getByText('Entry 1 in Folder 1 content. This is a long entr...')).toBeVisible();
+      });
+
+      // Find the first entry card (or a specific one by its content)
+      const entryCard = screen.getByText('Entry 1 in Folder 1 content. This is a long entr...').closest('[role="listitem"]');
+      expect(entryCard).toBeInTheDocument();
+
+      // The menu button is initially hidden by CSS (opacity 0) until hover/focus
+      // RTL doesn't fully simulate hover for CSS opacity changes well.
+      // We can fire a mouseEnter event, or directly find the button if it's always in DOM.
+      // Let's assume it's in DOM and try to click it.
+      // If CSS truly hides it from events, this test might need adjustment or more complex hover simulation.
+
+      // Option 1: Fire mouseEnter to trigger hover styles (if CSS is set up for it and RTL supports it well)
+      // fireEvent.mouseEnter(entryCard);
+
+      // Option 2: Find the menu button (it should be in the DOM, even if opacity is 0)
+      // The button has aria-label="More actions"
+      const menuButton = within(entryCard).getByRole('button', { name: /more actions/i });
+
+      // Click the menu button. userEvent is better for this.
+      await user.click(menuButton);
+
+      // Check if menu items are visible
+      const removeFromFolderButton = within(entryCard).getByRole('menuitem', { name: /remove from folder/i });
+      const deleteEntryButton = within(entryCard).getByRole('menuitem', { name: /delete entry/i });
+      expect(removeFromFolderButton).toBeVisible();
+      expect(deleteEntryButton).toBeVisible();
+
+      // Test "Remove from Folder"
+      window.confirm.mockReturnValueOnce(true); // Ensure confirm returns true for this action
+      await user.click(removeFromFolderButton);
+      expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to remove this entry from the folder?');
+      expect(global.fetch).toHaveBeenCalledWith('/diary/entry1/folder', expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify({ folderId: null }),
+      }));
+      await waitFor(() => expect(mockRefreshEntries).toHaveBeenCalledTimes(1));
+
+      // Re-open menu for next action (it closes after an action)
+      await user.click(menuButton);
+      const deleteEntryButtonAgain = within(entryCard).getByRole('menuitem', { name: /delete entry/i });
+
+      // Test "Delete Entry"
+      window.confirm.mockReturnValueOnce(true); // Ensure confirm returns true
+      await user.click(deleteEntryButtonAgain);
+      expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this entry permanently?');
+      expect(global.fetch).toHaveBeenCalledWith('/diary/entry1', { method: 'DELETE' });
+      await waitFor(() => expect(mockRefreshEntries).toHaveBeenCalledTimes(2)); // Called again
     });
   });
 
-  // Test for delete button (optional, as it's similar to EntriesPage)
-  test('calls handleDelete and refreshes entries on delete button click', async () => {
-    window.confirm = jest.fn(() => true); // Mock window.confirm
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ message: 'Deleted' }),
-      })
-    );
+  // Jest-axe accessibility test
+  test('should have no accessibility violations', async () => {
+    const { container } = renderComponentWithRouter();
+    // Wait for content to be fully rendered, especially after animations
+    await waitFor(() => expect(screen.getByText(`Folder: ${mockAllFolders[0].name}`)).toBeVisible(), { timeout: 2000 });
 
-    renderComponent();
-    const deleteButtons = screen.getAllByText('Delete'); // Assuming 'Delete' is unique enough
-    fireEvent.click(deleteButtons[0]); // Click the first delete button
-
-    expect(window.confirm).toHaveBeenCalledWith('Delete this entry?');
-    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith('/diary/entry1', { method: 'DELETE' }));
-    await waitFor(() => expect(mockRefreshEntries).toHaveBeenCalled());
-
-    jest.restoreAllMocks(); // Restore fetch and confirm
+    // Need to run axe within an act() block if there are state updates post-render affecting a11y
+    let results;
+    await act(async () => {
+        results = await axe(container);
+    });
+    expect(results).toHaveNoViolations();
   });
 });
+
+// Helper to use 'within' API if not globally available
+// (usually it is when importing from @testing-library/react)
+const within = screen.within;
