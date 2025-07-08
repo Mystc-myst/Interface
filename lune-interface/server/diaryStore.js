@@ -79,26 +79,42 @@ function load() {
  * Ensures directory exists and uses file locking.
  */
 function save() {
+  console.log('[diaryStore] Attempting to save diary data...');
   try {
     const dir = path.dirname(DATA_FILE);
     if (!fs.existsSync(dir)) {
+      console.log(`[diaryStore] Creating directory: ${dir}`);
       fs.mkdirSync(dir, { recursive: true });
     }
+
+    console.log(`[diaryStore] Attempting to acquire lock for: ${DATA_FILE}`);
     // lockSync does not support the `retries` option. Including it causes
     // `Error: Cannot use retries with the sync api` which prevents saving
     // diary data. The sync variant is sufficient here since writes are small
     // and infrequent.
     lockfile.lockSync(DATA_FILE, { stale: 5000 });
+    console.log(`[diaryStore] Lock acquired for: ${DATA_FILE}`);
+
     const dataToSave = {
       entries: diary,
       folders: folders,
     };
+    console.log('[diaryStore] Attempting to write data to file...');
     fs.writeFileSync(DATA_FILE, JSON.stringify(dataToSave, null, 2));
+    console.log('[diaryStore] Data successfully written to file.');
   } catch (err) {
-    console.error('Failed to save diary data:', err);
+    console.error('[diaryStore] Failed to save diary data:', err);
+    throw err; // Re-throw the error so the caller can handle it
   } finally {
-    if (lockfile.checkSync(DATA_FILE)) {
-      lockfile.unlockSync(DATA_FILE);
+    // Ensure unlock is attempted only if lock was acquired or if checking is safe
+    try {
+      if (lockfile.checkSync(DATA_FILE)) {
+        console.log(`[diaryStore] Releasing lock for: ${DATA_FILE}`);
+        lockfile.unlockSync(DATA_FILE);
+      }
+    } catch (unlockErr) {
+      // This catch is for errors during checkSync or unlockSync itself
+      console.error('[diaryStore] Error during unlock sequence:', unlockErr);
     }
   }
 }
@@ -298,7 +314,9 @@ exports.getAllFolders = async function() {
  * @throws {Error} If name is empty or not a string.
  */
 exports.addFolder = async function(name) {
+  console.log(`[diaryStore] addFolder called with name: "${name}"`);
   if (!name || typeof name !== 'string' || name.trim() === '') {
+    console.error('[diaryStore] addFolder: Folder name validation failed.');
     throw new Error('Folder name cannot be empty.');
   }
   const folder = {
@@ -306,8 +324,21 @@ exports.addFolder = async function(name) {
     name: name.trim(),
   };
   folders.push(folder);
-  save();
-  return folder;
+  console.log(`[diaryStore] Folder created in memory: ${JSON.stringify(folder)}. Attempting to save.`);
+  try {
+    save(); // save() will now throw if it fails
+    console.log('[diaryStore] addFolder: Save successful.');
+    return folder;
+  } catch (err) {
+    console.error(`[diaryStore] addFolder: Error during save operation for folder "${name}". Error: ${err.message}`);
+    // Attempt to roll back the in-memory change if save failed
+    const index = folders.findIndex(f => f.id === folder.id);
+    if (index !== -1) {
+      folders.splice(index, 1);
+      console.log(`[diaryStore] addFolder: Rolled back in-memory addition of folder ID ${folder.id}`);
+    }
+    throw err; // Re-throw to be caught by the route handler
+  }
 };
 
 /**
