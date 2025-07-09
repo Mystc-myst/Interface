@@ -1,39 +1,50 @@
+// Import React hooks, PropTypes, and navigation tools.
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-import Folder from './Folder';
-import EntryCard from './ui/EntryCard'; // Import EntryCard
-import BackToChatButton from './ui/BackToChatButton'; // Import the new button
-import './EntriesPage.css'; // Import specific styles for EntriesPage if any are still needed (e.g., layout)
+// Import sub-components.
+import Folder from './Folder'; // Component to display a single folder and its entries.
+import EntryCard from './ui/EntryCard'; // UI component to display a single entry's summary.
+import BackToChatButton from './ui/BackToChatButton'; // Button to navigate back to the chat/input view.
+// Import CSS for this page. Consider migrating to CSS Modules or Tailwind if not already.
+import './EntriesPage.css';
 
-export default function EntriesPage({ entries, folders, refreshEntries, refreshFolders, startEdit }) {
-  const navigate = useNavigate();
+// EntriesPage component: Displays all diary entries, organized by folders and unfiled.
+// Allows users to manage entries and folders.
+export default function EntriesPage({
+  entries,          // Array of all diary entries.
+  folders,          // Array of all folders.
+  refreshEntries,   // Function to refresh all data (entries, folders, hashtags).
+  refreshFolders,   // Function to specifically refresh folders data.
+  startEdit         // Function to set an entry's ID for editing (navigates to chat view).
+}) {
+  const navigate = useNavigate(); // Hook for programmatic navigation.
 
+  // Navigates the user back to the main chat/input view ('/chat').
   const handleBackToChat = () => {
     navigate('/chat');
   };
 
-  // handleDelete is now passed to EntryCard, which calls it with entryId
+  // Handles the deletion of a diary entry.
+  // This function is passed to EntryCard, which calls it with the entryId.
   const handleDeleteEntry = async (id) => {
-    // Confirmation can be handled inside EntryCard's menu, or here.
-    // For consistency with FolderViewPage, let's assume menu action is sufficient,
-    // or add window.confirm if a global behavior is desired.
-    // The original EntriesPage had window.confirm, so let's keep it for now.
+    // User confirmation before deleting.
     if (!window.confirm('Are you sure you want to delete this entry?')) return;
     try {
-      await fetch(`/diary/${id}`, { method: 'DELETE' });
-      await refreshEntries(); // Refresh all data
+      await fetch(`/diary/${id}`, { method: 'DELETE' }); // API call to delete the entry.
+      await refreshEntries(); // Refresh all data to reflect the deletion.
     } catch (error) {
       console.error('Error deleting entry:', error);
-      alert(`Error: ${error.message}`);
+      alert(`Error deleting entry: ${error.message}`); // User-facing error.
     }
   };
 
+  // Handles adding a new folder.
   const handleAddFolder = async () => {
-    const folderName = prompt('Enter folder name:');
+    const folderName = prompt('Enter folder name:'); // Get folder name from user.
     if (folderName && folderName.trim() !== '') {
       try {
-        const response = await fetch('/diary/folders', {
+        const response = await fetch('/diary/folders', { // API call to create a new folder.
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: folderName.trim() }),
@@ -42,23 +53,24 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to create folder');
         }
+        // Refresh folder list (or all data if only refreshEntries is available).
         if (refreshFolders) {
           await refreshFolders();
-        } else if (refreshEntries) {
+        } else if (refreshEntries) { // Fallback if specific folder refresh isn't provided.
           await refreshEntries();
         }
       } catch (error) {
         console.error('Error adding folder:', error);
-        alert(`Error: ${error.message}`);
+        alert(`Error adding folder: ${error.message}`); // User-facing error.
       }
     }
   };
 
+  // Handles dropping an entry into a folder (drag and drop functionality).
+  // useCallback is used for performance, as this function is passed to Folder components.
   const handleDropEntryIntoFolder = useCallback(async (folderId, entryId) => {
-    // const entry = entries.find(e => e.id === entryId); // Not strictly needed if backend handles it
-    // if (!entry) return;
     try {
-      const response = await fetch(`/diary/${entryId}/folder`, {
+      const response = await fetch(`/diary/${entryId}/folder`, { // API call to update entry's folderId.
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ folderId: folderId }),
@@ -67,23 +79,29 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to move entry to folder');
       }
-      await refreshEntries();
+      await refreshEntries(); // Refresh data to show the entry in its new folder.
     } catch (error) {
       console.error('Error moving entry to folder:', error);
-      alert(`Error: ${error.message}`);
+      alert(`Error moving entry: ${error.message}`); // User-facing error.
     }
-  }, [refreshEntries]); // Removed 'entries' from deps as it's not used directly
+  }, [refreshEntries]); // Dependency: refreshEntries function.
 
+  // Sets the data for drag and drop when an entry drag starts.
   const handleDragStartEntry = (e, entryId) => {
-    e.dataTransfer.setData('text/plain', entryId);
+    e.dataTransfer.setData('text/plain', entryId); // Set the dragged data to be the entry's ID.
   };
 
+  // Filter out entries that are not assigned to any folder.
+  // Sort them by timestamp, newest first.
   const unfiledEntries = entries.filter(entry => !entry.folderId)
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort newest first for consistency
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   return (
-    <main className="entries-page-main"> {/* Use a class for page-level styling */}
-      <div className="entries-page-content"> {/* Wrapper for padding and animation */}
+    // Main container for the entries page.
+    <main className="entries-page-main">
+      {/* Wrapper for content, likely for padding and animations. */}
+      <div className="entries-page-content">
+        {/* Header section with title and "Add Folder" button. */}
         <div className="entries-page-header">
           <h1 className="entries-page-title">Entries</h1>
           <button
@@ -94,70 +112,73 @@ export default function EntriesPage({ entries, folders, refreshEntries, refreshF
           </button>
         </div>
 
-        {/* Folders Section */}
+        {/* Section for displaying folders, only shown if there are folders. */}
         {folders.length > 0 && (
           <div className="entries-page-folders-section">
             <h2 className="entries-page-section-title">Folders</h2>
+            {/* Grid layout for folders. */}
             <div className="entries-page-folders-grid">
               {folders.map(folder => (
                 <Folder
                   key={folder.id}
-                  folder={{
+                  folder={{ // Pass folder data, including its entries.
                     ...folder,
-                    entries: folder.entries,
+                    entries: folder.entries, // Assuming folder object comes with its entries pre-filtered or needs to be.
+                                          // Or, Folder component might filter entries itself based on folder.id.
                   }}
-                  onDropEntry={handleDropEntryIntoFolder}
+                  onDropEntry={handleDropEntryIntoFolder} // Pass drop handler.
                 />
               ))}
             </div>
           </div>
         )}
 
-        {/* Unfiled Entries Section - Now uses EntryCard */}
-        {/* The container for EntryCards should manage their layout, e.g., vertical spacing */}
-        <div className="entries-list-container" role="list"> {/* Added role="list" for accessibility */}
+        {/* Section for displaying unfiled entries. */}
+        {/* Uses EntryCard for each unfiled entry. */}
+        <div className="entries-list-container" role="list"> {/* Accessibility: role="list". */}
           {unfiledEntries.map(entry => (
+            // Each entry is wrapped in a draggable div.
             <div
-              key={entry.id} // Key for React list
-              draggable // Keep draggable functionality if needed for folders
+              key={entry.id}
+              draggable // Make the entry draggable.
               onDragStart={(e) => handleDragStartEntry(e, entry.id)}
-              // The EntryCard itself will handle its styling and click.
-              // The draggable div is a wrapper here.
-              // Consider if draggable should be on the EntryCard itself or a wrapper.
-              // For now, keeping wrapper for drag, EntryCard for content/interaction.
             >
               <EntryCard
                 id={entry.id}
-                // Generate a title if entry.title doesn't exist. Assume entry.text is primary content.
+                // Generate a simple title from the first 50 chars of text if no title exists.
                 title={entry.title || entry.text.substring(0, 50) + (entry.text.length > 50 ? '...' : '')}
-                snippet={entry.text} // Or a more sophisticated snippet generation
-                date={new Date(entry.timestamp).toLocaleString()}
+                snippet={entry.text} // Using full text as snippet; could be refined.
+                date={new Date(entry.timestamp).toLocaleString()} // Format timestamp for display.
+                // Clicking an entry card initiates editing and navigates to chat view.
                 onClick={() => { startEdit(entry.id); navigate('/chat'); }}
-                onDeleteRequest={handleDeleteEntry} // Pass the delete handler
-                // onRemoveFromFolderRequest is not applicable for unfiled entries
-                // isHighlighted, onSetHighlight could be added for keyboard navigation consistency
+                onDeleteRequest={handleDeleteEntry} // Pass delete handler.
+                // onRemoveFromFolderRequest is not applicable here as these are unfiled.
               />
             </div>
           ))}
+          {/* Message displayed if there are no entries at all. */}
           {entries.length === 0 && <div className="entries-page-empty-message">Every echo has found its nest.</div>}
+          {/* Message if all entries are filed and there are folders. */}
           {entries.length > 0 && unfiledEntries.length === 0 && folders.length > 0 && (
             <div className="entries-page-empty-message">This space awaits a new ripple.</div>
           )}
+          {/* Message if all entries are filed but there are no folders (less likely scenario if folders are used). */}
            {entries.length > 0 && unfiledEntries.length === 0 && folders.length === 0 && (
             <div className="entries-page-empty-message">This space awaits a new ripple.</div>
           )}
         </div>
-        {/* Replace the old button with the new BackToChatButton component */}
+        {/* Button to navigate back to the chat/input view. */}
         <BackToChatButton id="entries-page-back-to-chat" onClick={handleBackToChat} />
       </div>
     </main>
   );
 }
 
+// PropTypes for type-checking the props passed to EntriesPage.
 EntriesPage.propTypes = {
-  entries: PropTypes.array.isRequired,
-  folders: PropTypes.array.isRequired,
-  refreshEntries: PropTypes.func.isRequired,
-  refreshFolders: PropTypes.func.isRequired,
-  startEdit: PropTypes.func.isRequired,
+  entries: PropTypes.array.isRequired,        // Must be an array.
+  folders: PropTypes.array.isRequired,        // Must be an array.
+  refreshEntries: PropTypes.func.isRequired,  // Must be a function.
+  refreshFolders: PropTypes.func.isRequired,  // Must be a function.
+  startEdit: PropTypes.func.isRequired,       // Must be a function.
 };
