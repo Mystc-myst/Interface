@@ -243,9 +243,9 @@ exports.add = async function(text, folderId = null) {
 exports.getAllUniqueHashtags = async function() {
   const allHashtags = new Set();
   diary.forEach(entry => {
-    if (entry.hashtags && Array.isArray(entry.hashtags)) {
-      entry.hashtags.forEach(tag => allHashtags.add(tag));
-    }
+    // Instead of reading from entry.hashtags, parse the current text
+    const currentHashtags = parseHashtags(entry.text);
+    currentHashtags.forEach(tag => allHashtags.add(tag));
   });
   return Array.from(allHashtags).sort();
 };
