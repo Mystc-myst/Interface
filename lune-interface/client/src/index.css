@@ -161,29 +161,33 @@
 
 /* Custom button style for Translucent Liquid Gold */
 .btn-liquid-gold-translucent {
-  border-radius: 12px;
-  height: 32px;
-  padding: 0 18px;
-  border: 1px solid rgba(var(--brazen-gold-rgb), 0.55); /* Reduced alpha for border */
-  background: linear-gradient(145deg, rgba(var(--brazen-gold-rgb), 0.1) 0%, rgba(var(--brazen-gold-rgb), 0.03) 100%); /* Reduced alpha for background */
-  backdrop-filter: blur(10px) saturate(150%); /* Adjusted blur and saturation */
-  box-shadow: 0 0 10px 3px rgba(var(--brazen-gold-rgb), 0.15) inset, 0 0 6px rgba(255, 255, 255, 0.08) inset; /* Reduced alpha and spread for shadow */
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--brazen-gold);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  cursor: pointer;
-  transition: filter 0.2s ease-out, transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  border-radius: 12px; /* Keep */
+  height: 32px; /* Keep */
+  padding: 0 18px; /* Keep */
+  border: 1px solid rgba(233, 231, 255, 0.35); /* Moon Mist edge shimmer */
+  background: rgba(91, 46, 255, 0.12); /* translucent Violet Deep */
+  backdrop-filter: blur(12px) saturate(160%); /* Specified */
+  box-shadow: inset 0 0 8px rgba(255,255,255,0.1); /* Subtle inner glow */
+  font-family: 'Inter', sans-serif; /* Keep */
+  font-size: 0.95rem; /* Keep */
+  font-weight: 600; /* Keep */
+  color: rgba(233, 231, 255, 0.9); /* Moon Mist at 90% opacity */
+  display: inline-flex; /* Keep */
+  align-items: center; /* Keep */
+  justify-content: center; /* Keep */
+  text-decoration: none; /* Keep */
+  cursor: pointer; /* Keep */
+  transition: all 220ms ease-out; /* Updated transition */
 }
 
 .btn-liquid-gold-translucent:hover {
-  filter: brightness(1.1);
-  /* Optional: slightly enhance shadow on hover if desired */
-  /* box-shadow: 0 0 12px 4px rgba(var(--brazen-gold-rgb), 0.2) inset, 0 0 8px rgba(255,255,255,.1) inset; */
+  background: #F3B43F; /* Brazen Gold */
+  color: #050409; /* Ink Black */
+  border-color: transparent; /* Fade out border */
+  transform: scale(1.03); /* Slight scale */
+  transition-delay: 30ms; /* Subtle ramp-in */
+  /* Assuming no specific box-shadow for hover, the idle one will transition out */
+  /* filter: brightness(1.1); /* This was from the old hover, removing unless specified */
 }
 
 .btn-liquid-gold-translucent:active {
@@ -191,7 +195,7 @@
 }
 
 .btn-liquid-gold-translucent kbd {
-  color: var(--brazen-gold);
+  color: var(--brazen-gold); /* This will be overridden by the main color on idle, and new color on hover */
   opacity: 0.7; /* Slightly more softened kbd text */
 }
 
