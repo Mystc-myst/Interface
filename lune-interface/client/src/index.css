@@ -185,81 +185,145 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom button style for Liquid Gold */
+/* Custom button style for Liquid Gold (Filled/Selected State) */
 .btn-liquid-gold {
   border-radius: 12px;
   height: 32px;
   padding: 0 18px;
-  border: 1px solid rgba(var(--brazen-gold-rgb), 0.85);
-  background: linear-gradient(145deg, rgba(var(--brazen-gold-rgb), 0.18) 0%, rgba(var(--brazen-gold-rgb), 0.06) 100%);
-  backdrop-filter: blur(14px) saturate(180%);
-  box-shadow: 0 0 12px 4px rgba(var(--brazen-gold-rgb), 0.22) inset, 0 0 8px rgba(255, 255, 255, 0.12) inset;
   font-family: 'Inter', sans-serif;
   font-size: 0.95rem;
-  font-weight: 600; /* Added for consistency with other buttons, can be adjusted */
-  color: var(--brazen-gold);
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-decoration: none; /* Remove underline if it's an <a> tag styled as button */
+  text-decoration: none;
   cursor: pointer;
-  transition: filter 0.2s ease-out, transform 0.2s ease-out, box-shadow 0.2s ease-out; /* Added box-shadow transition */
+  transition: all 220ms ease-out; /* Consistent transition */
+
+  /* Filled-gold state (matches hover of other buttons) */
+  background: var(--btn-gold-bg, linear-gradient(110deg,#F3B43F,#E79E30)); /* Fallback if var not defined */
+  color: var(--btn-gold-text, #050409); /* Fallback if var not defined */
+  border: 1px solid transparent; /* Consistent with hover states */
+  /* Gold glow from .btn-liquid-gold-translucent:hover / .btn-save-pill:hover */
+  box-shadow: 0 0 8px rgba(243,180,63,0.4), inset 0 0 8px rgba(255,255,255,0.15);
+  /* backdrop-filter: none; /* Not needed for opaque button */
 }
 
 .btn-liquid-gold:hover {
-  filter: brightness(1.15);
-  /* Optional: slightly enhance shadow on hover if desired */
-  /* box-shadow: 0 0 14px 5px rgba(var(--brazen-gold-rgb), 0.25) inset, 0 0 10px rgba(255,255,255,.15) inset; */
+  /* Keep the filled gold state on hover, maybe slightly brighter or enhance shadow if desired */
+  filter: brightness(1.05); /* Subtle brightness increase */
+  box-shadow: 0 0 10px rgba(243,180,63,0.5), inset 0 0 10px rgba(255,255,255,0.2); /* Slightly enhanced glow */
 }
 
 .btn-liquid-gold:active {
   transform: scale(0.97);
+  filter: brightness(0.95); /* Slightly dimmer on press */
 }
 
 /* Ensure kbd elements within the button inherit text color or have a compatible one */
 .btn-liquid-gold kbd {
-  color: var(--brazen-gold); /* Or a slightly less bright version if needed for contrast */
-  opacity: 0.8; /* Soften the kbd text a bit */
+  color: inherit; /* Inherit main button text color (Ink Black) */
+  opacity: 0.85; /* Adjust opacity as needed for contrast/emphasis */
+  transition: opacity 220ms ease-out;
 }
 
-/* Custom button style for Translucent Liquid Gold */
-.btn-liquid-gold-translucent {
-  border-radius: 12px; /* Keep - Verified */
-  height: 32px; /* Keep */
-  padding: 0 18px; /* Keep */
-  border: 1px solid rgba(233, 231, 255, 0.3); /* Updated Moon Mist shimmer */
-  background: linear-gradient(110deg, rgba(255, 255, 255, 0.08), rgba(91, 46, 255, 0.06)); /* Updated translucent filled base */
-  backdrop-filter: blur(12px) saturate(160%); /* Verified */
-  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.08), 0 0 6px rgba(91, 46, 255, 0.1); /* Updated box-shadow */
-  font-family: 'Inter', sans-serif; /* Keep */
-  font-size: 0.95rem; /* Keep */
-  font-weight: 600; /* Keep */
-  color: rgba(233, 231, 255, 0.85); /* Updated Moon Mist at 85% opacity */
-  display: inline-flex; /* Keep */
-  align-items: center; /* Keep */
-  justify-content: center; /* Keep */
-  text-decoration: none; /* Keep */
-  cursor: pointer; /* Keep */
-  transition: all 220ms ease-out; /* Verified */
+.btn-liquid-gold:hover kbd {
+  opacity: 0.9;
 }
 
-.btn-liquid-gold-translucent:hover {
-  background: linear-gradient(120deg, #F3B43F, #E79E30); /* Updated Brazen Gold gradient */
-  color: #050409; /* Ink Black - Verified */
-  border: 1px solid transparent; /* Remove border */
-  transform: scale(1.03); /* Slight scale - Verified */
-  box-shadow: 0 0 8px rgba(243, 180, 63, 0.4), inset 0 0 8px rgba(255, 255, 255, 0.15); /* Optional glow */
-  /* transition-delay: 30ms; /* Removed as per new requirements */
-  /* filter: brightness(1.1); /* This was from the old hover, removing unless specified */
+/* Custom button style for Save Pill */
+.btn-save-pill {
+  border-radius: 12px;
+  height: 32px;
+  padding: 0 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 220ms ease-out;
+  backdrop-filter: blur(12px) saturate(160%); /* Same as current translucent */
+
+  /* Idle state for Save Pill */
+  background: linear-gradient(110deg, rgba(255,255,255,.08), rgba(91,46,255,.05));
+  border: 1px solid rgba(233,231,255,.35); /* Moon-Mist 35% */
+  color: #E9E7FF; /* Moon-Mist 90% */
+  /* Adjusted inner shadow for clearer glass */
+  box-shadow: inset 0 0 10px rgba(255,255,255,0.06), 0 0 5px rgba(91,46,255,0.08);
 }
 
-.btn-liquid-gold-translucent:active {
+.btn-save-pill:hover {
+  background: linear-gradient(110deg,#F3B43F,#E79E30); /* var(--btn-gold-bg) */
+  color: #050409; /* var(--ink-black) */
+  border-color: transparent;
+  transform: scale(1.03);
+  /* Gold glow from .btn-liquid-gold-translucent:hover */
+  box-shadow: 0 0 8px rgba(243,180,63,0.4), inset 0 0 8px rgba(255,255,255,0.15);
+}
+
+.btn-save-pill:active {
   transform: scale(0.97);
 }
 
+.btn-save-pill kbd {
+  color: rgba(233,231,255,.7); /* Moon-Mist 70% for idle */
+  opacity: 1; /* Explicitly set opacity if needed, kbd often has browser default */
+  transition: color 220ms ease-out; /* Smooth transition for kbd color */
+}
+
+.btn-save-pill:hover kbd {
+  color: inherit; /* Inherit color from parent button on hover */
+}
+
+/* Custom button style for Translucent Liquid Gold (Hashtag Chips) */
+.btn-liquid-gold-translucent {
+  border-radius: 12px;
+  height: 32px;
+  padding: 0 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 220ms ease-out;
+  backdrop-filter: blur(12px) saturate(160%); /* Keep existing backdrop-filter */
+
+  /* Idle state for Hashtag Chips */
+  background: linear-gradient(110deg, rgba(255,255,255,.05), rgba(91,46,255,.03)); /* Reduced fill opacity */
+  border: 1px solid rgba(233,231,255,.25); /* Moon-Mist 25% */
+  color: rgba(233,231,255,.75); /* Moon-Mist 75% */
+  /* Subtler box-shadow */
+  box-shadow: inset 0 0 10px rgba(255,255,255,0.05), 0 0 4px rgba(91,46,255,0.07);
+}
+
+.btn-liquid-gold-translucent:hover {
+  background: linear-gradient(110deg,#F3B43F,#E79E30); /* var(--btn-gold-bg) - Identical to Save button hover */
+  color: #050409; /* var(--ink-black) - Identical to Save button hover */
+  border-color: transparent; /* Remove border on hover */
+  transform: scale(1.03); /* Slight scale - Identical to Save button hover */
+  /* Gold glow - Identical to Save button hover */
+  box-shadow: 0 0 8px rgba(243,180,63,0.4), inset 0 0 8px rgba(255,255,255,0.15);
+}
+
+.btn-liquid-gold-translucent:active {
+  transform: scale(0.97); /* Consistent active state */
+}
+
+/* Assuming kbd might not be used in tags, but if they were: */
 .btn-liquid-gold-translucent kbd {
-  color: var(--brazen-gold); /* This will be overridden by the main color on idle, and new color on hover */
-  opacity: 0.7; /* Slightly more softened kbd text */
+  color: rgba(233,231,255,.6); /* Slightly dimmer than button text if used */
+  opacity: 1;
+  transition: color 220ms ease-out;
+}
+
+.btn-liquid-gold-translucent:hover kbd {
+  color: inherit;
 }
 
 /* Shadcn base layer customizations AFTER variables are defined and AFTER @tailwind base */
