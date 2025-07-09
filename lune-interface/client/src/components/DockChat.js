@@ -82,7 +82,10 @@ export default function DockChat({ entries, hashtags, refreshEntries, editingId,
     <main className="relative">
       {/* Removed opacity-0 and animate-fadeIn from the div below */}
       {/* Added flex flex-col items-center to center its children: HashtagButtons and the form */}
-      <div className="p-4 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out flex flex-col items-center">
+      <div
+        className="p-4 border-l-[1px] border-zinc-700/60 transition-opacity duration-700 ease-in-out flex flex-col items-center"
+        style={{ marginTop: '96px' }}
+      >
         <div className="flex gap-2 mb-4">
         </div>
         {/* Hashtag Buttons Area */}
