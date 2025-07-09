@@ -61,3 +61,44 @@ retry.
 All chat replies are returned in the HTTP response to `/api/lune/send`.
 n8n cannot push updates to the app. The n8n webhook URL should be stored in an
 environment variable.
+
+## Lune Interface Details
+
+### Color System
+
+*(Placeholder for Color System table)*
+
+### 🌓 Theme System — Light & Dark Modes
+
+| Mode  | Background spec | Primary text | Liquid-Glass Base | Liquid-Gold Action |
+|-------|-----------------|--------------|-------------------|--------------------|
+| Dark  | Violet-Deep → Ink-Black radial (see Gradient) | Moon-Mist | rgba(91,46,255,.12) | #F3B43F → #E79E30 |
+| Light | Solid Parchment `#F6F1E7` | Ink-Black | rgba(0,0,0,.06)  | Desert-Gold `#C79A3B → #B68A2A` |
+
+> *Rationale:* Dark mode invites inward depth; Light mode offers airy clarity for daytime reflection.
+
+### Radial Gradient
+
+*(Placeholder for Radial Gradient description)*
+
+**Light fallback:** in light theme the background is a flat `#F6F1E7` to minimise visual noise; no gradient needed.
+
+## Developer Notes
+
+### 🌗 Theme Toggle
+
+Lune observes the user’s OS preference (`prefers-color-scheme`) at first load and stores overrides in `localStorage`.
+Toggle component: a small 🌙/☀️ pill at bottom-right using the `.btn-glass` class.
+Key custom-props live in `:root[data-theme="dark"| "light"]`; see `lune-interface/client/src/index.css`.
+
+- Run Lighthouse in **both** themes; maintain contrast ≥ 4.5 : 1 and a11y ≥ 95.
+- If `prefers-reduced-transparency` is true, blur effects are disabled in both modes.
+
+## Generative-Principles
+
+*(Placeholder for Generative-Principles table)*
+
+| Principle         | Description                                                                                                |
+|-------------------|------------------------------------------------------------------------------------------------------------|
+| Phase Entrainment | ... (other bullets) <br> - Theme fades respect circadian rhythm: dark evokes night introspection, light evokes dawn clarity. |
+| ...               | ...                                                                                                        |
