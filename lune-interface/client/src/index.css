@@ -159,6 +159,42 @@
   opacity: 0.8; /* Soften the kbd text a bit */
 }
 
+/* Custom button style for Translucent Liquid Gold */
+.btn-liquid-gold-translucent {
+  border-radius: 12px;
+  height: 32px;
+  padding: 0 18px;
+  border: 1px solid rgba(var(--brazen-gold-rgb), 0.55); /* Reduced alpha for border */
+  background: linear-gradient(145deg, rgba(var(--brazen-gold-rgb), 0.1) 0%, rgba(var(--brazen-gold-rgb), 0.03) 100%); /* Reduced alpha for background */
+  backdrop-filter: blur(10px) saturate(150%); /* Adjusted blur and saturation */
+  box-shadow: 0 0 10px 3px rgba(var(--brazen-gold-rgb), 0.15) inset, 0 0 6px rgba(255, 255, 255, 0.08) inset; /* Reduced alpha and spread for shadow */
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--brazen-gold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.2s ease-out, transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.btn-liquid-gold-translucent:hover {
+  filter: brightness(1.1);
+  /* Optional: slightly enhance shadow on hover if desired */
+  /* box-shadow: 0 0 12px 4px rgba(var(--brazen-gold-rgb), 0.2) inset, 0 0 8px rgba(255,255,255,.1) inset; */
+}
+
+.btn-liquid-gold-translucent:active {
+  transform: scale(0.97);
+}
+
+.btn-liquid-gold-translucent kbd {
+  color: var(--brazen-gold);
+  opacity: 0.7; /* Slightly more softened kbd text */
+}
+
 /* Shadcn base layer customizations AFTER variables are defined and AFTER @tailwind base */
 @layer base {
   * {
