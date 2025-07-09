@@ -21,6 +21,59 @@ function App() {
   // State to control the visibility of the LuneChatModal.
   const [showChat, setShowChat] = useState(false);
 
+  // Theme state and logic
+  const [theme, setTheme] = useState(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      return storedTheme;
+    }
+    // If no stored theme, check CSS-set theme from OS preference
+    // The actual value of --theme is not directly readable here before mount,
+    // but we can check if prefers-color-scheme was dark.
+    // The `useEffect` below will correctly sync `data-theme` from the CSS variable if needed.
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches && !storedTheme) {
+      return 'dark';
+    }
+    return 'light'; // Default to light if no preference or stored theme
+  });
+
+  useEffect(() => {
+    // This effect ensures that on initial load, if localStorage is set, it overrides OS.
+    // If localStorage is not set, it respects OS (already set by CSS @media query).
+    // It also applies the theme from state to the html element.
+    const root = document.documentElement;
+    // Correctly get the --theme value set by CSS media query
+    const computedStyle = getComputedStyle(root);
+    const currentOsTheme = computedStyle.getPropertyValue('--theme').trim();
+
+    if (localStorage.getItem('theme')) {
+      // If theme is in localStorage, it takes precedence.
+      // The `theme` state is already initialized from localStorage if available.
+      root.dataset.theme = theme;
+    } else if (currentOsTheme) {
+      // If no localStorage theme, but OS theme is detected via CSS variable
+      root.dataset.theme = currentOsTheme;
+      if (theme !== currentOsTheme) { // Sync React state only if it differs
+        setTheme(currentOsTheme);
+      }
+    } else {
+      // Fallback: if no localStorage and no OS theme detected (e.g. --theme not set by CSS)
+      // Use the initial state of `theme` (which defaults to 'light' or respects prefers-color-scheme via matchMedia)
+      root.dataset.theme = theme;
+    }
+  }, []); // Run once on mount to initialize
+
+  useEffect(() => {
+    // This effect reacts to changes in the `theme` state (e.g., by toggleTheme)
+    // and updates both localStorage and the `data-theme` attribute.
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+
   // Callback function to fetch diary entries from the backend.
   // Uses useCallback to prevent re-creation on every render unless dependencies change.
   const fetchEntries = useCallback(async () => {
@@ -146,6 +199,15 @@ function App() {
         )}
         {/* LuneChatModal component, its visibility is controlled by `showChat` state. */}
         <LuneChatModal open={showChat} onClose={() => setShowChat(false)} />
+
+        {/* Theme Toggle Button */}
+        <button
+          aria-label="Toggle dark/light mode"
+          onClick={toggleTheme}
+          className="theme-toggle btn-glass" // Added btn-glass for styling, specific .theme-toggle for positioning
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
       </div>
     );
   };

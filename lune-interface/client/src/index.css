@@ -1,11 +1,19 @@
 @import "./styles/tokens.css";
 @import "./styles/motion.css";
 
+/* Theme detection based on OS preference */
+@media (prefers-color-scheme: light) { :root { --theme: light; } }
+@media (prefers-color-scheme: dark)  { :root { --theme: dark;  } }
+
 /* shadcn/ui theme variables and custom variants */
 
 @custom-variant dark (&:is(.dark *));
 
+/* shared */
 :root {
+  --radius-pill: 12px;
+  --duration-fast: 220ms;
+
   /* --background: #070711; */ /* Deepest-navy base - Will be overridden by new gradient */
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -43,8 +51,20 @@
   --brazen-gold: #B8860B; /* Added Brazen-Gold */
 }
 
-.dark {
-  --background: #070711; /* Deepest-navy base */
+/* dark theme variables */
+[data-theme="dark"] {
+  --bg-main: radial-gradient(circle at 50% 40%, #5B2EFF 0%, #050409 60%, #050409 100%);
+  --text-main: #E9E7FF; /* Moon-Mist */
+  --btn-glass-bg: rgba(91,46,255,.12);
+  --btn-glass-text: #E9E7FF;
+  --btn-gold-bg: linear-gradient(110deg,#F3B43F,#E79E30); /* Liquid-Gold */
+  --btn-gold-text:#050409;
+  --frost-blur-amount: 16px; /* Default for dark mode, matches current -lg */
+
+  /* shadcn dark variables - these might need to be adjusted or merged
+     with the new theme variables if shadcn components are used extensively
+     and need to reflect the new dark theme. For now, keeping them separate. */
+  --background: #070711; /* Deepest-navy base - Original shadcn dark */
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.145 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -76,6 +96,49 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+}
+
+/* light theme variables */
+[data-theme="light"] {
+  --bg-main: #F6F1E7; /* Warm Parchment */
+  --text-main: #050409; /* Ink-Black */
+  --btn-glass-bg: rgba(0,0,0,.06);
+  --btn-glass-text: #050409;
+  --btn-gold-bg: linear-gradient(110deg,#C79A3B,#B68A2A); /* Desert-Gold */
+  --btn-gold-text: #F6F1E7;
+
+  /* shadcn light variables - these are the default :root variables.
+     We might need to adjust them if shadcn components are used extensively
+     and need to reflect the new light theme. For now, keeping them separate.
+     Effectively, these will be overridden by the [data-theme="light"] specific
+     --background, --foreground etc. if those are also defined here.
+     For now, we assume --bg-main and --text-main will be used directly on body/elements.
+     If shadcn components rely on --background, we'll need to set it here.
+     Let's assume for now shadcn's default :root styles are sufficient for light mode's base,
+     and our specific light theme variables will style our custom components/body.
+     If not, we'll need to map them: e.g., --background: var(--bg-main); inside this rule.
+     For now, let's add them to ensure shadcn components adapt. */
+  --background: #F6F1E7; /* Warm Parchment for shadcn components */
+  --foreground: #050409; /* Ink-Black for shadcn components */
+  /* The rest of the shadcn variables will inherit from :root by default if not specified here.
+     We may need to redefine more if the default light theme of shadcn doesn't fit.
+     For example, card backgrounds, popovers etc. might need to align with Parchment.
+     Let's start with these two and adjust if needed. */
+  --card: oklch(0.98 0 0); /* Lighter card for parchment */
+  --card-foreground: #050409;
+  --popover: oklch(0.98 0 0);
+  --popover-foreground: #050409;
+  --primary: oklch(0.205 0 0); /* Default from :root, might need adjustment */
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.95 0 0); /* Slightly off-parchment */
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.95 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.95 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --border: oklch(0.85 0 0); /* Darker border for parchment */
+  --input: oklch(0.85 0 0);
+  --ring: oklch(0.708 0 0); /* Default from :root */
 }
 
 @theme inline {
@@ -207,10 +270,20 @@
 
   html, body {
     height: 100%;
-    background: radial-gradient(circle at 50% 50%, #5B2EFF 0%, #050409 60%, #050409 100%); /* Centered gradient */
+    /* background: radial-gradient(circle at 50% 50%, #5B2EFF 0%, #050409 60%, #050409 100%); /* Centered gradient */
+    /* The above is now handled by --bg-main */
+    background: var(--bg-main);
     background-attachment: fixed;      /* keeps centre glow static */
     background-repeat: no-repeat;
+    /* color-scheme: dark; /* This will be dynamic based on the theme */
+  }
+
+  html[data-theme="dark"] {
     color-scheme: dark;
+  }
+
+  html[data-theme="light"] {
+    color-scheme: light;
   }
 
   @media print {
@@ -222,17 +295,18 @@
   body {
     /* @apply bg-background text-foreground; */ /* Replaced by body::before and direct body styles */
     /* Ensure body doesn't override html's height if it was set to min-height only */
-    @apply text-foreground; /* Keep text-foreground from shadcn */
+    /* @apply text-foreground; */ /* Keep text-foreground from shadcn - now use --text-main */
     font-family: 'Inter', sans-serif; /* Set base body font */
-    color: var(--moon-mist); /* Default text color from our tokens */
+    color: var(--text-main); /* Default text color from our theme variables */
     /* min-height: 100vh; /* Covered by height: 100% on html, body */
     margin: 0;
+    transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
   }
 
   h1, h2, h3 {
     font-family: 'Playfair Display', serif;
     font-weight: 600; /* Corresponds to semibold */
-    color: var(--moon-mist); /* Default heading color, can be overridden */
+    color: var(--text-main); /* Heading color from our theme variables */
   }
 }
 
@@ -299,6 +373,30 @@ body {
   scrollbar-color: #5B2EFF55 var(--ink-black); /* thumb and track color */
 }
 
+/* Theme Toggle Button Styles */
+.theme-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000; /* Ensure it's above most other content */
+  padding: 8px 12px; /* Adjust padding as needed */
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  /* Using btn-glass variables defined in theme sections */
+  background-color: var(--btn-glass-bg);
+  color: var(--btn-glass-text);
+  border: 1px solid transparent; /* Base border, can be themed if needed */
+  font-size: 1.25rem; /* Adjust icon size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+
+.theme-toggle:hover {
+  /* Optional: Add a subtle hover effect if desired, e.g., slightly change background or border */
+  filter: brightness(1.2);
+}
 
 /* Frost utility class */
 .frost {
