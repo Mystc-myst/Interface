@@ -65,7 +65,7 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false, onChatWithL
       {/* New button container */}
       <div className="flex items-center gap-4 justify-start mt-3"> {/* 1rem = gap-4, 0.75rem = mt-3 */}
         <Button
-          className="btn-liquid-gold" // Apply the new class
+          className="btn-save-pill" // Apply the new class for Save button
           onClick={() => {
             if (onSave) {
               onSave(text);
