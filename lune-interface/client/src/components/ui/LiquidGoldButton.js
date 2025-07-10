@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const LiquidGoldButton = ({ children, onClick, ...props }) => {
   return (
@@ -8,6 +9,11 @@ const LiquidGoldButton = ({ children, onClick, ...props }) => {
       </span>
     </button>
   );
+};
+
+LiquidGoldButton.propTypes = {
+  children: PropTypes.node.isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default LiquidGoldButton;
