@@ -2,14 +2,27 @@ import { useEffect } from 'react';
 
 /**
  * Custom hook for handling global keyboard shortcuts.
- * @param {Object} shortcuts - An object where keys are shortcut keys (e.g., 'n', 'b')
- *                             and values are callback functions to execute.
- * @param {Array<string>} targetIds - An object mapping shortcut keys to element IDs.
- *                                    Example: { n: 'add-folder-button', b: 'back-to-chat-button' }
+ * @param {Object} targetIds - An object mapping shortcut keys to element IDs for general shortcuts.
+ *                             Example: { n: 'add-folder-button', b: 'back-to-chat-button' }
+ * @param {Function} onActivate - Callback function for the special Ctrl/Cmd+Enter shortcut on initiation view.
+ * @param {boolean} isInitiationViewActive - Flag to determine if the initiation view specific shortcut should be active.
  */
-const useKeyboardShortcuts = (targetIds = {}) => {
+const useKeyboardShortcuts = (targetIds = {}, onActivate = null, isInitiationViewActive = false) => {
   useEffect(() => {
     const handleKeyDown = (event) => {
+      // Handle initiation view shortcut FIRST if active
+      if (isInitiationViewActive && onActivate && (event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+        event.preventDefault();
+        onActivate();
+        return; // Shortcut handled, no need to check others
+      }
+
+      // If initiation view shortcut was handled or not active, proceed with other shortcuts
+      // but only if not on initiation view (to prevent 'n' or 'b' from firing there)
+      if (isInitiationViewActive) {
+        return;
+      }
+
       const activeElement = document.activeElement;
       const isTyping =
         activeElement &&
@@ -50,7 +63,7 @@ const useKeyboardShortcuts = (targetIds = {}) => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [targetIds]); // Re-run effect if targetIds change, though typically they won't.
+  }, [targetIds, onActivate, isInitiationViewActive]); // Add new dependencies
 };
 
 export default useKeyboardShortcuts;
