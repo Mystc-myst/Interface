@@ -13,7 +13,7 @@ function HashtagButtons({ hashtags, onHashtagClick }) {
           key={tag}
           type="button" // Important to prevent form submission if inside a form
           onClick={() => onHashtagClick(tag)}
-          className="btn-liquid-gold-translucent" // Applied the new class here
+          className="btn-glass tag-chip" // Applied the new classes here
         >
           {tag}
         </button>

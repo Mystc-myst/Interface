@@ -65,7 +65,7 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false, onChatWithL
       {/* New button container */}
       <div className="flex items-center gap-4 justify-start mt-3"> {/* 1rem = gap-4, 0.75rem = mt-3 */}
         <Button
-          className="btn-save-pill" // Apply the new class for Save button
+          className="btn-glass" // Apply the new class for Save button
           onClick={() => {
             if (onSave) {
               onSave(text);
@@ -78,7 +78,7 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false, onChatWithL
           Save <kbd className="ml-2 text-xs">⌘/Ctrl + ↵</kbd>
         </Button>
         <Button
-          className="btn-liquid-gold" // Apply the new class
+          className="btn-glass" // Apply the new class
           onClick={onChatWithLune}
         >
           Chat with Lune
