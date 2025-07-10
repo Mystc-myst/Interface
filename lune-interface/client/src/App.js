@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 // Import routing components from react-router-dom.
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 // Import custom page/view components.
+import InitiationView from './components/InitiationView'; // Import the new InitiationView
 import DockChat from './components/DockChat'; // Main chat interface component.
 import EntriesPage from './components/EntriesPage'; // Page for displaying and managing diary entries.
 import FolderViewPage from './components/FolderViewPage'; // Page for viewing entries within a specific folder.
@@ -141,14 +142,10 @@ function App() {
       <div className="flex flex-col min-h-screen">
         {/* Content area that grows to fill available space. */}
         <div className="flex-grow p-4"> {/* Added padding for visibility */}
-          {/* Example Usage of LiquidGoldButton */}
-          <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-            <LiquidGoldButton onClick={() => console.log('Liquid Gold Button clicked!')}>
-              Activate Now <kbd style={{opacity: 0.7, fontSize: '0.8em', fontWeight: 'normal'}}>⌘/Ctrl&nbsp;+&nbsp;↵</kbd>
-            </LiquidGoldButton>
-          </div>
           {/* Defines the routes for the application. */}
           <Routes>
+            {/* Route for the new initiation screen. */}
+            <Route path="/start" element={<InitiationView />} />
             {/* Route for the main chat interface. */}
             <Route
               path="/chat"
@@ -193,8 +190,10 @@ function App() {
                 />
               }
             />
-            {/* Fallback route: if no other route matches, navigate to "/chat". */}
-            <Route path="*" element={<Navigate to="/chat" replace />} />
+            {/* Default route: navigate to "/start". InitiationView will handle redirect to "/chat" if already started. */}
+            <Route path="/" element={<Navigate to="/start" replace />} />
+            {/* Fallback route: if no other route matches (e.g. old bookmarks to /), navigate to "/start". */}
+            <Route path="*" element={<Navigate to="/start" replace />} />
           </Routes>
         </div>
         {/* Conditional rendering for a footer section, only shown on the chat page. */}
