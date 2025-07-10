@@ -1,0 +1,38 @@
+.btnAction {
+  position: relative;
+  display: inline-block;
+  border-radius: var(--radius-pill);
+  padding: 2px; /* border thickness */
+  background: var(--grad-gold); /* GOLD BORDER */
+  box-shadow: var(--glow-gold);
+  transition: transform .15s ease;
+  border: none; /* Ensuring no default browser border interferes */
+  cursor: pointer; /* Standard pointer for buttons */
+}
+
+.btnAction:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.btnAction:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center content horizontally */
+  gap: .5rem;
+  padding: .65rem 1.75rem;
+  border-radius: inherit;
+  background: var(--grad-purple); /* PURPLE FILL */
+  box-shadow: var(--inner-glow);
+  color: transparent; /* we’ll paint text with gold */
+  background-image: var(--grad-gold);
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: var(--anim-shine);
+  font-weight: 700;
+  font-size: 1.125rem; /* ~18 px */
+  white-space: nowrap; /* Prevent text wrapping */
+}

@@ -8,7 +8,7 @@ import DockChat from './components/DockChat'; // Main chat interface component.
 import EntriesPage from './components/EntriesPage'; // Page for displaying and managing diary entries.
 import FolderViewPage from './components/FolderViewPage'; // Page for viewing entries within a specific folder.
 import LuneChatModal from './components/LuneChatModal'; // Modal component for Lune AI chat.
-import LiquidGoldButton from './components/ui/LiquidGoldButton'; // Import the new button
+import LiquidGoldButton from './components/LiquidGoldButton/LiquidGoldButton'; // Corrected import path
 
 // Main application component.
 function App() {
@@ -214,6 +214,16 @@ function App() {
         >
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
+
+        {/* Test LiquidGoldButton */}
+        <div style={{ padding: '20px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+          <LiquidGoldButton onClick={() => alert('Liquid Gold Test Clicked!')}>
+            Test Gold Button
+          </LiquidGoldButton>
+          <LiquidGoldButton onClick={() => console.log('Another gold button clicked')}>
+            Shine On
+          </LiquidGoldButton>
+        </div>
       </div>
     );
   };

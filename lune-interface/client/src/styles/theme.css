@@ -1,0 +1,36 @@
+:root {
+  --gold-100: #FFF6C2;  /* specular highlight (almost white-gold) */
+  --gold-200: #FCD44D;  /* bright yellow core */
+  --gold-300: #E7B94C;  /* midtone yellow-orange */
+  --gold-400: #C49835;  /* warm amber shadow */
+  --gold-500: #8E6B2B;  /* deepest shadow / focus ring */
+  --purple-900: #1B0D49; /* canvas & button base */
+  --purple-700: #35156D; /* mid purple */
+  --purple-500: #6848B6; /* light accent purple */
+
+  --grad-gold: linear-gradient(
+    140deg,
+    var(--gold-100)  0%,
+    var(--gold-200) 15%,
+    var(--gold-300) 50%,
+    var(--gold-400) 80%,
+    var(--gold-200) 100%
+  );
+
+  --grad-purple: linear-gradient(
+    150deg,
+    var(--purple-700) 0%,
+    var(--purple-900) 70%
+  );
+
+  --glow-gold: 0 0 10px 2px rgba(252,212,77,0.65); /* outer drop-shadow */
+  --inner-glow: inset 0 1px 3px rgba(255,255,255,0.08); /* faint inner bevel */
+  --radius-pill: 24px; /* large soft corners */
+  --anim-shine: shine 6s linear infinite; /* endless shimmer */
+}
+
+@keyframes shine {
+  0%   { background-position:   0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position:   0% 50%; }
+}
