@@ -11,7 +11,37 @@
 
 /* shared */
 :root {
-  --radius-pill: 12px;
+  /* Core Color Tokens */
+  --gold-100: #FFF6C2; /* specular highlight (almost white-gold) */
+  --gold-200: #FCD44D; /* bright yellow core */
+  --gold-300: #E7B94C; /* midtone yellow-orange */
+  --gold-400: #C49835; /* warm amber shadow */
+  --gold-500: #8E6B2B; /* deepest shadow / focus ring */
+  --purple-900: #1B0D49; /* canvas & button base */
+  --purple-700: #35156D; /* mid purple */
+  --purple-500: #6848B6; /* light accent purple */
+
+  /* Gradient Recipes */
+  --grad-gold: linear-gradient(
+    140deg,
+    var(--gold-100)  0%,
+    var(--gold-200) 15%,
+    var(--gold-300) 50%,
+    var(--gold-400) 80%,
+    var(--gold-200) 100%
+  );
+  --grad-purple: linear-gradient(
+    150deg,
+    var(--purple-700) 0%,
+    var(--purple-900) 70%
+  );
+
+  /* Reusable Effects */
+  --glow-gold: 0 0 10px 2px rgba(252,212,77,0.65); /* outer drop-shadow */
+  --inner-glow: inset 0 1px 3px rgba(255,255,255,0.08); /* faint inner bevel */
+  --radius-pill: 24px; /* large soft corners - UPDATED */
+  /* --anim-shine: defined in @keyframes */
+
   --duration-fast: 220ms;
 
   /* --background: #070711; */ /* Deepest-navy base - Will be overridden by new gradient */
@@ -560,4 +590,64 @@ body {
 }
 .animate-fadeIn {
   animation: fadeIn 0.7s ease-in-out forwards;
+}
+
+/* Shine Animation */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes shine {
+    0%   { background-position:   0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position:   0% 50%; }
+  }
+}
+
+/* New Liquid Gold Button Styles */
+.btn-action {
+  position: relative;
+  display:inline-block;
+  border-radius:var(--radius-pill);
+  padding: 2px; /* border thickness */
+  background: var(--purple-900); /* Default background for the "border" area */
+  box-shadow: none;
+  transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
+  cursor: pointer;
+}
+
+.btn-action:hover   {
+  transform: translateY(-1px) scale(1.02);
+  background: var(--grad-gold);   /* GOLD BORDER on hover */
+  box-shadow: var(--glow-gold);
+}
+
+.btn-action:active  {
+  transform: translateY( 0 ) scale(0.98);
+}
+
+.btn-action > .inner {
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  padding: .65rem 1.75rem;
+  border-radius: inherit; /* takes radius from parent .btn-action */
+  background: var(--grad-purple);   /* PURPLE FILL */
+  box-shadow: var(--inner-glow);
+  color: var(--gold-100); /* Default text color - light gold */
+  font-weight: 700;
+  font-size: 1.125rem; /* ~18 px */
+  transition: color .15s ease; /* For text color transition if needed, though it becomes transparent */
+}
+
+.btn-action:hover > .inner {
+  color: transparent;                /* we’ll paint text with gold on hover */
+  background-image: var(--grad-gold);
+  background-clip: text;
+  -webkit-background-clip: text;
+  /* The purple fill from --grad-purple should remain as the background of the span,
+     the gold gradient is applied to the text itself. */
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn-action:hover > .inner {
+    animation: shine 6s linear infinite;
+  }
 }

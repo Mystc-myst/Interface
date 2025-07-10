@@ -7,6 +7,7 @@ import DockChat from './components/DockChat'; // Main chat interface component.
 import EntriesPage from './components/EntriesPage'; // Page for displaying and managing diary entries.
 import FolderViewPage from './components/FolderViewPage'; // Page for viewing entries within a specific folder.
 import LuneChatModal from './components/LuneChatModal'; // Modal component for Lune AI chat.
+import LiquidGoldButton from './components/ui/LiquidGoldButton'; // Import the new button
 
 // Main application component.
 function App() {
@@ -139,7 +140,13 @@ function App() {
       // Main layout container, uses flexbox for structure.
       <div className="flex flex-col min-h-screen">
         {/* Content area that grows to fill available space. */}
-        <div className="flex-grow">
+        <div className="flex-grow p-4"> {/* Added padding for visibility */}
+          {/* Example Usage of LiquidGoldButton */}
+          <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+            <LiquidGoldButton onClick={() => console.log('Liquid Gold Button clicked!')}>
+              Activate Now <kbd style={{opacity: 0.7, fontSize: '0.8em', fontWeight: 'normal'}}>⌘/Ctrl&nbsp;+&nbsp;↵</kbd>
+            </LiquidGoldButton>
+          </div>
           {/* Defines the routes for the application. */}
           <Routes>
             {/* Route for the main chat interface. */}
