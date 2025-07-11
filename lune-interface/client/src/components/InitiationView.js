@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LiquidGoldButton from './ui/LiquidGoldButton'; // Assuming path is correct
+import LiquidGoldButton from './LiquidGoldButton/LiquidGoldButton'; // Corrected path
 import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts';
 
 const InitiationView = () => {
