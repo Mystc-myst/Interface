@@ -8,7 +8,6 @@ import DockChat from './components/DockChat'; // Main chat interface component.
 import EntriesPage from './components/EntriesPage'; // Page for displaying and managing diary entries.
 import FolderViewPage from './components/FolderViewPage'; // Page for viewing entries within a specific folder.
 import LuneChatModal from './components/LuneChatModal'; // Modal component for Lune AI chat.
-import LiquidGoldButton from './components/LiquidGoldButton/LiquidGoldButton'; // Corrected import path
 
 // Main application component.
 function App() {
