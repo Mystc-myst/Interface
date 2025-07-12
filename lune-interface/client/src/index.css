@@ -238,6 +238,8 @@
   background: var(--btn-glass-bg);
   border: 1px solid var(--btn-glass-border);
   color: var(--btn-glass-text);
+  position: relative;
+  overflow: hidden;
 
   backdrop-filter: blur(14px) saturate(180%);
   box-shadow: var(--btn-glass-idle-shadow);
@@ -250,17 +252,30 @@
 }
 
 .btn-glass:hover,
-.btn-gold { /* .btn-gold is optional helper for non-hover scenarios if needed */
-  /* Uses theme-specific gold variables now */
-  background: var(--btn-gold-bg);
-  color: var(--btn-gold-text);
-  border-color: transparent; /* This should be fine for both themes */
-  /* TODO: Gold shadow might also need theme adjustment if it's too strong/weak */
-  box-shadow:
-    0 0 8px rgba(243,180,63,.40), /* Standard gold glow */
-    inset 0 0 8px rgba(255,255,255,.15); /* Standard light inset */
-  transform: scale(1.03);
-  transition-delay: 30ms; /* Optional: for a gentle ramp, applied on hover */
+.btn-gold {
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFD700;
+  border-color: #FFD700;
+  box-shadow: inset 0 0 12px rgba(255, 215, 0, 0.8);
+  transform: translateY(-1px);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.btn-glass:hover::before,
+.btn-gold::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+.btn-glass:active {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(1px);
 }
 
 /* Tag Chips - lighter glass, but share hover with .btn-glass */
