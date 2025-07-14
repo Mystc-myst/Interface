@@ -8,8 +8,8 @@ function HashtagContextMenu({ x, y, onSelect, tag }) {
 
   return (
     <div
-      className="absolute bg-zinc-700/90 backdrop-blur-sm rounded-md shadow-lg border border-zinc-500/50"
-      style={{ top: y, left: x, zIndex: 1000 }} // High z-index to appear on top
+      className="context-menu"
+      style={{ '--x': `${x}px`, '--y': `${y}px` }}
     >
       <ul className="py-1 text-white">
         <li
