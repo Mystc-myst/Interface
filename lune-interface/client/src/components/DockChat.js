@@ -13,6 +13,7 @@ import GoToEntriesButton from './ui/GoToEntriesButton'; // Button to navigate to
 export default function DockChat({
   entries,         // Array of all diary entries, passed from App.js.
   hashtags,        // Array of all unique hashtags, passed from App.js.
+  onHashtagDelete,
   refreshEntries,  // Function to refresh all data (entries, folders, hashtags), passed from App.js.
   editingId,       // ID of the entry currently being edited, or null if new entry. Passed from App.js.
   setEditingId,    // Function to set the editingId in App.js.
@@ -95,17 +96,6 @@ export default function DockChat({
     handleHashtagButtonClick(tag);
   };
 
-  const handleHashtagDelete = async (tag) => {
-    try {
-      await fetch(`/diary/hashtags/${tag}`, {
-        method: 'DELETE',
-      });
-      await refreshEntries();
-    } catch (err) {
-      console.error('Failed to delete hashtag:', err);
-    }
-  };
-
   // Styling for the top margin of the form.
   const formMarginTop = "mt-4";
 
@@ -125,7 +115,7 @@ export default function DockChat({
         <HashtagButtons
           hashtags={hashtags}
           onHashtagClick={handleHashtagButtonClick}
-          onHashtagDelete={handleHashtagDelete}
+          onHashtagDelete={onHashtagDelete} // Pass the handler from App.js
           onHashtagOpen={handleHashtagOpen}
         />
 
@@ -163,6 +153,7 @@ export default function DockChat({
 DockChat.propTypes = {
   entries: PropTypes.array.isRequired, // Must be an array.
   hashtags: PropTypes.arrayOf(PropTypes.string).isRequired, // Must be an array of strings.
+  onHashtagDelete: PropTypes.func.isRequired,
   refreshEntries: PropTypes.func.isRequired, // Must be a function.
   editingId: PropTypes.any, // Can be null, string, or number (depending on ID type).
   setEditingId: PropTypes.func, // Function to set editing ID.
