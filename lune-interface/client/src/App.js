@@ -130,6 +130,24 @@ function App() {
     await fetchHashtags();
   }, [fetchEntries, fetchFolders, fetchHashtags]); // Dependencies ensure it's stable.
 
+  // Callback function to handle the deletion of a hashtag.
+  const handleHashtagDelete = useCallback(async (tag) => {
+    try {
+      // The tag includes the '#', which we need to remove for the URL.
+      const tagName = tag.startsWith('#') ? tag.substring(1) : tag;
+      const res = await fetch(`/diary/hashtags/${tagName}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to delete hashtag: ${res.status}`);
+      }
+      // Refresh all data to reflect the change.
+      await refreshAllData();
+    } catch (error) {
+      console.error("Error deleting hashtag:", error);
+    }
+  }, [refreshAllData]);
+
   // Inner component `AppContent` to encapsulate routing logic.
   // This allows `useLocation` to be used, as it must be within a <Router> context.
   const AppContent = () => {
@@ -153,6 +171,7 @@ function App() {
                 <DockChat
                   entries={entries} // Pass current entries.
                   hashtags={hashtags} // Pass current hashtags.
+                  onHashtagDelete={handleHashtagDelete}
                   refreshEntries={refreshAllData} // Pass function to refresh all data.
                   editingId={editingId} // Pass current editing ID.
                   setEditingId={setEditingId} // Pass function to set editing ID.
