@@ -186,5 +186,18 @@ router.get('/hashtags', async (req, res) => {
   }
 });
 
+// DELETE /diary/hashtags/:tag - Delete a specific hashtag from all entries.
+router.delete('/hashtags/:tag', async (req, res) => {
+  try {
+    const success = await diaryStore.removeHashtag(req.params.tag);
+    if (!success) { // If the hashtag was not found or deletion failed.
+      return res.status(404).json({ error: 'Hashtag not found or could not be deleted.' });
+    }
+    res.json({ message: 'Hashtag deleted successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: `Failed to delete hashtag: ${err.message}` });
+  }
+});
+
 // Export the router to be used in server.js.
 module.exports = router;

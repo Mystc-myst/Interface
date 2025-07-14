@@ -91,6 +91,21 @@ export default function DockChat({
     setIsHashtagModalOpen(true);
   };
 
+  const handleHashtagOpen = (tag) => {
+    handleHashtagButtonClick(tag);
+  };
+
+  const handleHashtagDelete = async (tag) => {
+    try {
+      await fetch(`/diary/hashtags/${tag}`, {
+        method: 'DELETE',
+      });
+      await refreshEntries();
+    } catch (err) {
+      console.error('Failed to delete hashtag:', err);
+    }
+  };
+
   // Styling for the top margin of the form.
   const formMarginTop = "mt-4";
 
@@ -107,7 +122,12 @@ export default function DockChat({
         </div>
 
         {/* Displays clickable hashtag buttons. */}
-        <HashtagButtons hashtags={hashtags} onHashtagClick={handleHashtagButtonClick} />
+        <HashtagButtons
+          hashtags={hashtags}
+          onHashtagClick={handleHashtagButtonClick}
+          onHashtagDelete={handleHashtagDelete}
+          onHashtagOpen={handleHashtagOpen}
+        />
 
         {/* Form element containing the diary input. onSubmit might be vestigial. */}
         <form onSubmit={handleSubmit} className={`flex flex-col gap-2 ${formMarginTop}`}>

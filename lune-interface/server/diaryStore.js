@@ -393,6 +393,34 @@ exports.remove = async function(id) {
   return false; // Entry not found.
 };
 
+/**
+ * @function removeHashtag
+ * @description Removes a specific hashtag from all diary entries.
+ * It iterates through each entry, re-parses its text to remove the specified hashtag,
+ * and then updates the entry's text and hashtag list.
+ * @param {string} tag - The hashtag to remove (e.g., "#example").
+ * @returns {Promise<boolean>} A promise that resolves to `true` if the hashtag was found and removed from at least one entry, otherwise `false`.
+ */
+exports.removeHashtag = async function(tag) {
+  let changed = false;
+  diary.forEach(entry => {
+    if (entry.hashtags.includes(tag)) {
+      // Remove the tag from the text
+      const regex = new RegExp(tag, 'g');
+      entry.text = entry.text.replace(regex, '');
+      // Re-parse hashtags from the modified text
+      entry.hashtags = parseHashtags(entry.text);
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    save();
+  }
+
+  return changed;
+};
+
 // --- Folder Management Functions ---
 
 /**
