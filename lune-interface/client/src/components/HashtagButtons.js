@@ -12,8 +12,8 @@ function HashtagButtons({ hashtags, onHashtagClick, onHashtagDelete, onHashtagOp
   const handleContextMenu = (event, tag) => {
     event.preventDefault();
     setContextMenu({
-      x: event.clientX,
-      y: event.clientY,
+      x: event.pageX,
+      y: event.pageY,
       tag: tag,
     });
   };

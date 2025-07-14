@@ -8,21 +8,21 @@ function HashtagContextMenu({ x, y, onSelect, tag }) {
 
   return (
     <div
-      className="absolute bg-white rounded-md shadow-lg"
-      style={{ top: y, left: x }}
+      className="absolute bg-zinc-700/90 backdrop-blur-sm rounded-md shadow-lg border border-zinc-500/50"
+      style={{ top: y, left: x, zIndex: 1000 }} // High z-index to appear on top
     >
-      <ul className="py-1">
+      <ul className="py-1 text-white">
         <li
-          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+          className="px-4 py-2 hover:bg-zinc-600/80 cursor-pointer"
           onClick={() => handleOptionClick('open')}
         >
-          Open tag
+          Open #{tag.replace('#', '')}
         </li>
         <li
-          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+          className="px-4 py-2 hover:bg-red-500/80 cursor-pointer text-red-400"
           onClick={() => handleOptionClick('delete')}
         >
-          Delete tag
+          Delete #{tag.replace('#', '')}
         </li>
       </ul>
     </div>
