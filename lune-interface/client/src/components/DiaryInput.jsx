@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Button } from './ui/button'; // Back to relative path
 import PropTypes from 'prop-types';
 
-const DiaryInput = ({ onSave, initialText = '', clearOnSave = false, onChatWithLune }) => {
+const DiaryInput = ({ onSave, initialText = '', clearOnSave = false, onChatWithLune, disableAnimation = false }) => {
   const [text, setText] = useState(initialText);
   const textareaRef = useRef(null);
 
@@ -46,13 +46,8 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false, onChatWithL
 
   const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full md:max-w-[70ch] mx-auto" // Adjusted width
-    >
+  return disableAnimation ? (
+    <div className="w-full md:max-w-[70ch] mx-auto">
       <textarea
         ref={textareaRef}
         rows={1}
@@ -87,6 +82,48 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false, onChatWithL
           {wordCount} word{wordCount === 1 ? '' : 's'}
         </span>
       </div>
+    </div>
+  ) : (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="w-full md:max-w-[70ch] mx-auto"
+    >
+      <textarea
+        ref={textareaRef}
+        rows={1}
+        placeholder="Write what stirs beneath …"
+        value={text}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        className="frost w-full md:w-[70ch] min-h-[8rem] resize-none overflow-hidden rounded-2xl p-4 md:p-6 text-lg leading-loose text-slate-200 placeholder:text-slate-400 outline-none ring-1 ring-inset focus:ring-2 focus:ring-violet-300/60 transition"
+      />
+      {/* New button container */}
+      <div className="flex items-center gap-4 justify-start mt-3">
+        <Button
+          className="btn-glass"
+          onClick={() => {
+            if (onSave) {
+              onSave(text);
+              if (clearOnSave) {
+                setText('');
+              }
+            }
+          }}
+        >
+          Save <kbd className="ml-2 text-xs">⌘/Ctrl + ↵</kbd>
+        </Button>
+        <Button
+          className="btn-glass"
+          onClick={onChatWithLune}
+        >
+          Chat with Lune
+        </Button>
+        <span className="text-xs text-slate-300 ml-auto">
+          {wordCount} word{wordCount === 1 ? '' : 's'}
+        </span>
+      </div>
     </motion.div>
   );
 };
@@ -96,11 +133,13 @@ DiaryInput.propTypes = {
   initialText: PropTypes.string,
   clearOnSave: PropTypes.bool,
   onChatWithLune: PropTypes.func, // Added prop type for onChatWithLune
+  disableAnimation: PropTypes.bool,
 };
 
 // Add default prop for onChatWithLune to avoid errors if not passed
 DiaryInput.defaultProps = {
   onChatWithLune: () => {}, // No-op function
+  disableAnimation: false,
 };
 
 export default DiaryInput;
