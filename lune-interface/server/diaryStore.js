@@ -18,6 +18,7 @@ const DATA_FILE = path.join(__dirname, '..', '..', 'offline-diary', 'diary.json'
 // In-memory cache for diary entries and folders.
 let diary = []; // Stores diary entry objects.
 let folders = []; // Stores folder objects.
+let tagIndex = {}; // In-memory index for tags
 
 /**
  * @private
@@ -145,8 +146,25 @@ function save() {
   }
 }
 
+async function rebuildTagIndex() {
+  console.log('[diaryStore] Rebuilding tag index...');
+  const all = diary; // Use in-memory diary
+  tagIndex = all.reduce((idx, e) => {
+    if (e.tags) {
+      e.tags.forEach(tag => {
+        idx[tag] = idx[tag] || new Set();
+        idx[tag].add(e.id);
+      });
+    }
+    return idx;
+  }, {});
+  console.log('[diaryStore] Tag index rebuilt.');
+}
+
 // Initial load of data when the module is first required.
 load();
+rebuildTagIndex();
+
 
 // Perform an initial save if the file didn't exist, was empty, or was in the old format.
 // This ensures diary.json is created and is in the new {entries, folders} format from the start.
@@ -195,63 +213,20 @@ exports.getAll = async function() {
   return diary.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 };
 
-/**
- * @private
- * @function parseHashtags
- * @description Parses a string of text to extract hashtags (e.g., #example or #Another_Example).
- * @param {string} text - The text to parse for hashtags.
- * @returns {Array<string>} An array of unique hashtag strings found in the text.
- */
 function parseHashtags(text) {
   if (typeof text !== 'string') {
     return [];
   }
-  const regex = /#([A-Za-z0-9_-]+)/g; // Matches '#' followed by one or more word characters.
-  const hashtags = new Set(); // Use a Set to automatically handle uniqueness.
-  let match;
-  while ((match = regex.exec(text)) !== null) {
-    hashtags.add(`#${match[1]}`); // Add the full hashtag (e.g., "#example").
-  }
-  return Array.from(hashtags); // Convert Set to Array.
+  const TAG_REGEX = /#([A-Za-z0-9_-]+)/g;
+  const matches = text.matchAll(TAG_REGEX);
+  const tags = new Set(Array.from(matches, m => m[1].toLowerCase()));
+  return Array.from(tags);
 }
 
-/**
- * @private
- * @function parseTags
- * @description Parses a string of text to extract tags based on the `[[tag content]]` pattern.
- * Categorizes these tags into 'fields', 'states' (if "state" is in the tag content),
- * and 'loops' (if "loop" is in the tag content). This is legacy tag parsing.
- * @param {string} text - The text to parse for `[[tags]]`.
- * @returns {{fields: Array<string>, states: Array<string>, loops: Array<string>}} An object containing arrays of extracted tags.
- */
-function parseTags(text) {
-  const fields = new Set();
-  const states = new Set();
-  const loops = new Set();
-  if (typeof text === 'string') {
-    // Regex to find content within double square brackets, e.g., [[My Tag]].
-    // eslint-disable-next-line no-useless-escape
-    const regex = /\[\[([^\[]+?)\]\]/g;
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-      const tagContent = match[1]; // The content inside the brackets.
-      const fullTag = `[[${tagContent}]]`; // The full tag string.
-      // Categorize based on keywords in the tag content.
-      if (/loop/i.test(tagContent)) {
-        loops.add(fullTag);
-      } else if (/state/i.test(tagContent)) {
-        states.add(fullTag);
-      } else {
-        fields.add(fullTag);
-      }
-    }
-  }
-  return {
-    fields: Array.from(fields),
-    states: Array.from(states),
-    loops: Array.from(loops)
-  };
-}
+// Export for testing
+exports._private = {
+  parseHashtags
+};
 
 /**
  * @function add
@@ -265,40 +240,27 @@ function parseTags(text) {
  * @returns {Promise<Object>} A promise that resolves to the newly created diary entry object.
  */
 exports.add = async function(text, folderId = null) {
-  const oldTags = parseTags(text);     // Parse legacy `[[tags]]`.
-  const hashtags = parseHashtags(text); // Parse `#hashtags`.
+  const tags = parseHashtags(text);
   const entry = {
-    id: crypto.randomUUID(),        // Generate a unique ID.
-    text,                           // The entry content.
-    timestamp: new Date().toISOString(), // Current timestamp in ISO format.
-    fields: oldTags.fields,         // Legacy fields tags.
-    states: oldTags.states,         // Legacy states tags.
-    loops: oldTags.loops,           // Legacy loops tags.
-    hashtags: hashtags,             // Store extracted #hashtags.
-    links: [],                      // Placeholder for future linking features.
-    agent_logs: {},                 // Placeholder for logs from AI agent processing.
-    folderId: folderId              // ID of the folder this entry belongs to, if any.
+    id: crypto.randomUUID(),
+    text,
+    timestamp: new Date().toISOString(),
+    tags: tags,
+    folderId: folderId
   };
-  diary.push(entry); // Add to in-memory cache.
-  save(); // Persist changes to file.
+  diary.push(entry);
+  await save();
+  await rebuildTagIndex();
   return entry;
 };
 
-/**
- * @function getAllUniqueHashtags
- * @description Retrieves all unique hashtags from all diary entries.
- * It re-parses the text of each entry to ensure current hashtags are captured,
- * rather than relying solely on potentially stale `entry.hashtags` field if text was edited externally.
- * @returns {Promise<Array<string>>} A promise that resolves to an array of unique hashtag strings, sorted alphabetically.
- */
-exports.getAllUniqueHashtags = async function() {
-  const allHashtags = new Set();
-  diary.forEach(entry => {
-    // Re-parse hashtags from the current entry text to ensure freshness.
-    const currentHashtags = parseHashtags(entry.text);
-    currentHashtags.forEach(tag => allHashtags.add(tag));
-  });
-  return Array.from(allHashtags).sort(); // Return sorted array of unique hashtags.
+exports.getTags = async function() {
+  // Convert sets to arrays for JSON serialization
+  const serializableTagIndex = Object.entries(tagIndex).reduce((acc, [tag, entryIds]) => {
+    acc[tag] = Array.from(entryIds);
+    return acc;
+  }, {});
+  return serializableTagIndex;
 };
 
 /**
@@ -329,28 +291,18 @@ exports.findById = async function(id) {
  */
 exports.updateText = async function(id, text, folderId) {
   const entry = await exports.findById(id);
-  if (!entry) return null; // Entry not found.
+  if (!entry) return null;
 
-  entry.text = text; // Update text.
-  entry.timestamp = new Date().toISOString(); // Update timestamp.
+  entry.text = text;
+  entry.timestamp = new Date().toISOString();
+  entry.tags = parseHashtags(text);
 
-  // Re-parse legacy `[[tags]]`.
-  const oldTags = parseTags(text);
-  entry.fields = oldTags.fields;
-  entry.states = oldTags.states;
-  entry.loops = oldTags.loops;
-
-  // Re-parse `#hashtags`.
-  const hashtags = parseHashtags(text);
-  entry.hashtags = hashtags;
-
-  // Update folderId if a value (string or null) is explicitly passed.
-  // If folderId is undefined, the existing folderId is preserved.
   if (folderId !== undefined) {
     entry.folderId = folderId;
   }
 
-  save(); // Persist changes.
+  await save();
+  await rebuildTagIndex();
   return entry;
 };
 
@@ -386,39 +338,12 @@ exports.saveEntry = async function(entryToSave) {
 exports.remove = async function(id) {
   const index = diary.findIndex(e => e.id === id);
   if (index !== -1) {
-    diary.splice(index, 1); // Remove entry from cache.
-    save(); // Persist changes.
+    diary.splice(index, 1);
+    await save();
+    await rebuildTagIndex();
     return true;
   }
-  return false; // Entry not found.
-};
-
-/**
- * @function removeHashtag
- * @description Removes a specific hashtag from all diary entries.
- * It iterates through each entry, re-parses its text to remove the specified hashtag,
- * and then updates the entry's text and hashtag list.
- * @param {string} tag - The hashtag to remove (e.g., "#example").
- * @returns {Promise<boolean>} A promise that resolves to `true` if the hashtag was found and removed from at least one entry, otherwise `false`.
- */
-exports.removeHashtag = async function(tag) {
-  let changed = false;
-  diary.forEach(entry => {
-    if (entry.hashtags.includes(tag)) {
-      // Remove the tag from the text
-      const regex = new RegExp(tag, 'g');
-      entry.text = entry.text.replace(regex, '');
-      // Re-parse hashtags from the modified text
-      entry.hashtags = parseHashtags(entry.text);
-      changed = true;
-    }
-  });
-
-  if (changed) {
-    save();
-  }
-
-  return changed;
+  return false;
 };
 
 // --- Folder Management Functions ---

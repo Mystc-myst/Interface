@@ -174,28 +174,15 @@ router.delete('/folders/:id', async (req, res) => {
   }
 });
 
-// --- Hashtag Routes ---
+// --- Tag Routes ---
 
-// GET /diary/hashtags - Retrieve all unique hashtags found in diary entries.
-router.get('/hashtags', async (req, res) => {
+// GET /diary/tags - Retrieve the tag index.
+router.get('/tags', async (req, res) => {
   try {
-    const hashtags = await diaryStore.getAllUniqueHashtags();
-    res.json(hashtags); // Responds with an array of unique hashtag strings.
+    const tags = await diaryStore.getTags();
+    res.json(tags);
   } catch (err) {
-    res.status(500).json({ error: `Failed to get hashtags: ${err.message}` });
-  }
-});
-
-// DELETE /diary/hashtags/:tag - Delete a specific hashtag from all entries.
-router.delete('/hashtags/:tag', async (req, res) => {
-  try {
-    const success = await diaryStore.removeHashtag(req.params.tag);
-    if (!success) { // If the hashtag was not found or deletion failed.
-      return res.status(404).json({ error: 'Hashtag not found or could not be deleted.' });
-    }
-    res.json({ message: 'Hashtag deleted successfully.' });
-  } catch (err) {
-    res.status(500).json({ error: `Failed to delete hashtag: ${err.message}` });
+    res.status(500).json({ error: `Failed to get tags: ${err.message}` });
   }
 });
 

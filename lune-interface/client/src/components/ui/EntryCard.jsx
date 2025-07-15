@@ -14,12 +14,13 @@ const EntryCard = ({
   title,
   snippet,
   date,
+  tags,
+  onTagClick,
   onClick, // For navigating to the entry
   onDeleteRequest, // To request deletion of the entry
   onRemoveFromFolderRequest, // To request removal from folder
   isHighlighted, // Boolean, if this card is the one selected by keyboard
   onSetHighlight, // Function to call to set this card as highlighted
-  // Removed direct onDelete prop, actions are now part of the menu
 }) => {
   const cardRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -96,6 +97,20 @@ const EntryCard = ({
         <p className="entry-card-snippet">{snippet}</p>
         <p className="entry-card-date">{date}</p>
       </div>
+      <footer>
+        {tags.map(t => (
+          <button
+            key={t}
+            className="tag-pill"
+            onClick={(e) => {
+              e.stopPropagation();
+              onTagClick(t);
+            }}
+          >
+            #{t}
+          </button>
+        ))}
+      </footer>
 
       {/* Three-dot menu */}
       {(onDeleteRequest || onRemoveFromFolderRequest) && (
@@ -143,6 +158,8 @@ EntryCard.propTypes = {
   title: PropTypes.string.isRequired,
   snippet: PropTypes.string.isRequired,
   date: PropTypes.string.isRequired,
+  tags: PropTypes.arrayOf(PropTypes.string),
+  onTagClick: PropTypes.func,
   onClick: PropTypes.func.isRequired,
   onDeleteRequest: PropTypes.func,
   onRemoveFromFolderRequest: PropTypes.func,
@@ -151,6 +168,8 @@ EntryCard.propTypes = {
 };
 
 EntryCard.defaultProps = {
+  tags: [],
+  onTagClick: () => {},
   onDeleteRequest: null,
   onRemoveFromFolderRequest: null,
   isHighlighted: false,
