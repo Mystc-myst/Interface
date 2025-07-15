@@ -74,12 +74,6 @@
 }
 
 
-.entry-card-content {
-  /* padding-left to make space for the loop dot if it's absolutely positioned to the left of content */
-  /* margin-left: 15px; /* Example: if dot is 6px wide + 9px spacing */
-  /* No specific margin needed if dot is positioned within overall card padding */
-}
-
 .entry-card-title {
   font-family: 'Playfair Display', serif; /* Assuming this is desired */
   font-weight: 600;
@@ -95,8 +89,12 @@
   color: rgba(var(--moon-mist-rgb), 0.8);
   margin-bottom: 8px;
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* Show 3 lines of snippet */
+  /* WebKit fallback */
+  box-display: box;         /* future spec */
   -webkit-box-orient: vertical;
+  box-orient: vertical;     /* future spec */
+  -webkit-line-clamp: 3;
+  line-clamp: 3;            /* future spec */
   overflow: hidden;
   text-overflow: ellipsis;
   max-height: calc(0.9rem * 1.5 * 3); /* Ensure this matches line-clamp */
