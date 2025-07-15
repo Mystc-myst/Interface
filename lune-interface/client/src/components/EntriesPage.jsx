@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import PrimaryButton from './ui/PrimaryButton';
-import BackToChatButton from './ui/BackToChatButton';
 import FoldersRibbon from './FoldersRibbon';
 import DiaryFeed from './DiaryFeed';
 import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts'; // Adjusted path
@@ -56,12 +55,6 @@ const EntriesPage = ({ entries, folders, refreshEntries, refreshFolders, startEd
     }, 300); // Corresponds to slide animation duration
   };
 
-  const handleBackToChat = () => {
-    // Navigate to chat page, potentially with a slide-left animation if desired
-    alert('Navigating back to chat...');
-    window.location.href = '/chat'; // Example navigation
-  };
-
 
   // Dummy data if not provided by props (for standalone testing or if App.js doesn't pass them yet)
   const currentEntries = entries || [
@@ -97,8 +90,6 @@ const EntriesPage = ({ entries, folders, refreshEntries, refreshFolders, startEd
           // but DiaryFeed also has a handler if needed for other triggers.
         />
       </main>
-
-      <BackToChatButton id="back-to-chat-button" onClick={handleBackToChat} />
     </div>
   );
 };

@@ -17,12 +17,13 @@ function App() {
   const [folders, setFolders] = useState([]);
   // State for storing the tag index.
   const [tagIndex, setTagIndex] = useState({});
-  // State for the currently selected tag for filtering.
-  const [filterTag, setFilterTag] = useState(null);
   // State for tracking the ID of the entry currently being edited.
   const [editingId, setEditingId] = useState(null);
   // State to control the visibility of the LuneChatModal.
   const [showChat, setShowChat] = useState(false);
+
+  // State for the currently selected tag for filtering.
+  const [filterTag, setFilterTag] = useState(null);
 
   // Theme state and logic
   const [theme, setTheme] = useState(() => {

@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 // Import sub-components used within DockChat.
 import TagSidebar from './TagSidebar';
 import DiaryInput from "./DiaryInput"; // The main text input component for diary entries.
-import GoToEntriesButton from './ui/GoToEntriesButton'; // Button to navigate to the EntriesPage.
 
 // DockChat is the main component for user interaction on the chat/input screen.
 // It handles diary entry input, editing, saving, and tag interactions.
@@ -109,9 +108,6 @@ export default function DockChat({
             disableAnimation={Boolean(editingId)}
           />
         </form>
-
-        {/* Button to navigate to the EntriesPage. */}
-        <GoToEntriesButton />
       </div>
     </main>
   );

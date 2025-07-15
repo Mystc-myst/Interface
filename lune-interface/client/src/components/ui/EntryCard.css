@@ -105,6 +105,24 @@
   color: rgba(var(--moon-mist-rgb), 0.6);
 }
 
+.tag-pill {
+  background-color: #333;
+  border: 1px solid #555;
+  border-radius: 12px;
+  color: #eee;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 0.8rem;
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  transition: background-color 0.2s;
+}
+
+.tag-pill:hover {
+  background-color: #444;
+}
+
 /* Three-dot Menu (includes trash icon functionality) */
 .entry-card-menu-container {
   position: absolute;
