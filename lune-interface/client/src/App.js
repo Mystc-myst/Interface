@@ -15,8 +15,10 @@ function App() {
   const [entries, setEntries] = useState([]);
   // State for storing folders.
   const [folders, setFolders] = useState([]);
-  // State for storing hashtags.
-  const [hashtags, setHashtags] = useState([]);
+  // State for storing the tag index.
+  const [tagIndex, setTagIndex] = useState({});
+  // State for the currently selected tag for filtering.
+  const [filterTag, setFilterTag] = useState(null);
   // State for tracking the ID of the entry currently being edited.
   const [editingId, setEditingId] = useState(null);
   // State to control the visibility of the LuneChatModal.
@@ -102,57 +104,45 @@ function App() {
     }
   }, []); // Empty dependency array.
 
-  // Callback function to fetch hashtags from the backend.
-  const fetchHashtags = useCallback(async () => {
+  const fetchTagIndex = useCallback(async () => {
     try {
-      const res = await fetch('/diary/hashtags'); // API endpoint for hashtags.
-      if (!res.ok) throw new Error(`Failed to fetch hashtags: ${res.status}`);
+      const res = await fetch('/diary/tags');
+      if (!res.ok) throw new Error(`Failed to fetch tags: ${res.status}`);
       const data = await res.json();
-      setHashtags(data); // Update hashtags state.
+      setTagIndex(data);
     } catch (error) {
-      console.error("Error fetching hashtags:", error);
-      setHashtags([]); // Reset on error.
+      console.error("Error fetching tag index:", error);
+      setTagIndex({});
     }
-  }, []); // Empty dependency array.
+  }, []);
 
   // useEffect hook to perform initial data loading when the component mounts.
-  // Fetches entries, folders, and hashtags.
   useEffect(() => {
     fetchEntries();
     fetchFolders();
-    fetchHashtags();
-  }, [fetchEntries, fetchFolders, fetchHashtags]); // Dependencies: re-run if these functions change (they won't due to useCallback).
+    fetchTagIndex();
+  }, [fetchEntries, fetchFolders, fetchTagIndex]);
 
-  // Callback function to refresh all data types (entries, folders, hashtags).
+  // Callback function to refresh all data types.
   const refreshAllData = useCallback(async () => {
     await fetchEntries();
     await fetchFolders();
-    await fetchHashtags();
-  }, [fetchEntries, fetchFolders, fetchHashtags]); // Dependencies ensure it's stable.
+    await fetchTagIndex();
+  }, [fetchEntries, fetchFolders, fetchTagIndex]);
 
-  // Callback function to handle the deletion of a hashtag.
-  const handleHashtagDelete = useCallback(async (tag) => {
-    try {
-      // The tag includes the '#', which we need to remove for the URL.
-      const tagName = tag.startsWith('#') ? tag.substring(1) : tag;
-      const res = await fetch(`/diary/hashtags/${tagName}`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) {
-        throw new Error(`Failed to delete hashtag: ${res.status}`);
-      }
-      // Refresh all data to reflect the change.
-      await refreshAllData();
-    } catch (error) {
-      console.error("Error deleting hashtag:", error);
-    }
-  }, [refreshAllData]);
+  const handleTagSelect = (tag) => {
+    setFilterTag(tag);
+  };
 
   // Inner component `AppContent` to encapsulate routing logic.
   // This allows `useLocation` to be used, as it must be within a <Router> context.
   const AppContent = () => {
     const location = useLocation(); // Hook to get current URL location.
     const isChatPage = location.pathname === '/chat'; // Check if the current page is the chat page.
+
+    const visibleEntries = filterTag
+      ? entries.filter(e => e.tags.includes(filterTag))
+      : entries;
 
     return (
       // Main layout container, uses flexbox for structure.
@@ -169,9 +159,9 @@ function App() {
               element={
                 // DockChat component, passed various state and functions as props.
                 <DockChat
-                  entries={entries} // Pass current entries.
-                  hashtags={hashtags} // Pass current hashtags.
-                  onHashtagDelete={handleHashtagDelete}
+                  entries={visibleEntries} // Pass current entries.
+                  tagIndex={tagIndex}
+                  onTagSelect={handleTagSelect}
                   refreshEntries={refreshAllData} // Pass function to refresh all data.
                   editingId={editingId} // Pass current editing ID.
                   setEditingId={setEditingId} // Pass function to set editing ID.
@@ -192,6 +182,7 @@ function App() {
                   refreshFolders={fetchFolders} // Pass function to specifically refresh folders.
                   startEdit={setEditingId} // Pass function to initiate editing an entry.
                   setFolders={setFolders} // Allow EntriesPage to update folders state (e.g., after creating a new folder).
+                  onTagClick={handleTagSelect}
                 />
               }
             />

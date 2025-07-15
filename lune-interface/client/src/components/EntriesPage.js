@@ -16,7 +16,8 @@ export default function EntriesPage({
   folders,          // Array of all folders.
   refreshEntries,   // Function to refresh all data (entries, folders, hashtags).
   refreshFolders,   // Function to specifically refresh folders data.
-  startEdit         // Function to set an entry's ID for editing (navigates to chat view).
+  startEdit,         // Function to set an entry's ID for editing (navigates to chat view).
+  onTagClick
 }) {
   const navigate = useNavigate(); // Hook for programmatic navigation.
 
@@ -149,6 +150,8 @@ export default function EntriesPage({
                 title={entry.title || entry.text.substring(0, 50) + (entry.text.length > 50 ? '...' : '')}
                 snippet={entry.text} // Using full text as snippet; could be refined.
                 date={new Date(entry.timestamp).toLocaleString()} // Format timestamp for display.
+                tags={entry.tags}
+                onTagClick={onTagClick}
                 // Clicking an entry card initiates editing and navigates to chat view.
                 onClick={() => { startEdit(entry.id); navigate('/chat'); }}
                 onDeleteRequest={handleDeleteEntry} // Pass delete handler.
@@ -181,4 +184,5 @@ EntriesPage.propTypes = {
   refreshEntries: PropTypes.func.isRequired,  // Must be a function.
   refreshFolders: PropTypes.func.isRequired,  // Must be a function.
   startEdit: PropTypes.func.isRequired,       // Must be a function.
+  onTagClick: PropTypes.func.isRequired,
 };

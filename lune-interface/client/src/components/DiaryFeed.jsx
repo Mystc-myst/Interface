@@ -30,7 +30,7 @@ const placeholderEntries = [
   },
 ];
 
-const DiaryFeed = ({ entries = placeholderEntries, onEntryClick, onEntryDelete }) => {
+const DiaryFeed = ({ entries = placeholderEntries, onEntryClick, onEntryDelete, onTagClick }) => {
   const handleEntryClick = (entryId) => {
     if (onEntryClick) {
       onEntryClick(entryId);
@@ -69,6 +69,8 @@ const DiaryFeed = ({ entries = placeholderEntries, onEntryClick, onEntryDelete }
           title={entry.title}
           snippet={entry.snippet}
           date={entry.date}
+          tags={entry.tags}
+          onTagClick={onTagClick}
           onClick={() => handleEntryClick(entry.id)}
           onDelete={() => handleEntryDelete(entry.id)}
           // EntryCard already has role="listitem"
