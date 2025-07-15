@@ -22,6 +22,9 @@ const EntryCard = ({
   isHighlighted, // Boolean, if this card is the one selected by keyboard
   onSetHighlight, // Function to call to set this card as highlighted
 }) => {
+  // Fallback for tags to ensure it's always an array.
+  const safeTags = tags || [];
+
   const cardRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -98,7 +101,7 @@ const EntryCard = ({
         <p className="entry-card-date">{date}</p>
       </div>
       <footer>
-        {tags.map(t => (
+        {safeTags.map(t => (
           <button
             key={t}
             className="tag-pill"
