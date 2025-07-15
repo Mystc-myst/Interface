@@ -20,31 +20,28 @@ console.log = (message, ...optionalParams) => {
 describe('POST /diary endpoint', () => {
   let server;
 
-  beforeAll((done) => {
+  before(() => {
     // Instead of app.listen, we use the app instance with supertest's agent
     // If the app wasn't already listening (due to require.main check),
     // supertest handles making requests to it.
     // If you need to explicitly start and stop a server for some reason:
-    // server = app.listen(0, done); // Listen on a random free port for testing
+    // server = app.listen(0); // Listen on a random free port for testing
     // For typical supertest usage with an exported app, explicit listen/close isn't always needed
     // if supertest can directly use the app object.
     // However, if 'app' itself is the server instance from app.listen(), then it needs closing.
     // Since our app is just the express app, and not server = app.listen(), this is simpler.
-    done();
   });
 
   beforeEach(() => {
     consoleOutput = []; // Reset output before each test
   });
 
-  afterAll((done) => {
+  after(() => {
     console.log = originalConsoleLog; // Restore original console.log
     // if (server) {
-    //   server.close(done);
+    //   server.close();
     // } else {
-    //   done();
     // }
-    done(); // Assuming supertest handles server lifecycle or no explicit server was started by test
   });
 
   it('should attempt to send data to n8n webhook and return the entry', async () => {
