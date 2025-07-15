@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 // Import sub-components.
 import Folder from './Folder'; // Component to display a single folder and its entries.
 import EntryCard from './ui/EntryCard'; // UI component to display a single entry's summary.
-import BackToChatButton from './ui/BackToChatButton'; // Button to navigate back to the chat/input view.
 // Import CSS for this page. Consider migrating to CSS Modules or Tailwind if not already.
 import './EntriesPage.css';
 
@@ -170,8 +169,6 @@ export default function EntriesPage({
             <div className="entries-page-empty-message">This space awaits a new ripple.</div>
           )}
         </div>
-        {/* Button to navigate back to the chat/input view. */}
-        <BackToChatButton id="entries-page-back-to-chat" onClick={handleBackToChat} />
       </div>
     </main>
   );
