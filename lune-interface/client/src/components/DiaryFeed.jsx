@@ -9,24 +9,28 @@ const placeholderEntries = [
     title: 'First Day Musings',
     snippet: 'The journey of a thousand miles begins with a single step. Today, I took that step into a new adventure...',
     date: 'October 20, 2023',
+    tags: [],
   },
   {
     id: 'e2',
     title: 'A Walk in the Park',
     snippet: 'The autumn leaves were vibrant, painting the park in hues of gold and crimson. A gentle breeze rustled through the trees.',
     date: 'October 22, 2023',
+    tags: [],
   },
   {
     id: 'e3',
     title: 'Recipe for Success',
     snippet: 'Found an amazing recipe for sourdough bread. The key is patience and a good starter. Can\'t wait to try it this weekend!',
     date: 'October 24, 2023',
+    tags: [],
   },
   {
     id: 'e4',
     title: 'Stargazing Night',
     snippet: 'The sky was incredibly clear tonight. Saw Mars and the Pleiades cluster. It felt like looking into infinity.',
     date: 'October 25, 2023',
+    tags: [],
   },
 ];
 
