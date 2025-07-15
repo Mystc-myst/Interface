@@ -20,11 +20,6 @@ export default function EntriesPage({
 }) {
   const navigate = useNavigate(); // Hook for programmatic navigation.
 
-  // Navigates the user back to the main chat/input view ('/chat').
-  const handleBackToChat = () => {
-    navigate('/chat');
-  };
-
   // Handles the deletion of a diary entry.
   // This function is passed to EntryCard, which calls it with the entryId.
   const handleDeleteEntry = async (id) => {
