@@ -1,5 +1,7 @@
 import React from 'react';
 
+import PropTypes from 'prop-types';
+
 function TagSidebar({ tagIndex, onSelect }) {
   const tags = Object.keys(tagIndex).sort();
 
@@ -22,5 +24,10 @@ function TagSidebar({ tagIndex, onSelect }) {
     </aside>
   );
 }
+
+TagSidebar.propTypes = {
+  tagIndex: PropTypes.object.isRequired,
+  onSelect: PropTypes.func.isRequired,
+};
 
 export default TagSidebar;
