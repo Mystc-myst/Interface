@@ -1,0 +1,81 @@
+.back-to-chat-button {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+
+  /* Liquid-glass pill styles */
+  padding: 8px 22px; /* Spec: padding 8 22 */
+  border: 1px solid rgba(var(--moon-mist-rgb, 221, 223, 228), 0.3); /* Moon-Mist @ 30% */
+  background: linear-gradient(110deg, rgba(91,46,255,.20) 0%, rgba(91,46,255,.06) 100%);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%); /* For Safari */
+  box-shadow: inset 0 0 10px rgba(255,255,255,.12); /* Inner inset glow */
+
+  color: var(--moon-mist, #DDFDE4); /* Text and icon color */
+  border-radius: 9999px; /* Pill shape */
+  font-family: 'Inter', sans-serif;
+  font-weight: 400; /* Regular weight */
+  font-size: 0.95rem; /* Spec: 0.95rem */
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 400ms ease-out, transform 400ms ease-out, filter 0.2s ease-out, box-shadow 0.2s ease-out;
+  pointer-events: none;
+  outline: none;
+}
+
+.back-to-chat-button.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.back-to-chat-button:hover {
+  filter: brightness(1.15);
+}
+
+.back-to-chat-button:active {
+  transform: scale(0.97) translateY(0); /* Keep translateY(0) from .visible state */
+  filter: brightness(1.15); /* Keep hover brightness during active state */
+}
+
+/* Specific focus-visible style for accessibility */
+.back-to-chat-button:focus-visible {
+  outline: 2px solid var(--aqua-loop, #00FFFF); /* Example focus outline, ensure --aqua-loop is defined */
+  outline-offset: 2px;
+  filter: brightness(1.15); /* Apply hover brightness on focus as well */
+}
+
+.back-to-chat-icon {
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+/* Reduced motion adjustments */
+@media (prefers-reduced-motion: reduce) {
+  .back-to-chat-button {
+    transform: translateY(0);
+    transition: opacity 400ms ease-out, filter 0.2s ease-out, box-shadow 0.2s ease-out;
+    /* Motion safety: remove blur and use a more solid background */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(var(--violet-deep-rgb, 91, 46, 255), 0.7); /* Example: Use a solid, slightly transparent version of a theme color */
+  }
+  .back-to-chat-button.visible {
+    transform: translateY(0);
+  }
+  .back-to-chat-button:active {
+    transform: scale(1); /* No scale on active for reduced motion */
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .back-to-chat-button {
+  left: auto;
+  right: 24px;
+}
