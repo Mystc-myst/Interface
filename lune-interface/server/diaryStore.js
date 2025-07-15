@@ -206,7 +206,7 @@ function parseHashtags(text) {
   if (typeof text !== 'string') {
     return [];
   }
-  const regex = /#(\w+)/g; // Matches '#' followed by one or more word characters.
+  const regex = /#([A-Za-z0-9_-]+)/g; // Matches '#' followed by one or more word characters.
   const hashtags = new Set(); // Use a Set to automatically handle uniqueness.
   let match;
   while ((match = regex.exec(text)) !== null) {
