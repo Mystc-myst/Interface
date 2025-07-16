@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "framer-motion": "^12.23.0"
   },
   "devDependencies": {
     "@testing-library/react": "^14.3.1",
