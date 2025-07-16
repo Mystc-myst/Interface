@@ -250,6 +250,7 @@ exports.add = async function(text, folderId = null) {
   };
   diary.push(entry);
   await save();
+  console.log(`[diaryStore] Parsed tags for new entry ${entry.id}:`, entry.tags);
   await rebuildTagIndex();
   return entry;
 };
@@ -296,6 +297,7 @@ exports.updateText = async function(id, text, folderId) {
   entry.text = text;
   entry.timestamp = new Date().toISOString();
   entry.tags = parseHashtags(text);
+  console.log(`[diaryStore] Parsed tags for updated entry ${entry.id}:`, entry.tags);
 
   if (folderId !== undefined) {
     entry.folderId = folderId;
@@ -317,9 +319,14 @@ exports.updateText = async function(id, text, folderId) {
 exports.saveEntry = async function(entryToSave) {
   const index = diary.findIndex(e => e.id === entryToSave.id);
   if (index !== -1) {
+    // Ensure tags are parsed from the text.
+    entryToSave.tags = parseHashtags(entryToSave.text);
+    console.log(`[diaryStore] Parsed tags for entry ${entryToSave.id}:`, entryToSave.tags);
+
     // Replace existing entry.
     diary[index] = entryToSave;
-    save(); // Persist changes.
+    await save(); // Persist changes.
+    await rebuildTagIndex(); // Rebuild index after save.
   } else {
     // Entry not found. Currently, this function only updates existing entries.
     // To add if not found, one might push to `diary` array and then save.
