@@ -132,6 +132,7 @@ function App() {
   }, [fetchEntries, fetchFolders, fetchTagIndex]);
 
   const handleTagSelect = (tag) => {
+    console.log("handleTagSelect called with tag:", tag);
     setFilterTag(tag);
   };
 
@@ -144,6 +145,7 @@ function App() {
     const visibleEntries = filterTag
       ? entries.filter(e => e.tags.includes(filterTag))
       : entries;
+    console.log("filterTag:", filterTag, "visibleEntries.length:", visibleEntries.length);
 
     return (
       // Main layout container, uses flexbox for structure.

@@ -106,21 +106,15 @@
 }
 
 .tag-pill {
-  background-color: #333;
-  border: 1px solid #555;
-  border-radius: 12px;
-  color: #eee;
+  background-color: var(--accent-purple);
+  color: white;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.9rem;
   cursor: pointer;
-  display: inline-block;
-  font-size: 0.8rem;
-  margin-right: 0.5rem;
-  margin-top: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  transition: background-color 0.2s;
 }
-
 .tag-pill:hover {
-  background-color: #444;
+  opacity: 0.8;
 }
 
 /* Three-dot Menu (includes trash icon functionality) */
