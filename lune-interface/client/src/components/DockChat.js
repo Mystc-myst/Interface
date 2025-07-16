@@ -106,7 +106,6 @@ export default function DockChat({
             initialText={input} // Controlled by editingId effect; DiaryInput might need to sync with this.
             clearOnSave={true}  // DiaryInput should clear its internal state on save.
             onChatWithLune={() => setShowChat(true)} // Pass function to open Lune chat modal.
-            disableAnimation={Boolean(editingId)}
           />
         </form>
 
