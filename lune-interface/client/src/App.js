@@ -1,28 +1,20 @@
-// Import necessary React features and components.
 import React, { useState, useEffect, useCallback } from 'react';
-// Import routing components from react-router-dom.
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-// Import custom page/view components.
-import InitiationView from './components/InitiationView'; // Import the new InitiationView
-import DockChat from './components/DockChat'; // Main chat interface component.
-import EntriesPage from './components/EntriesPage'; // Page for displaying and managing diary entries.
-import FolderViewPage from './components/FolderViewPage'; // Page for viewing entries within a specific folder.
-import LuneChatModal from './components/LuneChatModal'; // Modal component for Lune AI chat.
+import io from 'socket.io-client';
+import InitiationView from './components/InitiationView';
+import DockChat from './components/DockChat';
+import EntriesPage from './components/EntriesPage';
+import FolderViewPage from './components/FolderViewPage';
+import LuneChatModal from './components/LuneChatModal';
 
-// Main application component.
+const socket = io('http://localhost:5001');
+
 function App() {
-  // State for storing diary entries.
   const [entries, setEntries] = useState([]);
-  // State for storing folders.
   const [folders, setFolders] = useState([]);
-  // State for storing the tag index.
   const [tagIndex, setTagIndex] = useState({});
-  // State for tracking the ID of the entry currently being edited.
   const [editingId, setEditingId] = useState(null);
-  // State to control the visibility of the LuneChatModal.
   const [showChat, setShowChat] = useState(false);
-
-  // State for the currently selected tag for filtering.
   const [filterTag, setFilterTag] = useState(null);
 
   // Theme state and logic
@@ -117,11 +109,38 @@ function App() {
     }
   }, []);
 
-  // useEffect hook to perform initial data loading when the component mounts.
   useEffect(() => {
     fetchEntries();
     fetchFolders();
     fetchTagIndex();
+
+    socket.on('new-entry', (entry) => {
+      setEntries(prevEntries => [entry, ...prevEntries]);
+    });
+
+    socket.on('entry-updated', (updatedEntry) => {
+      setEntries(prevEntries => prevEntries.map(entry => entry.id === updatedEntry.id ? updatedEntry : entry));
+    });
+
+    socket.on('entry-deleted', (deletedEntryId) => {
+      setEntries(prevEntries => prevEntries.filter(entry => entry.id !== deletedEntryId));
+    });
+
+    socket.on('tags-updated', (tags) => {
+      setTagIndex(tags);
+    });
+
+    socket.on('folders-updated', () => {
+      fetchFolders();
+    });
+
+    return () => {
+      socket.off('new-entry');
+      socket.off('entry-updated');
+      socket.off('entry-deleted');
+      socket.off('tags-updated');
+      socket.off('folders-updated');
+    };
   }, [fetchEntries, fetchFolders, fetchTagIndex]);
 
   // Callback function to refresh all data types.
