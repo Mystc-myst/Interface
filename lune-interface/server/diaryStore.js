@@ -67,6 +67,24 @@ function parseHashtags(text) {
 }
 
 /**
+ * @private
+ * @function cleanupUnusedTags
+ * @description Removes tags that are no longer associated with any entries.
+ */
+async function cleanupUnusedTags() {
+  const tags = await Tag.findAll();
+  for (const tag of tags) {
+    const count = await tag.countEntries();
+    if (count === 0) {
+      await tag.destroy();
+    }
+  }
+}
+
+// Export internal helpers for testing purposes
+exports._private = { parseHashtags, cleanupUnusedTags };
+
+/**
  * @function getAll
  * @description Retrieves all diary entries from the database, sorted by timestamp in descending order.
  * @returns {Promise<Array<Object>>} A promise that resolves to an array of diary entry objects.
@@ -139,8 +157,9 @@ exports.updateText = async function(id, text, folderId) {
   });
 
   const tags = parseHashtags(text);
-  const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } })));
+  const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } }))); 
   await entry.setTags(tagInstances.map(t => t[0]));
+  await cleanupUnusedTags();
 
   return entry;
 };
@@ -158,8 +177,9 @@ exports.saveEntry = async function(entryToSave) {
   await entry.update(entryToSave);
 
   const tags = parseHashtags(entryToSave.text);
-  const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } })));
+  const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } }))); 
   await entry.setTags(tagInstances.map(t => t[0]));
+  await cleanupUnusedTags();
 
   return entry;
 };
@@ -174,6 +194,7 @@ exports.remove = async function(id) {
   const entry = await Entry.findByPk(id);
   if (!entry) return false;
   await entry.destroy();
+  await cleanupUnusedTags();
   return true;
 };
 
