@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import io from 'socket.io-client';
 import InitiationView from './components/InitiationView';
 import DockChat from './components/DockChat';
@@ -245,6 +245,11 @@ function App() {
         >
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
+
+        {/* Persistent link to entries page */}
+        <Link to="/entries" className="entries-nav-button">
+          📖
+        </Link>
 
       </div>
     );
