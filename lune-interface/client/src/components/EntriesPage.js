@@ -2,6 +2,7 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import { promptInput } from '../lib/dialogs';
 // Import sub-components.
 import Folder from './Folder'; // Component to display a single folder and its entries.
 import EntryCard from './ui/EntryCard'; // UI component to display a single entry's summary.
@@ -36,7 +37,7 @@ export default function EntriesPage({
 
   // Handles adding a new folder.
   const handleAddFolder = async () => {
-    const folderName = prompt('Enter folder name:'); // Get folder name from user.
+    const folderName = promptInput('Enter folder name:'); // Get folder name from user.
     if (folderName && folderName.trim() !== '') {
       try {
         const response = await fetch('/diary/folders', { // API call to create a new folder.

@@ -1,4 +1,5 @@
 import React from 'react';
+import { log } from '../lib/logger';
 import EntryCard from './ui/EntryCard';
 import './DiaryFeed.css';
 
@@ -41,7 +42,7 @@ const DiaryFeed = ({ entries = placeholderEntries, onEntryClick, onEntryDelete, 
     } else {
       // Placeholder navigation for spec: "click routes to /entries/:id via 300ms slide-right"
       // Actual routing and animation would depend on the app's routing/animation libraries.
-      console.log(`Navigating to /entries/${entryId}`);
+      log(`Navigating to /entries/${entryId}`);
       // Simulate navigation delay for slide animation perception
       setTimeout(() => {
         window.location.href = `/entries/${entryId}`; // Simple redirect for now
@@ -55,7 +56,7 @@ const DiaryFeed = ({ entries = placeholderEntries, onEntryClick, onEntryDelete, 
       if (onEntryDelete) {
         onEntryDelete(entryId);
       } else {
-        console.log(`Deleting entry: ${entryId}`);
+        log(`Deleting entry: ${entryId}`);
         // In a real app, update state to remove the entry
       }
     }
