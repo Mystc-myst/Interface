@@ -162,7 +162,7 @@ function App() {
     const isChatPage = location.pathname === '/chat'; // Check if the current page is the chat page.
 
     const visibleEntries = filterTag
-      ? entries.filter(e => e.tags.includes(filterTag))
+      ? entries.filter(e => (e.tags || []).includes(filterTag))
       : entries;
     console.log("filterTag:", filterTag, "visibleEntries.length:", visibleEntries.length);
 
