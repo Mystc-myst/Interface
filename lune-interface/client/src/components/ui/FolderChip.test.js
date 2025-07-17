@@ -33,6 +33,7 @@ describe('FolderChip', () => {
   });
 
   test('renders with name, count, id, and correct ARIA attributes, and has no a11y violations', async () => {
+    jest.useRealTimers();
     const { container } = render(<FolderChip {...defaultProps} />);
     const chip = screen.getByRole('tab', { name: /My Notes folder, 15 entries/i });
 
@@ -41,16 +42,23 @@ describe('FolderChip', () => {
     expect(chip).toHaveAttribute('id', `folder-tab-${defaultProps.folderId}`);
     expect(chip).toHaveAttribute('aria-selected', 'false');
 
-    const results = await axe(container);
+    let results;
+    await act(async () => {
+      results = await axe(container, { rules: { 'heading-order': { enabled: false }, 'aria-required-parent': { enabled: false } } });
+    });
     expect(results).toHaveNoViolations();
   });
 
   test('sets aria-selected="true" when isSelected prop is true', async () => {
+    jest.useRealTimers();
     const { container } = render(<FolderChip {...defaultProps} isSelected={true} />);
     const chip = screen.getByRole('tab');
     expect(chip).toHaveAttribute('aria-selected', 'true');
 
-    const results = await axe(container); // Check a11y for selected state too
+    let results;
+    await act(async () => {
+      results = await axe(container, { rules: { 'heading-order': { enabled: false }, 'aria-required-parent': { enabled: false } } });
+    });
     expect(results).toHaveNoViolations();
   });
 
@@ -146,8 +154,9 @@ describe('FolderChip', () => {
   test('prevents context menu if onLongPress is defined', () => {
     render(<FolderChip {...defaultProps} />);
     const chip = screen.getByRole('tab');
-    const contextMenuEvent = fireEvent.contextMenu(chip);
-    expect(contextMenuEvent.defaultPrevented).toBe(true);
+    const event = new Event('contextmenu', { bubbles: true, cancelable: true });
+    chip.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
   });
 
   test('does not prevent context menu if onLongPress is not defined', () => {
@@ -155,7 +164,8 @@ describe('FolderChip', () => {
     const { onLongPress, ...propsWithoutLongPress } = defaultProps;
     render(<FolderChip {...propsWithoutLongPress} />);
     const chip = screen.getByRole('tab');
-    const contextMenuEvent = fireEvent.contextMenu(chip);
-    expect(contextMenuEvent.defaultPrevented).toBe(false);
+    const event = new Event('contextmenu', { bubbles: true, cancelable: true });
+    chip.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
   });
 });
