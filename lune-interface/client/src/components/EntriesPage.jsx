@@ -3,6 +3,8 @@ import PrimaryButton from './ui/PrimaryButton';
 import FoldersRibbon from './FoldersRibbon';
 import DiaryFeed from './DiaryFeed';
 import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts'; // Adjusted path
+import { promptInput } from '../lib/dialogs';
+import { log } from '../lib/logger';
 import './EntriesPage.css'; // For page-specific styles like slide animation
 
 // Assuming App.js passes these props, or they are fetched here
@@ -17,7 +19,7 @@ const EntriesPage = ({ entries, folders, refreshEntries, refreshFolders, startEd
 
   const handleAddFolder = () => {
     // Placeholder: In a real app, this would likely open a modal or inline form
-    const newFolderName = prompt('Enter new folder name:');
+    const newFolderName = promptInput('Enter new folder name:');
     if (newFolderName) {
       // Simulate adding a folder and refreshing
       // This logic would ideally involve an API call and then refreshing folders state
@@ -30,14 +32,14 @@ const EntriesPage = ({ entries, folders, refreshEntries, refreshFolders, startEd
          setFolders(prev => [...(prev || []), newFolder]);
       } else {
         // Fallback if setFolders is not available (e.g. if FoldersRibbon manages its own state fully)
-        console.log('Folder added (simulated):', newFolder);
+        log('Folder added (simulated):', newFolder);
       }
       // if (refreshFolders) refreshFolders();
     }
   };
 
   const handleEntryCardClick = (entryId) => {
-    console.log(`Entry card ${entryId} clicked, preparing to slide out.`);
+    log(`Entry card ${entryId} clicked, preparing to slide out.`);
     setIsSlidingOut(true);
     // Actual navigation and view change would happen after the animation.
     // The 300ms slide is a visual effect before routing.
@@ -78,7 +80,7 @@ const EntriesPage = ({ entries, folders, refreshEntries, refreshFolders, startEd
 
       <FoldersRibbon
         // folders={currentFolders} // FoldersRibbon uses its own placeholder data for now
-        onSelectFolder={(folderId) => console.log(`Folder ${folderId} selected in page`)}
+        onSelectFolder={(folderId) => log(`Folder ${folderId} selected in page`)}
         // onRenameFolder, onDeleteFolder can be wired up here if needed
       />
 

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import FolderChip from './ui/FolderChip';
 import './FoldersRibbon.css';
+import { promptInput } from '../lib/dialogs';
+import { log } from '../lib/logger';
 
 // Default/fallback folders if none are provided via props
 const defaultFolders = [
@@ -37,11 +39,11 @@ const FoldersRibbon = ({
     if (onSelectFolder) {
       onSelectFolder(folderId);
     }
-    // console.log(`Selected folder: ${folderId}`);
+    // log(`Selected folder: ${folderId}`);
   };
 
   const handleChipDoubleClick = (folder) => {
-    const newName = prompt(`Rename folder "${folder.name}":`, folder.name);
+    const newName = promptInput(`Rename folder "${folder.name}":`, folder.name);
     if (newName && newName !== folder.name) {
       if (onRenameFolder) {
         onRenameFolder(folder.id, newName); // Notify parent
@@ -50,7 +52,7 @@ const FoldersRibbon = ({
         setInternalFolders(prevFolders =>
           prevFolders.map(f => (f.id === folder.id ? { ...f, name: newName } : f))
         );
-        console.log(`Rename folder ${folder.id} to "${newName}" (internal state)`);
+        log(`Rename folder ${folder.id} to "${newName}" (internal state)`);
       }
     }
   };
@@ -62,7 +64,7 @@ const FoldersRibbon = ({
       } else {
         // Fallback to updating internal state
         setInternalFolders(prevFolders => prevFolders.filter(f => f.id !== folder.id));
-        console.log(`Delete folder ${folder.id} (internal state)`);
+        log(`Delete folder ${folder.id} (internal state)`);
         if (selectedFolderId === folder.id) {
           const newSelectedId = internalFolders.length > 1 ? internalFolders.find(f => f.id !== folder.id)?.id : null;
           setSelectedFolderId(newSelectedId);

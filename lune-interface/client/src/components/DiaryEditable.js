@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import getCaretCoordinates from 'textarea-caret';
+import { log } from '../lib/logger';
 
 function DiaryEditable({ entry, onSave }) {
   const [text, setText] = useState('');
@@ -43,14 +44,14 @@ function DiaryEditable({ entry, onSave }) {
 
     if (lastHashIndex !== -1 && lastHashIndex > lastSpaceIndex && !textBeforeCursor.substring(lastHashIndex + 1).includes(' ')) {
       const currentTag = textBeforeCursor.substring(lastHashIndex + 1);
-      console.log('[DiaryEditable] Current partial tag:', currentTag);
-      console.log('[DiaryEditable] All available hashtags:', allHashtags);
+      log('[DiaryEditable] Current partial tag:', currentTag);
+      log('[DiaryEditable] All available hashtags:', allHashtags);
 
       // Filter suggestions: hashtags from allHashtags should start with '#' followed by the currentTag
       const filteredSuggestions = allHashtags.filter(tag =>
         tag.toLowerCase().startsWith(`#${currentTag.toLowerCase()}`)
       );
-      console.log('[DiaryEditable] Filtered suggestions:', filteredSuggestions);
+      log('[DiaryEditable] Filtered suggestions:', filteredSuggestions);
 
       if (filteredSuggestions.length > 0) {
         setSuggestions(filteredSuggestions);
