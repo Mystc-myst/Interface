@@ -26,8 +26,7 @@ exports.handleUserMessage = async (req, res) => {
 
   try {
     // Define the n8n webhook URL. This is where the user's message is forwarded.
-    const webhookUrl =
-      'https://mystc-myst.app.n8n.cloud/webhook/9f5ad6f1-d4a7-43a6-8c13-4b1c0e76bb4e/chat';
+    const webhookUrl = process.env.N8N_WEBHOOK_URL;
     // Prepare the data payload for the webhook.
     const data = {
       sessionId: sessionId || 'test-session-1', // Use provided sessionId or a default.
