@@ -487,3 +487,6 @@ exports.assignEntryToFolder = async function(entryId, folderId) {
   save(); // Persist changes.
   return entry;
 };
+
+// Export the tag index rebuild function for external use
+exports.rebuildTagIndex = rebuildTagIndex;
