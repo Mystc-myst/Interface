@@ -9,7 +9,7 @@ function Wrapper() {
     { id: '2', text: 'Second', tags: ['bar'] }
   ];
   const tagIndex = { foo: ['1'], bar: ['2'] };
-  const visible = filter ? entries.filter(e => e.tags.includes(filter)) : entries;
+  const visible = filter ? entries.filter(e => (e.tags || []).includes(filter)) : entries;
   return (
     <div>
       <TagSidebar tagIndex={tagIndex} onSelect={setFilter} />
