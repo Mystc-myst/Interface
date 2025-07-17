@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import io from 'socket.io-client';
 import InitiationView from './components/InitiationView';
 import DockChat from './components/DockChat';
-import EntriesPage from './components/EntriesPage';
+import EntriesPage from './components/EntriesPage.js';
 import FolderViewPage from './components/FolderViewPage';
 import LuneChatModal from './components/LuneChatModal';
 
