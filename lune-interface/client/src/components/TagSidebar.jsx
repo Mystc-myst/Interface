@@ -1,6 +1,7 @@
 import React from 'react';
 
 import PropTypes from 'prop-types';
+import './TagSidebar.css';
 
 function TagSidebar({ tagIndex, onSelect }) {
   const tags = Object.keys(tagIndex).sort();
@@ -10,7 +11,7 @@ function TagSidebar({ tagIndex, onSelect }) {
   }
 
   return (
-    <aside>
+    <aside className="tag-sidebar">
       <h3>Tags</h3>
       <ul>
         {tags.map(tag => (
