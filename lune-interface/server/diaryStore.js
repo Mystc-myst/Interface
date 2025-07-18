@@ -82,7 +82,8 @@ async function cleanupUnusedTags() {
 }
 
 // Export internal helpers for testing purposes
-exports._private = { parseHashtags, cleanupUnusedTags };
+exports._private = { cleanupUnusedTags };
+exports.parseHashtags = parseHashtags;
 
 /**
  * @function getAll
