@@ -1,3 +1,5 @@
 module.exports = {
-  verbose: true,
-};
+    testEnvironment: 'node',
+    rootDir: './',
+    moduleDirectories: ['node_modules', 'src'],
+  };

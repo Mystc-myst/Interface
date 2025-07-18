@@ -1,8 +1,8 @@
 'use strict';
 
 module.exports = {
-  up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('Folders', {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable('Folders', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -21,10 +21,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
-    }).then(() => {
-      return queryInterface.createTable('Entries', {
-        id: {
-          type: Sequelize.UUID,
+    });
+    await queryInterface.createTable('Entries', {
+      id: {
+        type: Sequelize.UUID,
           defaultValue: Sequelize.UUIDV4,
           primaryKey: true
         },
@@ -102,13 +102,10 @@ module.exports = {
       });
     });
   },
-  down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('EntryTag').then(() => {
-      return queryInterface.dropTable('Tags');
-    }).then(() => {
-      return queryInterface.dropTable('Entries');
-    }).then(() => {
-      return queryInterface.dropTable('Folders');
-    });
+  async down(queryInterface, Sequelize) {
+    await queryInterface.dropTable('EntryTag');
+    await queryInterface.dropTable('Tags');
+    await queryInterface.dropTable('Entries');
+    await queryInterface.dropTable('Folders');
   }
 };
