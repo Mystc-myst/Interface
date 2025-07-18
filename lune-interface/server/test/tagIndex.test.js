@@ -1,16 +1,31 @@
 const diaryStore = require('../diaryStore');
 const { sequelize, Entry, Tag } = require('../db');
+const Umzug = require('umzug');
+const path = require('path');
+
+const umzug = new Umzug({
+  migrations: {
+    path: path.join(__dirname, '../migrations'),
+    params: [
+      sequelize.getQueryInterface(),
+      sequelize.constructor
+    ]
+  },
+  storage: 'sequelize',
+  storageOptions: {
+    sequelize: sequelize
+  }
+});
 
 describe('tag index updates', () => {
   // Before each test, sync the database and clear all entries and tags.
   beforeEach(async () => {
-    await sequelize.sync({ force: true });
+    await umzug.up();
   });
 
   // After each test, clean up the database to ensure a clean state for the next test.
   afterEach(async () => {
-    await Entry.destroy({ where: {} });
-    await Tag.destroy({ where: {} });
+    await umzug.down({ to: 0 });
   });
 
   test('add entries updates tag index', async () => {

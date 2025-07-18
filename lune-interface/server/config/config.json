@@ -1,0 +1,14 @@
+{
+  "development": {
+    "dialect": "sqlite",
+    "storage": "lune-interface/offline-diary/diary.sqlite"
+  },
+  "test": {
+    "dialect": "sqlite",
+    "storage": ":memory:"
+  },
+  "production": {
+    "dialect": "sqlite",
+    "storage": "lune-interface/offline-diary/diary.sqlite"
+  }
+}
