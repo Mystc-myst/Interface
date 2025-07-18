@@ -18,39 +18,41 @@ const umzug = new Umzug({
 });
 
 describe('tag index updates', () => {
-  // Before each test, sync the database and clear all entries and tags.
+  let transaction;
+
   beforeEach(async () => {
     await umzug.up();
+    transaction = await sequelize.transaction();
   });
 
-  // After each test, clean up the database to ensure a clean state for the next test.
   afterEach(async () => {
+    await transaction.rollback();
     await umzug.down({ to: 0 });
   });
 
   test('add entries updates tag index', async () => {
-    const entry1 = await diaryStore.add('First entry #foo');
-    const entry2 = await diaryStore.add('Second entry #foo #bar');
-    const tags = await diaryStore.getTags();
+    const entry1 = await diaryStore.add('First entry #foo', null, { transaction });
+    const entry2 = await diaryStore.add('Second entry #foo #bar', null, { transaction });
+    const tags = await diaryStore.getTags({ transaction });
     expect(tags.foo).toEqual(expect.arrayContaining([entry1.id, entry2.id]));
     expect(tags.bar).toEqual([entry2.id]);
   });
 
   test('update and delete entry updates tag index', async () => {
     // Add initial entries
-    const entry1 = await diaryStore.add('First entry #foo');
-    const entry2 = await diaryStore.add('Second entry #foo #bar');
+    const entry1 = await diaryStore.add('First entry #foo', null, { transaction });
+    const entry2 = await diaryStore.add('Second entry #foo #bar', null, { transaction });
 
     // Update the first entry and check if tags are updated
-    await diaryStore.updateText(entry1.id, 'Updated entry #baz');
-    let tags = await diaryStore.getTags();
+    await diaryStore.updateText(entry1.id, 'Updated entry #baz', null, { transaction });
+    let tags = await diaryStore.getTags({ transaction });
     expect(tags.foo).toEqual([entry2.id]);
     expect(tags.bar).toEqual([entry2.id]);
     expect(tags.baz).toEqual([entry1.id]);
 
     // Remove the second entry and check if tags are updated
-    await diaryStore.remove(entry2.id);
-    tags = await diaryStore.getTags();
+    await diaryStore.remove(entry2.id, { transaction });
+    tags = await diaryStore.getTags({ transaction });
     expect(tags).toEqual({ baz: [entry1.id] });
   });
 });

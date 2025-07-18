@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { sequelize, Entry, Folder, Tag } = require('./db');
+const { NotFoundError, DatabaseError } = require('./errors');
 const Umzug = require('umzug');
 
 // Path to the old JSON data file for migration purposes.
@@ -89,12 +90,12 @@ function parseHashtags(text) {
  * @function cleanupUnusedTags
  * @description Removes tags that are no longer associated with any entries.
  */
-async function cleanupUnusedTags() {
-  const tags = await Tag.findAll();
+async function cleanupUnusedTags({ transaction } = {}) {
+  const tags = await Tag.findAll({ transaction });
   for (const tag of tags) {
-    const count = await tag.countEntries();
+    const count = await tag.countEntries({ transaction });
     if (count === 0) {
-      await tag.destroy();
+      await tag.destroy({ transaction });
     }
   }
 }
@@ -109,10 +110,14 @@ exports.parseHashtags = parseHashtags;
  * @returns {Promise<Array<Object>>} A promise that resolves to an array of diary entry objects.
  */
 exports.getAll = async function() {
-  return Entry.findAll({
-    order: [['timestamp', 'DESC']],
-    include: [Folder, Tag]
-  });
+  try {
+    return await Entry.findAll({
+      order: [['timestamp', 'DESC']],
+      include: [Folder, Tag]
+    });
+  } catch (err) {
+    throw new DatabaseError(`Failed to get all entries: ${err.message}`);
+  }
 };
 
 /**
@@ -122,15 +127,19 @@ exports.getAll = async function() {
  * @param {string|null} [folderId=null] - Optional ID of the folder to associate this entry with.
  * @returns {Promise<Object>} A promise that resolves to the newly created diary entry object.
  */
-exports.add = async function(text, folderId = null) {
-  const entry = await Entry.create({
-    text,
-    FolderId: folderId
-  });
-  const tags = parseHashtags(text);
-  const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } })));
-  await entry.setTags(tagInstances.map(t => t[0]));
-  return entry;
+exports.add = async function(text, folderId = null, { transaction } = {}) {
+  try {
+    const entry = await Entry.create({
+      text,
+      FolderId: folderId
+    }, { transaction });
+    const tags = parseHashtags(text);
+    const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag }, transaction })));
+    await entry.setTags(tagInstances.map(t => t[0]), { transaction });
+    return entry;
+  } catch (err) {
+    throw new DatabaseError(`Failed to add entry: ${err.message}`);
+  }
 };
 
 /**
@@ -138,13 +147,17 @@ exports.add = async function(text, folderId = null) {
  * @description Retrieves the tag index from the database.
  * @returns {Promise<Object>} A promise that resolves to the tag index.
  */
-exports.getTags = async function() {
-  const tags = await Tag.findAll({ include: Entry });
-  const tagIndex = {};
-  for (const tag of tags) {
-    tagIndex[tag.name] = tag.Entries.map(e => e.id);
+exports.getTags = async function({ transaction } = {}) {
+  try {
+    const tags = await Tag.findAll({ include: Entry, transaction });
+    const tagIndex = {};
+    for (const tag of tags) {
+      tagIndex[tag.name] = tag.Entries.map(e => e.id);
+    }
+    return tagIndex;
+  } catch (err) {
+    throw new DatabaseError(`Failed to get tags: ${err.message}`);
   }
-  return tagIndex;
 };
 
 /**
@@ -154,7 +167,18 @@ exports.getTags = async function() {
  * @returns {Promise<Object|undefined>} A promise that resolves to the diary entry object if found, otherwise undefined.
  */
 exports.findById = async function(id) {
-  return Entry.findByPk(id, { include: [Folder, Tag] });
+  try {
+    const entry = await Entry.findByPk(id, { include: [Folder, Tag] });
+    if (!entry) {
+      throw new NotFoundError(`Entry with ID ${id} not found.`);
+    }
+    return entry;
+  } catch (err) {
+    if (err instanceof NotFoundError) {
+      throw err;
+    }
+    throw new DatabaseError(`Failed to find entry by ID ${id}: ${err.message}`);
+  }
 };
 
 /**
@@ -165,22 +189,31 @@ exports.findById = async function(id) {
  * @param {string|null|undefined} [folderId=undefined] - New folder ID.
  * @returns {Promise<Object|null>} A promise that resolves to the updated diary entry object, or null if no entry with the given ID is found.
  */
-exports.updateText = async function(id, text, folderId) {
-  const entry = await Entry.findByPk(id);
-  if (!entry) return null;
+exports.updateText = async function(id, text, folderId, { transaction } = {}) {
+  try {
+    const entry = await Entry.findByPk(id, { transaction });
+    if (!entry) {
+      throw new NotFoundError(`Entry with ID ${id} not found.`);
+    }
 
-  await entry.update({
-    text,
-    timestamp: new Date(),
-    FolderId: folderId
-  });
+    await entry.update({
+      text,
+      timestamp: new Date(),
+      FolderId: folderId
+    }, { transaction });
 
-  const tags = parseHashtags(text);
-  const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } }))); 
-  await entry.setTags(tagInstances.map(t => t[0]));
-  await cleanupUnusedTags();
+    const tags = parseHashtags(text);
+    const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag }, transaction })));
+    await entry.setTags(tagInstances.map(t => t[0]), { transaction });
+    await cleanupUnusedTags({ transaction });
 
-  return entry;
+    return entry;
+  } catch (err) {
+    if (err instanceof NotFoundError) {
+      throw err;
+    }
+    throw new DatabaseError(`Failed to update entry with ID ${id}: ${err.message}`);
+  }
 };
 
 /**
@@ -190,17 +223,26 @@ exports.updateText = async function(id, text, folderId) {
  * @returns {Promise<Object|null>} A promise that resolves to the saved diary entry object, or null if not found.
  */
 exports.saveEntry = async function(entryToSave) {
-  const entry = await Entry.findByPk(entryToSave.id);
-  if (!entry) return null;
+  try {
+    const entry = await Entry.findByPk(entryToSave.id);
+    if (!entry) {
+      throw new NotFoundError(`Entry with ID ${entryToSave.id} not found.`);
+    }
 
-  await entry.update(entryToSave);
+    await entry.update(entryToSave);
 
-  const tags = parseHashtags(entryToSave.text);
-  const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } }))); 
-  await entry.setTags(tagInstances.map(t => t[0]));
-  await cleanupUnusedTags();
+    const tags = parseHashtags(entryToSave.text);
+    const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } })));
+    await entry.setTags(tagInstances.map(t => t[0]));
+    await cleanupUnusedTags();
 
-  return entry;
+    return entry;
+  } catch (err) {
+    if (err instanceof NotFoundError) {
+      throw err;
+    }
+    throw new DatabaseError(`Failed to save entry with ID ${entryToSave.id}: ${err.message}`);
+  }
 };
 
 /**
@@ -209,12 +251,21 @@ exports.saveEntry = async function(entryToSave) {
  * @param {string} id - The unique ID of the diary entry to remove.
  * @returns {Promise<boolean>} A promise that resolves to `true` if the entry was found and removed, otherwise `false`.
  */
-exports.remove = async function(id) {
-  const entry = await Entry.findByPk(id);
-  if (!entry) return false;
-  await entry.destroy();
-  await cleanupUnusedTags();
-  return true;
+exports.remove = async function(id, { transaction } = {}) {
+  try {
+    const entry = await Entry.findByPk(id, { transaction });
+    if (!entry) {
+      throw new NotFoundError(`Entry with ID ${id} not found.`);
+    }
+    await entry.destroy({ transaction });
+    await cleanupUnusedTags({ transaction });
+    return true;
+  } catch (err) {
+    if (err instanceof NotFoundError) {
+      throw err;
+    }
+    throw new DatabaseError(`Failed to remove entry with ID ${id}: ${err.message}`);
+  }
 };
 
 /**
@@ -223,7 +274,11 @@ exports.remove = async function(id) {
  * @returns {Promise<Array<Object>>} A promise that resolves to an array of folder objects.
  */
 exports.getAllFolders = async function() {
-  return Folder.findAll({ order: [['name', 'ASC']] });
+  try {
+    return await Folder.findAll({ order: [['name', 'ASC']] });
+  } catch (err) {
+    throw new DatabaseError(`Failed to get all folders: ${err.message}`);
+  }
 };
 
 /**
@@ -233,7 +288,11 @@ exports.getAllFolders = async function() {
  * @returns {Promise<Object>} A promise that resolves to the newly created folder object.
  */
 exports.addFolder = async function(name) {
-  return Folder.create({ name });
+  try {
+    return await Folder.create({ name });
+  } catch (err) {
+    throw new DatabaseError(`Failed to add folder: ${err.message}`);
+  }
 };
 
 /**
@@ -243,7 +302,18 @@ exports.addFolder = async function(name) {
  * @returns {Promise<Object|undefined>} A promise that resolves to the folder object if found, otherwise undefined.
  */
 exports.findFolderById = async function(id) {
-  return Folder.findByPk(id);
+  try {
+    const folder = await Folder.findByPk(id);
+    if (!folder) {
+      throw new NotFoundError(`Folder with ID ${id} not found.`);
+    }
+    return folder;
+  } catch (err) {
+    if (err instanceof NotFoundError) {
+      throw err;
+    }
+    throw new DatabaseError(`Failed to find folder by ID ${id}: ${err.message}`);
+  }
 };
 
 /**
@@ -254,9 +324,18 @@ exports.findFolderById = async function(id) {
  * @returns {Promise<Object|null>} A promise that resolves to the updated folder object, or null if no folder with the given ID is found.
  */
 exports.updateFolder = async function(id, name) {
-  const folder = await Folder.findByPk(id);
-  if (!folder) return null;
-  return folder.update({ name });
+  try {
+    const folder = await Folder.findByPk(id);
+    if (!folder) {
+      throw new NotFoundError(`Folder with ID ${id} not found.`);
+    }
+    return await folder.update({ name });
+  } catch (err) {
+    if (err instanceof NotFoundError) {
+      throw err;
+    }
+    throw new DatabaseError(`Failed to update folder with ID ${id}: ${err.message}`);
+  }
 };
 
 /**
@@ -266,10 +345,19 @@ exports.updateFolder = async function(id, name) {
  * @returns {Promise<boolean>} A promise that resolves to `true` if the folder was found and removed, otherwise `false`.
  */
 exports.removeFolder = async function(id) {
-  const folder = await Folder.findByPk(id);
-  if (!folder) return false;
-  await folder.destroy();
-  return true;
+  try {
+    const folder = await Folder.findByPk(id);
+    if (!folder) {
+      throw new NotFoundError(`Folder with ID ${id} not found.`);
+    }
+    await folder.destroy();
+    return true;
+  } catch (err) {
+    if (err instanceof NotFoundError) {
+      throw err;
+    }
+    throw new DatabaseError(`Failed to remove folder with ID ${id}: ${err.message}`);
+  }
 };
 
 /**
@@ -280,7 +368,16 @@ exports.removeFolder = async function(id) {
  * @returns {Promise<Object|null>} A promise that resolves to the updated entry object, or null if the entry is not found.
  */
 exports.assignEntryToFolder = async function(entryId, folderId) {
-  const entry = await Entry.findByPk(entryId);
-  if (!entry) return null;
-  return entry.update({ FolderId: folderId });
+  try {
+    const entry = await Entry.findByPk(entryId);
+    if (!entry) {
+      throw new NotFoundError(`Entry with ID ${entryId} not found.`);
+    }
+    return await entry.update({ FolderId: folderId });
+  } catch (err) {
+    if (err instanceof NotFoundError) {
+      throw err;
+    }
+    throw new DatabaseError(`Failed to assign entry with ID ${entryId} to folder: ${err.message}`);
+  }
 };

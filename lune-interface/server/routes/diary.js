@@ -1,5 +1,6 @@
 const express = require('express');
 const diaryStore = require('../diaryStore');
+const { NotFoundError, DatabaseError } = require('../errors');
 const axios = require('axios');
 
 module.exports = function(io) {
@@ -31,7 +32,11 @@ module.exports = function(io) {
 
       res.status(201).json(entry);
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      if (err instanceof DatabaseError) {
+        res.status(500).json({ error: err.message });
+      } else {
+        res.status(400).json({ error: err.message });
+      }
     }
   });
 
@@ -42,8 +47,11 @@ router.get('/', async (req, res) => {
     const entries = await diaryStore.getAll();
     res.json(entries);
   } catch (err) {
-    // Handle errors during retrieval.
-    res.status(500).json({ error: `Failed to get entries: ${err.message}` });
+    if (err instanceof DatabaseError) {
+        res.status(500).json({ error: err.message });
+    } else {
+        res.status(500).json({ error: `An unexpected error occurred: ${err.message}` });
+    }
   }
 });
 
@@ -54,17 +62,19 @@ router.get('/', async (req, res) => {
         return res.status(400).json({ error: 'Text is required to update an entry.' });
       }
       const entry = await diaryStore.updateText(req.params.id, text, folderId);
-      if (!entry) {
-        return res.status(404).json({ error: 'Entry not found.' });
-      }
-
       io.emit('entry-updated', entry);
       const tags = await diaryStore.getTags();
       io.emit('tags-updated', tags);
 
       res.json(entry);
     } catch (err) {
-      res.status(500).json({ error: `Failed to update entry: ${err.message}` });
+      if (err instanceof NotFoundError) {
+        res.status(404).json({ error: err.message });
+      } else if (err instanceof DatabaseError) {
+        res.status(500).json({ error: err.message });
+      } else {
+        res.status(400).json({ error: err.message });
+      }
     }
   });
 
@@ -75,30 +85,35 @@ router.get('/', async (req, res) => {
           return res.status(400).json({ error: 'folderId is required (can be null to unassign from folder).' });
       }
       const entry = await diaryStore.assignEntryToFolder(req.params.entryId, folderId);
-      if (!entry) {
-        return res.status(404).json({ error: 'Entry not found.' });
-      }
       io.emit('entry-updated', entry);
       res.json(entry);
     } catch (err) {
-      res.status(500).json({ error: `Failed to assign entry to folder: ${err.message}` });
+      if (err instanceof NotFoundError) {
+        res.status(404).json({ error: err.message });
+      } else if (err instanceof DatabaseError) {
+        res.status(500).json({ error: err.message });
+      } else {
+        res.status(400).json({ error: err.message });
+      }
     }
   });
 
   router.delete('/:id', async (req, res) => {
     try {
-      const success = await diaryStore.remove(req.params.id);
-      if (!success) {
-        return res.status(404).json({ error: 'Entry not found or could not be deleted.' });
-      }
-
+      await diaryStore.remove(req.params.id);
       io.emit('entry-deleted', req.params.id);
       const tags = await diaryStore.getTags();
       io.emit('tags-updated', tags);
 
       res.json({ message: 'Diary entry deleted successfully.' });
     } catch (err) {
-      res.status(500).json({ error: `Failed to delete entry: ${err.message}` });
+      if (err instanceof NotFoundError) {
+        res.status(404).json({ error: err.message });
+      } else if (err instanceof DatabaseError) {
+        res.status(500).json({ error: err.message });
+      } else {
+        res.status(400).json({ error: err.message });
+      }
     }
   });
 
@@ -109,7 +124,11 @@ router.get('/', async (req, res) => {
       const folders = await diaryStore.getAllFolders();
       res.json(folders);
     } catch (err) {
-      res.status(500).json({ error: `Failed to get folders: ${err.message}` });
+      if (err instanceof DatabaseError) {
+        res.status(500).json({ error: err.message });
+      } else {
+        res.status(500).json({ error: `An unexpected error occurred: ${err.message}` });
+      }
     }
   });
 
@@ -123,7 +142,11 @@ router.get('/', async (req, res) => {
       io.emit('folders-updated');
       res.status(201).json(folder);
     } catch (err) {
-      res.status(400).json({ error: `Failed to create folder: ${err.message}` });
+      if (err instanceof DatabaseError) {
+        res.status(500).json({ error: err.message });
+      } else {
+        res.status(400).json({ error: err.message });
+      }
     }
   });
 
@@ -134,29 +157,32 @@ router.get('/', async (req, res) => {
         return res.status(400).json({ error: 'Folder name is required and cannot be empty for update.' });
       }
       const folder = await diaryStore.updateFolder(req.params.id, name.trim());
-      if (!folder) {
-        return res.status(404).json({ error: 'Folder not found.' });
-      }
       io.emit('folders-updated');
       res.json(folder);
     } catch (err) {
-      if (err.message === 'Folder name cannot be empty.') {
-        return res.status(400).json({ error: err.message });
+      if (err instanceof NotFoundError) {
+        res.status(404).json({ error: err.message });
+      } else if (err instanceof DatabaseError) {
+        res.status(500).json({ error: err.message });
+      } else {
+        res.status(400).json({ error: err.message });
       }
-      res.status(500).json({ error: `Failed to update folder: ${err.message}` });
     }
   });
 
   router.delete('/folders/:id', async (req, res) => {
     try {
-      const success = await diaryStore.removeFolder(req.params.id);
-      if (!success) {
-        return res.status(404).json({ error: 'Folder not found or could not be deleted.' });
-      }
+      await diaryStore.removeFolder(req.params.id);
       io.emit('folders-updated');
       res.json({ message: 'Folder deleted successfully. Entries previously in this folder are now unassigned.' });
     } catch (err) {
-      res.status(500).json({ error: `Failed to delete folder: ${err.message}` });
+      if (err instanceof NotFoundError) {
+        res.status(404).json({ error: err.message });
+      } else if (err instanceof DatabaseError) {
+        res.status(500).json({ error: err.message });
+      } else {
+        res.status(400).json({ error: err.message });
+      }
     }
   });
 
@@ -167,7 +193,11 @@ router.get('/', async (req, res) => {
       const tags = await diaryStore.getTags();
       res.json(tags);
     } catch (err) {
-      res.status(500).json({ error: `Failed to get tags: ${err.message}` });
+      if (err instanceof DatabaseError) {
+        res.status(500).json({ error: err.message });
+      } else {
+        res.status(500).json({ error: `An unexpected error occurred: ${err.message}` });
+      }
     }
   });
 

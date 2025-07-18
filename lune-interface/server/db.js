@@ -3,7 +3,7 @@
  * @description Sets up the a new database connection and defines the data models and their associations.
  */
 
-const { Sequelize, DataTypes } = require('sequelize');
+const { Sequelize, DataTypes } = require('/app/node_modules/sequelize');
 const path = require('path');
 
 // Initialize a new Sequelize instance with SQLite dialect.
