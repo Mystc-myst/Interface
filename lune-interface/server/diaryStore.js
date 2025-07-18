@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { sequelize, Entry, Folder, Tag } = require('./db');
+const Umzug = require('umzug');
 
 // Path to the old JSON data file for migration purposes.
 const DATA_FILE = path.join(__dirname, '..', '..', 'offline-diary', 'diary.json');
@@ -47,7 +48,24 @@ async function migrate() {
 }
 
 // Synchronize the database and then run the migration.
-sequelize.sync().then(migrate);
+const umzug = new Umzug({
+  migrations: {
+    path: path.join(__dirname, 'migrations'),
+    params: [
+      sequelize.getQueryInterface(),
+      sequelize.constructor
+    ]
+  },
+  storage: 'sequelize',
+  storageOptions: {
+    sequelize: sequelize
+  }
+});
+
+(async () => {
+  await umzug.up();
+  await migrate();
+})();
 
 /**
  * @private
