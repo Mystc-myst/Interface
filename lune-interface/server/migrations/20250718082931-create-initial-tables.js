@@ -54,52 +54,49 @@ module.exports = {
           type: Sequelize.DATE
         }
       });
-    }).then(() => {
-      return queryInterface.createTable('Tags', {
-        name: {
-          type: Sequelize.STRING,
-          primaryKey: true
+    await queryInterface.createTable('Tags', {
+      name: {
+        type: Sequelize.STRING,
+        primaryKey: true
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      }
+    });
+    await queryInterface.createTable('EntryTag', {
+      EntryId: {
+        type: Sequelize.UUID,
+        references: {
+          model: 'Entries',
+          key: 'id'
         },
-        createdAt: {
-          allowNull: false,
-          type: Sequelize.DATE
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+        primaryKey: true
+      },
+      TagName: {
+        type: Sequelize.STRING,
+        references: {
+          model: 'Tags',
+          key: 'name'
         },
-        updatedAt: {
-          allowNull: false,
-          type: Sequelize.DATE
-        }
-      });
-    }).then(() => {
-      return queryInterface.createTable('EntryTag', {
-        EntryId: {
-          type: Sequelize.UUID,
-          references: {
-            model: 'Entries',
-            key: 'id'
-          },
-          onUpdate: 'CASCADE',
-          onDelete: 'CASCADE',
-          primaryKey: true
-        },
-        TagName: {
-          type: Sequelize.STRING,
-          references: {
-            model: 'Tags',
-            key: 'name'
-          },
-          onUpdate: 'CASCADE',
-          onDelete: 'CASCADE',
-          primaryKey: true
-        },
-        createdAt: {
-          allowNull: false,
-          type: Sequelize.DATE
-        },
-        updatedAt: {
-          allowNull: false,
-          type: Sequelize.DATE
-        }
-      });
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+        primaryKey: true
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      }
     });
   },
   async down(queryInterface, Sequelize) {

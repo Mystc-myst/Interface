@@ -9,7 +9,15 @@ const umzug = new Umzug({
     params: [
       sequelize.getQueryInterface(),
       sequelize.constructor
-    ]
+    ],
+    resolve: ({ name, path: migrationPath, context }) => {
+      const migration = require(migrationPath);
+      return {
+        name,
+        up: async () => migration.up(context, require('sequelize')),
+        down: async () => migration.down(context, require('sequelize')),
+      };
+    },
   },
   storage: 'sequelize',
   storageOptions: {
@@ -26,7 +34,9 @@ describe('tag index updates', () => {
   });
 
   afterEach(async () => {
-    await transaction.rollback();
+    if (transaction) {
+      await transaction.rollback();
+    }
     await umzug.down({ to: 0 });
   });
 
