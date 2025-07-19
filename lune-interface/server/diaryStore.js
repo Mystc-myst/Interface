@@ -27,9 +27,7 @@ async function migrate() {
     const entries = Array.isArray(data) ? data : data.entries;
     const folders = Array.isArray(data) ? [] : data.folders;
 
-    for (const folder of folders) {
-      await Folder.findOrCreate({ where: { id: folder.id }, defaults: folder });
-    }
+    await Folder.bulkCreate(folders, { ignoreDuplicates: true });
 
     for (const entry of entries) {
       const newEntry = await Entry.create({
@@ -39,8 +37,10 @@ async function migrate() {
         FolderId: entry.folderId
       });
       const tags = parseHashtags(entry.text);
-      const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } })));
-      await newEntry.setTags(tagInstances.map(t => t[0]));
+      if (tags.length > 0) {
+        const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } })));
+        await newEntry.setTags(tagInstances.map(t => t[0]));
+      }
     }
 
     fs.renameSync(DATA_FILE, `${DATA_FILE}.migrated`);
@@ -91,13 +91,12 @@ function parseHashtags(text) {
  * @description Removes tags that are no longer associated with any entries.
  */
 async function cleanupUnusedTags({ transaction } = {}) {
-  const tags = await Tag.findAll({ transaction });
-  for (const tag of tags) {
-    const count = await tag.countEntries({ transaction });
-    if (count === 0) {
-      await tag.destroy({ transaction });
-    }
-  }
+  await sequelize.query(
+    `DELETE FROM Tags WHERE name IN (
+      SELECT T.name FROM Tags T LEFT JOIN EntryTag ET ON T.name = ET.TagName WHERE ET.TagName IS NULL
+    )`,
+    { type: sequelize.QueryTypes.DELETE, transaction }
+  );
 }
 
 // Export internal helpers for testing purposes
@@ -134,8 +133,10 @@ exports.add = async function(text, folderId = null, { transaction } = {}) {
       FolderId: folderId
     }, { transaction });
     const tags = parseHashtags(text);
-    const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag }, transaction })));
-    await entry.setTags(tagInstances.map(t => t[0]), { transaction });
+    if (tags.length > 0) {
+      const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag }, transaction })));
+      await entry.setTags(tagInstances.map(t => t[0]), { transaction });
+    }
     return entry;
   } catch (err) {
     throw new DatabaseError(`Failed to add entry: ${err.message}`);
@@ -149,10 +150,16 @@ exports.add = async function(text, folderId = null, { transaction } = {}) {
  */
 exports.getTags = async function({ transaction } = {}) {
   try {
-    const tags = await Tag.findAll({ include: Entry, transaction });
+    const results = await sequelize.query(
+      `SELECT T.name, ET.EntryId FROM Tags T JOIN EntryTag ET ON T.name = ET.TagName`,
+      { type: sequelize.QueryTypes.SELECT, transaction }
+    );
     const tagIndex = {};
-    for (const tag of tags) {
-      tagIndex[tag.name] = tag.Entries.map(e => e.id);
+    for (const result of results) {
+      if (!tagIndex[result.name]) {
+        tagIndex[result.name] = [];
+      }
+      tagIndex[result.name].push(result.EntryId);
     }
     return tagIndex;
   } catch (err) {
@@ -203,8 +210,10 @@ exports.updateText = async function(id, text, folderId, { transaction } = {}) {
     }, { transaction });
 
     const tags = parseHashtags(text);
-    const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag }, transaction })));
-    await entry.setTags(tagInstances.map(t => t[0]), { transaction });
+    if (tags.length > 0) {
+      const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag }, transaction })));
+      await entry.setTags(tagInstances.map(t => t[0]), { transaction });
+    }
     await cleanupUnusedTags({ transaction });
 
     return entry;

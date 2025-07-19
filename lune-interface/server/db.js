@@ -3,13 +3,19 @@
  * @description Sets up the a new database connection and defines the data models and their associations.
  */
 
-const { Sequelize, DataTypes } = require('/app/node_modules/sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 const path = require('path');
 
 // Initialize a new Sequelize instance with SQLite dialect.
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: path.join(__dirname, '..', 'offline-diary', 'diary.sqlite')
+  storage: path.join(__dirname, '..', 'offline-diary', 'diary.sqlite'),
+  pool: {
+    max: 20,
+    min: 2,
+    acquire: 30000,
+    idle: 10000
+  }
 });
 
 // Define the Entry model.
