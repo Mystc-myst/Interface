@@ -7,6 +7,18 @@ const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
+// Normalize a Sequelize Entry instance to a plain object expected by the client
+function serializeEntry(entry) {
+  const plain = entry.toJSON ? entry.toJSON() : entry;
+  return {
+    id: plain.id,
+    text: plain.text,
+    timestamp: plain.timestamp,
+    folderId: plain.folderId ?? plain.FolderId ?? null,
+    tags: Array.isArray(plain.Tags) ? plain.Tags.map(t => t.name) : plain.tags || [],
+  };
+}
+
 module.exports = function(io) {
   const router = express.Router();
 
@@ -29,17 +41,17 @@ module.exports = function(io) {
         console.error('Error sending data to n8n webhook after entry creation:', webhookError.message);
       }
 
-      io.emit('new-entry', entry);
+      io.emit('new-entry', serializeEntry(entry));
       await diaryStore.emitTagsUpdate(io);
 
-      res.status(201).json(entry);
+      res.status(201).json(serializeEntry(entry));
   }));
 
 // GET /diary - Retrieve all diary entries.
 // Entries are typically returned newest first by the diaryStore.
 router.get('/', asyncHandler(async (req, res) => {
     const entries = await diaryStore.getAll();
-    res.json(entries);
+    res.json(entries.map(serializeEntry));
 }));
 
   router.put('/:id', asyncHandler(async (req, res) => {
@@ -48,10 +60,10 @@ router.get('/', asyncHandler(async (req, res) => {
         return res.status(400).json({ error: 'Text is required to update an entry.' });
       }
       const entry = await diaryStore.updateEntry(req.params.id, { text, folderId });
-      io.emit('entry-updated', entry);
+      io.emit('entry-updated', serializeEntry(entry));
       await diaryStore.emitTagsUpdate(io);
 
-      res.json(entry);
+      res.json(serializeEntry(entry));
   }));
 
   router.put('/:entryId/folder', asyncHandler(async (req, res) => {
@@ -60,8 +72,8 @@ router.get('/', asyncHandler(async (req, res) => {
           return res.status(400).json({ error: 'folderId is required (can be null to unassign from folder).' });
       }
       const entry = await diaryStore.assignEntryToFolder(req.params.entryId, folderId);
-      io.emit('entry-updated', entry);
-      res.json(entry);
+      io.emit('entry-updated', serializeEntry(entry));
+      res.json(serializeEntry(entry));
   }));
 
   router.delete('/:id', asyncHandler(async (req, res) => {
