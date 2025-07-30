@@ -19,7 +19,7 @@ function DiaryEditable({ entry, onSave }) {
   useEffect(() => {
     const fetchHashtags = async () => {
       try {
-        const response = await fetch('/diary/hashtags');
+        const response = await fetch('/diary/tags');
         if (response.ok) {
           const data = await response.json();
           setAllHashtags(data);
