@@ -47,7 +47,7 @@ router.get('/', asyncHandler(async (req, res) => {
       if (!text || typeof text !== 'string') {
         return res.status(400).json({ error: 'Text is required to update an entry.' });
       }
-      const entry = await diaryStore.updateText(req.params.id, text, folderId);
+      const entry = await diaryStore.updateEntry(req.params.id, { text, folderId });
       io.emit('entry-updated', entry);
       await diaryStore.emitTagsUpdate(io);
 

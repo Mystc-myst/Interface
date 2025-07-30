@@ -218,28 +218,46 @@ exports.findById = async function(id) {
 };
 
 /**
- * @function updateText
- * @description Updates the text content of an existing diary entry.
- * @param {string} id - The unique ID of the diary entry to update.
- * @param {string} text - The new text content for the diary entry.
- * @param {string|null|undefined} [folderId=undefined] - New folder ID.
- * @returns {Promise<Object|null>} A promise that resolves to the updated diary entry object, or null if no entry with the given ID is found.
+ * @function updateEntry
+ * @description Updates a diary entry with the provided values. Accepts either
+ * an entry object containing an `id` or an explicit ID with an updates object.
+ * If the text changes, associated tags are updated accordingly.
+ * @param {string|Object} idOrEntry - Entry ID or object containing updates with an `id` property.
+ * @param {Object} [updates] - Fields to update when an ID is provided.
+ * @param {Object} [options] - Optional Sequelize transaction.
+ * @returns {Promise<Object>} The updated entry.
  */
-exports.updateText = async function(id, text, folderId, { transaction } = {}) {
+exports.updateEntry = async function(idOrEntry, updates = {}, { transaction } = {}) {
+  let id;
+  let data;
+  if (typeof idOrEntry === 'object' && idOrEntry !== null) {
+    id = idOrEntry.id;
+    data = { ...idOrEntry };
+    delete data.id;
+  } else {
+    id = idOrEntry;
+    data = { ...updates };
+  }
+
   try {
     const entry = await Entry.findByPk(id, { transaction });
     if (!entry) {
       throw new NotFoundError(`Entry with ID ${id} not found.`);
     }
 
-    await entry.update({
-      text,
-      timestamp: new Date(),
-      FolderId: folderId
-    }, { transaction });
+    if (data.folderId !== undefined) {
+      data.FolderId = data.folderId;
+      delete data.folderId;
+    }
 
-    await applyTags(entry, text, { transaction });
-    await cleanupUnusedTags({ transaction });
+    const textUpdated = Object.prototype.hasOwnProperty.call(data, 'text');
+
+    await entry.update(data, { transaction });
+
+    if (textUpdated) {
+      await applyTags(entry, data.text, { transaction });
+      await cleanupUnusedTags({ transaction });
+    }
 
     return entry;
   } catch (err) {
@@ -247,33 +265,6 @@ exports.updateText = async function(id, text, folderId, { transaction } = {}) {
       throw err;
     }
     throw new DatabaseError(`Failed to update entry with ID ${id}: ${err.message}`);
-  }
-};
-
-/**
- * @function saveEntry
- * @description Saves an entire diary entry object by replacing the existing entry with the same ID.
- * @param {Object} entryToSave - The diary entry object to save. Must contain an `id` property.
- * @returns {Promise<Object|null>} A promise that resolves to the saved diary entry object, or null if not found.
- */
-exports.saveEntry = async function(entryToSave) {
-  try {
-    const entry = await Entry.findByPk(entryToSave.id);
-    if (!entry) {
-      throw new NotFoundError(`Entry with ID ${entryToSave.id} not found.`);
-    }
-
-    await entry.update(entryToSave);
-
-    await applyTags(entry, entryToSave.text);
-    await cleanupUnusedTags();
-
-    return entry;
-  } catch (err) {
-    if (err instanceof NotFoundError) {
-      throw err;
-    }
-    throw new DatabaseError(`Failed to save entry with ID ${entryToSave.id}: ${err.message}`);
   }
 };
 
