@@ -63,10 +63,12 @@ const umzug = new Umzug({
   }
 });
 
-(async () => {
-  await umzug.up();
-  await migrate();
-})();
+if (process.env.NODE_ENV !== 'test') {
+  (async () => {
+    await umzug.up();
+    await migrate();
+  })();
+}
 
 /**
  * @private

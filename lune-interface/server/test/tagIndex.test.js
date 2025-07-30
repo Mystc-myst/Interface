@@ -1,35 +1,12 @@
 const diaryStore = require('../diaryStore');
 const { sequelize, Entry, Tag } = require('../db');
-const Umzug = require('umzug');
-const path = require('path');
 
-const umzug = new Umzug({
-  migrations: {
-    path: path.join(__dirname, '../migrations'),
-    params: [
-      sequelize.getQueryInterface(),
-      sequelize.constructor
-    ],
-    resolve: ({ name, path: migrationPath, context }) => {
-      const migration = require(migrationPath);
-      return {
-        name,
-        up: async () => migration.up(context, require('sequelize')),
-        down: async () => migration.down(context, require('sequelize')),
-      };
-    },
-  },
-  storage: 'sequelize',
-  storageOptions: {
-    sequelize: sequelize
-  }
-});
 
 describe('tag index updates', () => {
   let transaction;
 
   beforeEach(async () => {
-    await umzug.up();
+    await sequelize.sync({ force: true });
     transaction = await sequelize.transaction();
   });
 
@@ -37,7 +14,11 @@ describe('tag index updates', () => {
     if (transaction) {
       await transaction.rollback();
     }
-    await umzug.down({ to: 0 });
+    await sequelize.drop();
+  });
+
+  afterAll(async () => {
+    await sequelize.close();
   });
 
   test('add entries updates tag index', async () => {
