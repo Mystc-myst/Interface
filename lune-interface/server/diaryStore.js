@@ -104,6 +104,26 @@ exports._private = { cleanupUnusedTags };
 exports.parseHashtags = parseHashtags;
 
 /**
+ * @private
+ * @function applyTags
+ * @description Parses hashtags from text and associates the corresponding Tag
+ * instances with the provided Entry.
+ * @param {Object} entry - Sequelize Entry instance.
+ * @param {string} text - Text to parse for hashtags.
+ * @param {Object} [options] - Options object that may contain a transaction.
+ */
+async function applyTags(entry, text, { transaction } = {}) {
+  const tags = parseHashtags(text);
+  const tagInstances = await Promise.all(
+    tags.map(tag => Tag.findOrCreate({ where: { name: tag }, transaction }))
+  );
+  await entry.setTags(tagInstances.map(t => t[0]), { transaction });
+}
+
+// expose internal helper for tests
+exports._private.applyTags = applyTags;
+
+/**
  * @function getAll
  * @description Retrieves all diary entries from the database, sorted by timestamp in descending order.
  * @returns {Promise<Array<Object>>} A promise that resolves to an array of diary entry objects.
@@ -132,11 +152,7 @@ exports.add = async function(text, folderId = null, { transaction } = {}) {
       text,
       FolderId: folderId
     }, { transaction });
-    const tags = parseHashtags(text);
-    if (tags.length > 0) {
-      const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag }, transaction })));
-      await entry.setTags(tagInstances.map(t => t[0]), { transaction });
-    }
+    await applyTags(entry, text, { transaction });
     return entry;
   } catch (err) {
     throw new DatabaseError(`Failed to add entry: ${err.message}`);
@@ -209,11 +225,7 @@ exports.updateText = async function(id, text, folderId, { transaction } = {}) {
       FolderId: folderId
     }, { transaction });
 
-    const tags = parseHashtags(text);
-    if (tags.length > 0) {
-      const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag }, transaction })));
-      await entry.setTags(tagInstances.map(t => t[0]), { transaction });
-    }
+    await applyTags(entry, text, { transaction });
     await cleanupUnusedTags({ transaction });
 
     return entry;
@@ -240,9 +252,7 @@ exports.saveEntry = async function(entryToSave) {
 
     await entry.update(entryToSave);
 
-    const tags = parseHashtags(entryToSave.text);
-    const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } })));
-    await entry.setTags(tagInstances.map(t => t[0]));
+    await applyTags(entry, entryToSave.text);
     await cleanupUnusedTags();
 
     return entry;
