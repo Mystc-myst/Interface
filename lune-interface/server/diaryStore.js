@@ -184,6 +184,19 @@ exports.getTags = async function({ transaction } = {}) {
 };
 
 /**
+ * @function emitTagsUpdate
+ * @description Fetches the tag index and emits a `tags-updated` event.
+ * @param {Object} io - The Socket.io server instance.
+ * @param {Object} [options] - Optional parameters.
+ * @param {Object} [options.transaction] - Sequelize transaction, if any.
+ * @returns {Promise<void>} Resolves when the event has been emitted.
+ */
+exports.emitTagsUpdate = async function(io, { transaction } = {}) {
+  const tags = await exports.getTags({ transaction });
+  io.emit('tags-updated', tags);
+};
+
+/**
  * @function findById
  * @description Finds a diary entry by its unique ID from the database.
  * @param {string} id - The unique ID of the diary entry to find.

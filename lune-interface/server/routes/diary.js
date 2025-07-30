@@ -27,8 +27,7 @@ module.exports = function(io) {
       }
 
       io.emit('new-entry', entry);
-      const tags = await diaryStore.getTags();
-      io.emit('tags-updated', tags);
+      await diaryStore.emitTagsUpdate(io);
 
       res.status(201).json(entry);
     } catch (err) {
@@ -63,8 +62,7 @@ router.get('/', async (req, res) => {
       }
       const entry = await diaryStore.updateText(req.params.id, text, folderId);
       io.emit('entry-updated', entry);
-      const tags = await diaryStore.getTags();
-      io.emit('tags-updated', tags);
+      await diaryStore.emitTagsUpdate(io);
 
       res.json(entry);
     } catch (err) {
@@ -102,8 +100,7 @@ router.get('/', async (req, res) => {
     try {
       await diaryStore.remove(req.params.id);
       io.emit('entry-deleted', req.params.id);
-      const tags = await diaryStore.getTags();
-      io.emit('tags-updated', tags);
+      await diaryStore.emitTagsUpdate(io);
 
       res.json({ message: 'Diary entry deleted successfully.' });
     } catch (err) {
