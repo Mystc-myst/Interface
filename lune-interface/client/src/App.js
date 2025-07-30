@@ -246,8 +246,12 @@ function App() {
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
 
-        {/* Persistent link to entries page */}
-        <Link to="/entries" className="entries-nav-button">
+        {/* Toggle button between entries list and new entry page */}
+        <Link
+          to={location.pathname === '/entries' ? '/chat' : '/entries'}
+          className="entries-nav-button"
+          aria-label="Toggle entries view"
+        >
           📖
         </Link>
 
