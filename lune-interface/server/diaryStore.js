@@ -189,32 +189,34 @@ exports.findById = async function(id) {
 };
 
 /**
- * @function updateText
- * @description Updates the text content of an existing diary entry.
- * @param {string} id - The unique ID of the diary entry to update.
- * @param {string} text - The new text content for the diary entry.
- * @param {string|null|undefined} [folderId=undefined] - New folder ID.
- * @returns {Promise<Object|null>} A promise that resolves to the updated diary entry object, or null if no entry with the given ID is found.
+ * @function updateEntry
+ * @description Updates an existing diary entry's text, folder assignment, and tags.
+ * @param {Object} entryData - Object containing at least an `id` and optionally `text` and `folderId`.
+ * @param {string} entryData.id - ID of the entry to update.
+ * @param {string} [entryData.text] - New text for the entry.
+ * @param {string|null} [entryData.folderId] - New folder ID or null to unassign.
+ * @returns {Promise<Object>} The updated entry.
  */
-exports.updateText = async function(id, text, folderId, { transaction } = {}) {
+exports.updateEntry = async function(entryData, { transaction } = {}) {
+  const { id, text, folderId } = entryData;
   try {
     const entry = await Entry.findByPk(id, { transaction });
     if (!entry) {
       throw new NotFoundError(`Entry with ID ${id} not found.`);
     }
 
-    await entry.update({
-      text,
-      timestamp: new Date(),
-      FolderId: folderId
-    }, { transaction });
+    const updates = { timestamp: new Date() };
+    if (text !== undefined) updates.text = text;
+    if (folderId !== undefined) updates.FolderId = folderId;
 
-    const tags = parseHashtags(text);
-    if (tags.length > 0) {
+    await entry.update(updates, { transaction });
+
+    if (text !== undefined) {
+      const tags = parseHashtags(text);
       const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag }, transaction })));
       await entry.setTags(tagInstances.map(t => t[0]), { transaction });
+      await cleanupUnusedTags({ transaction });
     }
-    await cleanupUnusedTags({ transaction });
 
     return entry;
   } catch (err) {
@@ -222,35 +224,6 @@ exports.updateText = async function(id, text, folderId, { transaction } = {}) {
       throw err;
     }
     throw new DatabaseError(`Failed to update entry with ID ${id}: ${err.message}`);
-  }
-};
-
-/**
- * @function saveEntry
- * @description Saves an entire diary entry object by replacing the existing entry with the same ID.
- * @param {Object} entryToSave - The diary entry object to save. Must contain an `id` property.
- * @returns {Promise<Object|null>} A promise that resolves to the saved diary entry object, or null if not found.
- */
-exports.saveEntry = async function(entryToSave) {
-  try {
-    const entry = await Entry.findByPk(entryToSave.id);
-    if (!entry) {
-      throw new NotFoundError(`Entry with ID ${entryToSave.id} not found.`);
-    }
-
-    await entry.update(entryToSave);
-
-    const tags = parseHashtags(entryToSave.text);
-    const tagInstances = await Promise.all(tags.map(tag => Tag.findOrCreate({ where: { name: tag } })));
-    await entry.setTags(tagInstances.map(t => t[0]));
-    await cleanupUnusedTags();
-
-    return entry;
-  } catch (err) {
-    if (err instanceof NotFoundError) {
-      throw err;
-    }
-    throw new DatabaseError(`Failed to save entry with ID ${entryToSave.id}: ${err.message}`);
   }
 };
 

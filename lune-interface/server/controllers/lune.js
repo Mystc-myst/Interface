@@ -98,7 +98,7 @@ exports.processEntry = async function(entry) {
     references: ['text', 'Resistor', 'Interpreter', 'Forge'] // Indicates sources for the reflection.
   };
   // Save the updated entry (with Lune's reflection) using diaryStore.
-  await diaryStore.saveEntry(entry);
+  await diaryStore.updateEntry({ id: entry.id, text: entry.text, folderId: entry.FolderId });
   // This function doesn't return a value, it modifies the entry and saves it.
 };
 

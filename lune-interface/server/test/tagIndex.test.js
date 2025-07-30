@@ -54,7 +54,7 @@ describe('tag index updates', () => {
     const entry2 = await diaryStore.add('Second entry #foo #bar', null, { transaction });
 
     // Update the first entry and check if tags are updated
-    await diaryStore.updateText(entry1.id, 'Updated entry #baz', null, { transaction });
+    await diaryStore.updateEntry({ id: entry1.id, text: 'Updated entry #baz', folderId: null }, { transaction });
     let tags = await diaryStore.getTags({ transaction });
     expect(tags.foo).toEqual([entry2.id]);
     expect(tags.bar).toEqual([entry2.id]);
