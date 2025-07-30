@@ -89,7 +89,7 @@ export default function EntriesPage({
 
   // Filter out entries that are not assigned to any folder.
   // Sort them by timestamp, newest first.
-  const unfiledEntries = entries.filter(entry => !entry.folderId)
+  const unfiledEntries = entries.filter(entry => !(entry.folderId || entry.FolderId))
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   return (

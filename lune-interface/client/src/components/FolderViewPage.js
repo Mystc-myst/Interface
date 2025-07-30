@@ -32,7 +32,7 @@ export default function FolderViewPage({
         setCurrentFolder(folder); // Set the found folder as current.
         // Filter allEntries to get only those belonging to the current folder.
         // Sort these entries by timestamp, newest first.
-        const filteredEntries = allEntries.filter(entry => entry.folderId === folderId)
+        const filteredEntries = allEntries.filter(entry => (entry.folderId || entry.FolderId) === folderId)
           .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         setEntriesInFolder(filteredEntries); // Update state with the filtered and sorted entries.
       } else {
