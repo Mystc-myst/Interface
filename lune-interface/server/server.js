@@ -10,6 +10,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const luneRoutes = require('./routes/lune');
 const diaryRoutes = require('./routes/diary');
+const errorMapper = require('./middleware/errorMapper');
 
 // Load environment variables from .env file.
 dotenv.config();
@@ -57,6 +58,9 @@ if (require.main === module) {
 app.use((req, res, next) => {
   res.status(404).json({ error: `Not Found - ${req.method} ${req.originalUrl}` });
 });
+
+// Map custom errors to HTTP responses
+app.use(errorMapper);
 
 // Global Error Handler
 // eslint-disable-next-line no-unused-vars
