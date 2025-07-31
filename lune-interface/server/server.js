@@ -8,6 +8,7 @@ const http = require('http');
 const { Server } = require("socket.io");
 const cors = require('cors');
 const dotenv = require('dotenv');
+const diaryStore = require('./diaryStore');
 const luneRoutes = require('./routes/lune');
 const diaryRoutes = require('./routes/diary');
 const errorMapper = require('./middleware/errorMapper');
@@ -49,9 +50,12 @@ io.on('connection', (socket) => {
 
 // Server Startup Logic
 if (require.main === module) {
-  server.listen(port, () => {
-    console.log(`Server is running on port: ${port}`);
-  });
+  (async () => {
+    await diaryStore.initialize();
+    server.listen(port, () => {
+      console.log(`Server is running on port: ${port}`);
+    });
+  })();
 }
 
 // 404 Handler
