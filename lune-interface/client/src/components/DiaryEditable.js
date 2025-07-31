@@ -131,23 +131,32 @@ function DiaryEditable({ entry, onSave }) {
     e.preventDefault();
     if (!text.trim()) return;
     try {
+      let res;
       if (entry._id) {
-        await fetch(`/diary/${entry._id}`, {
+        res = await fetch(`/diary/${entry._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text }),
         });
       } else {
-        await fetch('/diary', {
+        res = await fetch('/diary', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text }),
         });
       }
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error(errText);
+        alert(`Error saving entry: ${errText}`);
+        return;
+      }
       setText('');
       onSave && onSave();
     } catch (err) {
       console.error('Failed to save entry:', err);
+      alert(`Failed to save entry: ${err.message}`);
     }
   };
 

@@ -47,7 +47,11 @@ export default function FolderViewPage({
   const handleDeleteEntry = async (entryId) => {
     if (!window.confirm('Are you sure you want to delete this entry permanently?')) return;
     try {
-      await fetch(`/diary/${entryId}`, { method: 'DELETE' }); // API call to delete.
+      const res = await fetch(`/diary/${entryId}`, { method: 'DELETE' }); // API call to delete.
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || 'Failed to delete entry');
+      }
       if (refreshEntries) {
           await refreshEntries(); // Refresh data to reflect deletion.
       }

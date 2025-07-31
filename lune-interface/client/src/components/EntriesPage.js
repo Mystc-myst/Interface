@@ -27,7 +27,11 @@ export default function EntriesPage({
     // User confirmation before deleting.
     if (!window.confirm('Are you sure you want to delete this entry?')) return;
     try {
-      await fetch(`/diary/${id}`, { method: 'DELETE' }); // API call to delete the entry.
+      const res = await fetch(`/diary/${id}`, { method: 'DELETE' }); // API call to delete the entry.
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || 'Failed to delete entry');
+      }
       await refreshEntries(); // Refresh all data to reflect the deletion.
     } catch (error) {
       console.error('Error deleting entry:', error);

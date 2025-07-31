@@ -31,12 +31,12 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false, onChatWithL
     setText(e.target.value);
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = async (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       if (onSave) {
-        onSave(text);
-        if (clearOnSave) {
+        const success = await onSave(text);
+        if (success && clearOnSave) {
           setText('');
         }
       }
@@ -60,10 +60,10 @@ const DiaryInput = ({ onSave, initialText = '', clearOnSave = false, onChatWithL
       <div className="flex items-center gap-4 justify-start mt-3"> {/* 1rem = gap-4, 0.75rem = mt-3 */}
         <Button
           className="btn-glass" // Apply the new class for Save button
-          onClick={() => {
+          onClick={async () => {
             if (onSave) {
-              onSave(text);
-              if (clearOnSave) {
+              const success = await onSave(text);
+              if (success && clearOnSave) {
                 setText('');
               }
             }
