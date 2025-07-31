@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
-import io from 'socket.io-client';
+import socket from './lib/socket';
 import InitiationView from './components/InitiationView';
 import DockChat from './components/DockChat';
 import EntriesPage from './components/EntriesPage';
 import FolderViewPage from './components/FolderViewPage';
 import LuneChatModal from './components/LuneChatModal';
 
-const socket = io('http://localhost:5001');
 
 function App() {
   const [entries, setEntries] = useState([]);
