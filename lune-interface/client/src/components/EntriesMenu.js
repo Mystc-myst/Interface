@@ -31,7 +31,7 @@ function EntriesMenu({ entries, onSelect, onNew }) {
       <div className="overflow-y-auto max-h-[70vh] no-scrollbar">
         {filtered.map(entry => (
           <div
-            key={entry._id || entry.id || Math.random()}
+            key={entry.id || Math.random()}
             className="cursor-pointer p-2 rounded hover:bg-lunePurple/10 border-b"
             tabIndex={0}
             role="button"

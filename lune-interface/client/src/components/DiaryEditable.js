@@ -144,8 +144,8 @@ function DiaryEditable({ entry, onSave }) {
     if (!text.trim()) return;
     try {
       let res;
-      if (entry._id) {
-        res = await fetch(`/diary/${entry._id}`, {
+      if (entry.id) {
+        res = await fetch(`/diary/${entry.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text }),
