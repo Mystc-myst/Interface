@@ -63,10 +63,18 @@ const umzug = new Umzug({
   }
 });
 
-(async () => {
+/**
+ * @function initialize
+ * @description Runs pending migrations and migrates data from diary.json if it
+ * exists. This should be called once on server startup before handling any
+ * requests.
+ */
+async function initialize() {
   await umzug.up();
   await migrate();
-})();
+}
+
+exports.initialize = initialize;
 
 /**
  * @private
