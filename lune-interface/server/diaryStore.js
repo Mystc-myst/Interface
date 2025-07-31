@@ -155,14 +155,25 @@ exports.getAll = async function() {
  * @returns {Promise<Object>} A promise that resolves to the newly created diary entry object.
  */
 exports.add = async function(text, folderId = null, { transaction } = {}) {
+  const shouldCommit = !transaction;
+  const tx = transaction || await sequelize.transaction();
   try {
-    const entry = await Entry.create({
-      text,
-      FolderId: folderId
-    }, { transaction });
-    await applyTags(entry, text, { transaction });
+    const entry = await Entry.create(
+      {
+        text,
+        FolderId: folderId
+      },
+      { transaction: tx }
+    );
+    await applyTags(entry, text, { transaction: tx });
+    if (shouldCommit) {
+      await tx.commit();
+    }
     return entry;
   } catch (err) {
+    if (shouldCommit) {
+      await tx.rollback();
+    }
     throw new DatabaseError(`Failed to add entry: ${err.message}`);
   }
 };
@@ -247,8 +258,10 @@ exports.updateEntry = async function(idOrEntry, updates = {}, { transaction } = 
     data = { ...updates };
   }
 
+  const shouldCommit = !transaction;
+  const tx = transaction || await sequelize.transaction();
   try {
-    const entry = await Entry.findByPk(id, { transaction });
+    const entry = await Entry.findByPk(id, { transaction: tx });
     if (!entry) {
       throw new NotFoundError(`Entry with ID ${id} not found.`);
     }
@@ -260,15 +273,20 @@ exports.updateEntry = async function(idOrEntry, updates = {}, { transaction } = 
 
     const textUpdated = Object.prototype.hasOwnProperty.call(data, 'text');
 
-    await entry.update(data, { transaction });
+    await entry.update(data, { transaction: tx });
 
     if (textUpdated) {
-      await applyTags(entry, data.text, { transaction });
-      await cleanupUnusedTags({ transaction });
+      await applyTags(entry, data.text, { transaction: tx });
+      await cleanupUnusedTags({ transaction: tx });
     }
-
+    if (shouldCommit) {
+      await tx.commit();
+    }
     return entry;
   } catch (err) {
+    if (shouldCommit) {
+      await tx.rollback();
+    }
     if (err instanceof NotFoundError) {
       throw err;
     }
