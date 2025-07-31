@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import getCaretCoordinates from 'textarea-caret';
 import { log } from '../lib/logger';
+import socket from '../lib/socket';
 
 function DiaryEditable({ entry, onSave }) {
   const [text, setText] = useState('');
@@ -22,7 +23,8 @@ function DiaryEditable({ entry, onSave }) {
         const response = await fetch('/diary/tags');
         if (response.ok) {
           const data = await response.json();
-          setAllHashtags(data);
+          const tags = Object.keys(data).map(t => `#${t}`);
+          setAllHashtags(tags);
         } else {
           console.error('Failed to fetch hashtags');
         }
@@ -30,7 +32,17 @@ function DiaryEditable({ entry, onSave }) {
         console.error('Error fetching hashtags:', err);
       }
     };
+
     fetchHashtags();
+
+    socket.on('tags-updated', (tags) => {
+      const formatted = Object.keys(tags).map(t => `#${t}`);
+      setAllHashtags(formatted);
+    });
+
+    return () => {
+      socket.off('tags-updated');
+    };
   }, []);
 
   const handleTextChange = (e) => {
