@@ -35,10 +35,16 @@ module.exports = function(io) {
       const entry = await diaryStore.add(entryText, folderId);
 
       const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
-      try {
-        await axios.post(n8nWebhookUrl, { text: entry.text });
-      } catch (webhookError) {
-        console.error('Error sending data to n8n webhook after entry creation:', webhookError.message);
+      if (n8nWebhookUrl) {
+        // Fire and forget the webhook request so the client isn't blocked
+        axios
+          .post(n8nWebhookUrl, { text: entry.text }, { timeout: 2000 })
+          .catch((webhookError) => {
+            console.error(
+              'Error sending data to n8n webhook after entry creation:',
+              webhookError.message
+            );
+          });
       }
 
       io.emit('new-entry', serializeEntry(entry));
