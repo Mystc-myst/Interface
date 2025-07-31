@@ -39,23 +39,31 @@ export default function DockChat({
   // Handles saving a new entry or updating an existing one.
   // This function is passed to DiaryInput component.
   const handleSave = async (text) => {
-    if (!text.trim()) return; // Do nothing if text is empty or only whitespace.
+    if (!text.trim()) return false; // Do nothing if text is empty or only whitespace.
 
     try {
+      let res;
       if (editingId) {
         // If editingId exists, update the existing entry (PUT request).
-        await fetch(`/diary/${editingId}`, {
+        res = await fetch(`/diary/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text })
         });
       } else {
         // If no editingId, create a new entry (POST request).
-        await fetch('/diary', {
+        res = await fetch('/diary', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text })
         });
+      }
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error(errText);
+        alert(`Error saving entry: ${errText}`);
+        return false;
       }
       // After successful save, reset editingId in App.js to indicate completion of edit/creation.
       if (setEditingId) {
@@ -63,9 +71,11 @@ export default function DockChat({
       }
       // The input field will be cleared by the useEffect hook above when editingId becomes null.
       await refreshEntries(); // Refresh all data to show the new/updated entry.
+      return true;
     } catch (err) {
       console.error('Failed to save entry:', err);
-      // TODO: Add user-facing error message.
+      alert(`Failed to save entry: ${err.message}`);
+      return false;
     }
   };
 
