@@ -2,6 +2,8 @@ const axios = require('axios');
 const diaryRoutes = require('../routes/diary');
 const diaryStore = require('../diaryStore');
 
+require('dotenv').config();
+
 jest.mock('axios');
 
 describe('sendEntryWebhook', () => {
@@ -12,7 +14,6 @@ describe('sendEntryWebhook', () => {
   it('sends payload with folder info', async () => {
     axios.post.mockResolvedValue({});
     jest.spyOn(diaryStore, 'findFolderById').mockResolvedValue({ id: 5, name: 'Personal' });
-    process.env.N8N_WEBHOOK_URL = 'http://example.com';
 
     const entry = {
       id: 1,
@@ -26,7 +27,7 @@ describe('sendEntryWebhook', () => {
 
     expect(diaryStore.findFolderById).toHaveBeenCalledWith(5);
     expect(axios.post).toHaveBeenCalledWith(
-      'http://example.com',
+      process.env.N8N_WEBHOOK_URL,
       {
         entry_id: 1,
         content: 'test',
@@ -40,7 +41,6 @@ describe('sendEntryWebhook', () => {
 
   it('sends payload without folder', async () => {
     axios.post.mockResolvedValue({});
-    process.env.N8N_WEBHOOK_URL = 'http://example.com';
 
     const entry = {
       id: 2,
@@ -53,7 +53,7 @@ describe('sendEntryWebhook', () => {
 
     expect(diaryStore.findFolderById).not.toHaveBeenCalled();
     expect(axios.post).toHaveBeenCalledWith(
-      'http://example.com',
+      process.env.N8N_WEBHOOK_URL,
       {
         entry_id: 2,
         content: 'hello',
