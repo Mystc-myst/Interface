@@ -1,37 +1,65 @@
 const express = require('express');
 const diaryStore = require('../diaryStore');
 const axios = require('axios');
+const qs = require('qs');
 const { processEntry } = require('../controllers/lune');
 
 // Helper to send an entry to an external n8n webhook
 async function sendEntryWebhook(entry) {
-  const webhookUrl = process.env.N8N_WEBHOOK_URL;
-  if (!webhookUrl) return;
+  const baseUrl = process.env.N8N_WEBHOOK_URL;
+  if (!baseUrl) {
+    // Throwing an error is better than silently failing.
+    // The caller can decide how to handle the failure.
+    throw new Error('N8N_WEBHOOK_URL is not configured.');
+  }
 
-  let folder = null;
+  let folderPayload = null;
   if (entry.FolderId) {
     try {
-      folder = await diaryStore.findFolderById(entry.FolderId);
+      const folder = await diaryStore.findFolderById(entry.FolderId);
+      if (folder) {
+        // n8n works best with simple key-value pairs or JSON strings.
+        folderPayload = JSON.stringify({ folder_id: folder.id, folder_name: folder.name });
+      }
     } catch (err) {
-      console.error('Error fetching folder for webhook payload:', err.message);
+      console.error('[Webhook] Error fetching folder for payload:', err.message);
+      // Decide if you want to proceed without the folder or stop.
+      // For now, we'll proceed without it.
     }
   }
 
-  const payload = {
+  const params = {
     entry_id: entry.id,
-    content: entry.text,
+    // Ensure content and idea are not undefined, default to empty string.
+    content: entry.text || '',
     created_at: entry.timestamp,
-    folder: folder
-      ? { folder_id: folder.id, folder_name: folder.name }
-      : null,
+    folder: folderPayload,
+    // Safely access nested property.
     idea: entry.agent_logs?.Lune?.reflection || ''
   };
 
+  // Use 'qs' for reliable and explicit query string generation.
+  const url = `${baseUrl}?${qs.stringify(params, { encode: true, arrayFormat: 'brackets' })}`;
+
+  console.log('[Webhook] Sending to n8n:', url);
+
   try {
-    // n8n webhooks can accept GET requests with query parameters
-    await axios.get(webhookUrl, { params: payload, timeout: 2000 });
-  } catch (webhookError) {
-    console.error('Error sending data to n8n webhook:', webhookError.message);
+    const response = await axios.get(url, {
+      timeout: 5000, // Increased timeout for safety.
+      validateStatus: null // Manually handle non-2xx responses.
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+      console.log(`[Webhook] Success: Received status code ${response.status}`);
+    } else {
+      console.error(`[Webhook] Non-success status: ${response.status}`, response.data);
+      // Throw an error to ensure the failure is visible to the caller.
+      throw new Error(`n8n webhook returned status ${response.status}`);
+    }
+  } catch (err) {
+    // Log the specific error message and re-throw to allow upstream handling.
+    console.error('[Webhook] Failed to send:', err.message);
+    throw err;
   }
 }
 
@@ -120,6 +148,37 @@ router.get('/', asyncHandler(async (req, res) => {
 
       res.json({ message: 'Diary entry deleted successfully.' });
   }));
+
+  // --- Webhook Test Route ---
+
+  // A dedicated endpoint to test the n8n webhook integration
+  // by sending the most recent diary entry.
+  router.get('/test-webhook', asyncHandler(async (req, res, next) => {
+    console.log('[Webhook Test] Received request to test n8n webhook.');
+    const entries = await diaryStore.getAll();
+    const latestEntry = entries[0];
+
+    if (!latestEntry) {
+      console.log('[Webhook Test] No entries found in diaryStore.');
+      return res.status(404).json({ error: 'No diary entries found to test the webhook.' });
+    }
+
+    console.log(`[Webhook Test] Found latest entry with ID: ${latestEntry.id}`);
+
+    try {
+      await sendEntryWebhook(latestEntry);
+      res.status(200).json({
+        message: 'Webhook test triggered successfully.',
+        entry: serializeEntry(latestEntry)
+      });
+    } catch (error) {
+      // The robust `sendEntryWebhook` now throws on failure.
+      // We catch it and pass it to the Express error handler.
+      console.error('[Webhook Test] The sendEntryWebhook function threw an error.');
+      next(error); // Forward to global error handler
+    }
+  }));
+
 
   // --- Folder Routes ---
 
