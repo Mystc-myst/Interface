@@ -3,6 +3,37 @@ const diaryStore = require('../diaryStore');
 const axios = require('axios');
 const { processEntry } = require('../controllers/lune');
 
+// Helper to send an entry to an external n8n webhook
+async function sendEntryWebhook(entry) {
+  const webhookUrl = process.env.N8N_WEBHOOK_URL;
+  if (!webhookUrl) return;
+
+  let folder = null;
+  if (entry.FolderId) {
+    try {
+      folder = await diaryStore.findFolderById(entry.FolderId);
+    } catch (err) {
+      console.error('Error fetching folder for webhook payload:', err.message);
+    }
+  }
+
+  const payload = {
+    entry_id: entry.id,
+    content: entry.text,
+    created_at: entry.timestamp,
+    folder: folder
+      ? { folder_id: folder.id, folder_name: folder.name }
+      : null,
+    idea: entry.agent_logs?.Lune?.reflection || ''
+  };
+
+  try {
+    await axios.post(webhookUrl, payload, { timeout: 2000 });
+  } catch (webhookError) {
+    console.error('Error sending data to n8n webhook:', webhookError.message);
+  }
+}
+
 // Utility to forward async errors to Express error handlers
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -38,38 +69,8 @@ module.exports = function(io) {
       // Generate the idea/reflection using the Lune agent pipeline
       await processEntry(entry);
 
-      // Look up folder details if the entry was assigned to a folder
-      let folder = null;
-      if (entry.FolderId) {
-        try {
-          folder = await diaryStore.findFolderById(entry.FolderId);
-        } catch (err) {
-          console.error('Error fetching folder for webhook payload:', err.message);
-        }
-      }
-
-      const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
-      if (n8nWebhookUrl) {
-        const payload = {
-          entry_id: entry.id,
-          content: entry.text,
-          created_at: entry.timestamp,
-          folder: folder
-            ? { folder_id: folder.id, folder_name: folder.name }
-            : null,
-          idea: entry.agent_logs?.Lune?.reflection || ''
-        };
-
-        // Fire and forget the webhook request so the client isn't blocked
-        axios
-          .post(n8nWebhookUrl, payload, { timeout: 2000 })
-          .catch((webhookError) => {
-            console.error(
-              'Error sending data to n8n webhook after entry creation:',
-              webhookError.message
-            );
-          });
-      }
+      // Fire and forget the webhook request so the client isn't blocked
+      sendEntryWebhook(entry).catch(() => {});
 
       io.emit('new-entry', serializeEntry(entry));
       await diaryStore.emitTagsUpdate(io);
@@ -93,6 +94,8 @@ router.get('/', asyncHandler(async (req, res) => {
       io.emit('entry-updated', serializeEntry(entry));
       await diaryStore.emitTagsUpdate(io);
 
+      sendEntryWebhook(entry).catch(() => {});
+
       res.json(serializeEntry(entry));
   }));
 
@@ -103,6 +106,9 @@ router.get('/', asyncHandler(async (req, res) => {
       }
       const entry = await diaryStore.assignEntryToFolder(req.params.entryId, folderId);
       io.emit('entry-updated', serializeEntry(entry));
+
+      sendEntryWebhook(entry).catch(() => {});
+
       res.json(serializeEntry(entry));
   }));
 
@@ -156,3 +162,5 @@ router.get('/', asyncHandler(async (req, res) => {
 
   return router;
 }
+
+module.exports.sendEntryWebhook = sendEntryWebhook;
