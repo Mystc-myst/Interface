@@ -2,7 +2,7 @@ const axios = require('axios');
 const diaryRoutes = require('../routes/diary');
 const diaryStore = require('../diaryStore');
 
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.example') });
 
 jest.mock('axios');
 
@@ -12,7 +12,7 @@ describe('sendEntryWebhook', () => {
   });
 
   it('sends payload with folder info', async () => {
-    axios.post.mockResolvedValue({});
+    axios.get.mockResolvedValue({});
     jest.spyOn(diaryStore, 'findFolderById').mockResolvedValue({ id: 5, name: 'Personal' });
 
     const entry = {
@@ -25,22 +25,23 @@ describe('sendEntryWebhook', () => {
 
     await diaryRoutes.sendEntryWebhook(entry);
 
+    const expectedPayload = {
+      entry_id: 1,
+      content: 'test',
+      created_at: '2024-01-01',
+      folder: { folder_id: 5, folder_name: 'Personal' },
+      idea: 'idea'
+    };
+
     expect(diaryStore.findFolderById).toHaveBeenCalledWith(5);
-    expect(axios.post).toHaveBeenCalledWith(
+    expect(axios.get).toHaveBeenCalledWith(
       process.env.N8N_WEBHOOK_URL,
-      {
-        entry_id: 1,
-        content: 'test',
-        created_at: '2024-01-01',
-        folder: { folder_id: 5, folder_name: 'Personal' },
-        idea: 'idea'
-      },
-      { timeout: 2000 }
+      { params: expectedPayload, timeout: 2000 }
     );
   });
 
   it('sends payload without folder', async () => {
-    axios.post.mockResolvedValue({});
+    axios.get.mockResolvedValue({});
 
     const entry = {
       id: 2,
@@ -51,17 +52,18 @@ describe('sendEntryWebhook', () => {
 
     await diaryRoutes.sendEntryWebhook(entry);
 
+    const expectedPayload = {
+      entry_id: 2,
+      content: 'hello',
+      created_at: '2024',
+      folder: null,
+      idea: ''
+    };
+
     expect(diaryStore.findFolderById).not.toHaveBeenCalled();
-    expect(axios.post).toHaveBeenCalledWith(
+    expect(axios.get).toHaveBeenCalledWith(
       process.env.N8N_WEBHOOK_URL,
-      {
-        entry_id: 2,
-        content: 'hello',
-        created_at: '2024',
-        folder: null,
-        idea: ''
-      },
-      { timeout: 2000 }
+      { params: expectedPayload, timeout: 2000 }
     );
   });
 });

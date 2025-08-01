@@ -28,7 +28,8 @@ async function sendEntryWebhook(entry) {
   };
 
   try {
-    await axios.post(webhookUrl, payload, { timeout: 2000 });
+    // n8n webhooks can accept GET requests with query parameters
+    await axios.get(webhookUrl, { params: payload, timeout: 2000 });
   } catch (webhookError) {
     console.error('Error sending data to n8n webhook:', webhookError.message);
   }
