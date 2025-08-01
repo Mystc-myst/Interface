@@ -1,6 +1,7 @@
 const express = require('express');
 const diaryStore = require('../diaryStore');
 const axios = require('axios');
+const { processEntry } = require('../controllers/lune');
 
 // Utility to forward async errors to Express error handlers
 const asyncHandler = (fn) => (req, res, next) => {
@@ -34,11 +35,34 @@ module.exports = function(io) {
 
       const entry = await diaryStore.add(entryText, folderId);
 
+      // Generate the idea/reflection using the Lune agent pipeline
+      await processEntry(entry);
+
+      // Look up folder details if the entry was assigned to a folder
+      let folder = null;
+      if (entry.FolderId) {
+        try {
+          folder = await diaryStore.findFolderById(entry.FolderId);
+        } catch (err) {
+          console.error('Error fetching folder for webhook payload:', err.message);
+        }
+      }
+
       const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
       if (n8nWebhookUrl) {
+        const payload = {
+          entry_id: entry.id,
+          content: entry.text,
+          created_at: entry.timestamp,
+          folder: folder
+            ? { folder_id: folder.id, folder_name: folder.name }
+            : null,
+          idea: entry.agent_logs?.Lune?.reflection || ''
+        };
+
         // Fire and forget the webhook request so the client isn't blocked
         axios
-          .post(n8nWebhookUrl, { text: entry.text }, { timeout: 2000 })
+          .post(n8nWebhookUrl, payload, { timeout: 2000 })
           .catch((webhookError) => {
             console.error(
               'Error sending data to n8n webhook after entry creation:',
