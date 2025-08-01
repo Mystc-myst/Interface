@@ -22,8 +22,9 @@ const server = http.createServer(app);
 
 // Initialize Socket.io server.
 const io = new Server(server, {
+  path: '/socket.io/',
   cors: {
-    origin: "*", // Adjust for production
+    origin: "http://localhost:3000", // Default client port
     methods: ["GET", "POST"]
   }
 });
