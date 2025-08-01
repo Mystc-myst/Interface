@@ -39,6 +39,8 @@ cd lune-interface/server && npm start
 cd lune-interface/client && npm start
 ```
 
+`npm start` launches the server once. During development you can run `npm run dev` in the `lune-interface/server` directory. This uses `nodemon` to automatically restart the Express server whenever files change.
+
 Before starting the server, copy `lune-interface/server/.env.example` to
 `lune-interface/server/.env` and fill in the required values for
 `MONGO_URI`, `OPENAI_API_KEY`, `N8N_WEBHOOK_URL` and `PORT`.
