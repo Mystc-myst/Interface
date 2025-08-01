@@ -1,0 +1,6 @@
+Warning: OPENAI_API_KEY is not set. Lune replies might fail if the n8n webhook relies on it.
+Executing (default): SELECT name FROM sqlite_master WHERE type='table' AND name='SequelizeMeta';
+Executing (default): PRAGMA INDEX_LIST(`SequelizeMeta`)
+Executing (default): PRAGMA INDEX_INFO(`sqlite_autoindex_SequelizeMeta_1`)
+Executing (default): SELECT `name` FROM `SequelizeMeta` AS `SequelizeMeta` ORDER BY `SequelizeMeta`.`name` ASC;
+Server is running on port: 5001
