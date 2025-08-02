@@ -11,8 +11,8 @@ describe('sendEntryWebhook', () => {
     jest.clearAllMocks();
   });
 
-  it('sends payload with folder info', async () => {
-    axios.get.mockResolvedValue({});
+  it('sends payload with folder info via POST', async () => {
+    axios.post.mockResolvedValue({ status: 200 });
     jest.spyOn(diaryStore, 'findFolderById').mockResolvedValue({ id: 5, name: 'Personal' });
 
     const entry = {
@@ -34,14 +34,19 @@ describe('sendEntryWebhook', () => {
     };
 
     expect(diaryStore.findFolderById).toHaveBeenCalledWith(5);
-    expect(axios.get).toHaveBeenCalledWith(
+    expect(axios.post).toHaveBeenCalledWith(
       process.env.N8N_WEBHOOK_URL,
-      { params: expectedPayload, timeout: 2000 }
+      expectedPayload,
+      {
+        timeout: 5000,
+        headers: { 'Content-Type': 'application/json' },
+        validateStatus: null,
+      }
     );
   });
 
-  it('sends payload without folder', async () => {
-    axios.get.mockResolvedValue({});
+  it('sends payload without folder via POST', async () => {
+    axios.post.mockResolvedValue({ status: 200 });
 
     const entry = {
       id: 2,
@@ -61,9 +66,14 @@ describe('sendEntryWebhook', () => {
     };
 
     expect(diaryStore.findFolderById).not.toHaveBeenCalled();
-    expect(axios.get).toHaveBeenCalledWith(
+    expect(axios.post).toHaveBeenCalledWith(
       process.env.N8N_WEBHOOK_URL,
-      { params: expectedPayload, timeout: 2000 }
+      expectedPayload,
+      {
+        timeout: 5000,
+        headers: { 'Content-Type': 'application/json' },
+        validateStatus: null,
+      }
     );
   });
 });

@@ -1,15 +1,12 @@
 const express = require('express');
 const diaryStore = require('../diaryStore');
 const axios = require('axios');
-const qs = require('qs');
 const { processEntry } = require('../controllers/lune');
 
 // Helper to send an entry to an external n8n webhook
 async function sendEntryWebhook(entry) {
-  const baseUrl = process.env.N8N_WEBHOOK_URL;
-  if (!baseUrl) {
-    // Throwing an error is better than silently failing.
-    // The caller can decide how to handle the failure.
+  const webhookUrl = process.env.N8N_WEBHOOK_URL;
+  if (!webhookUrl) {
     throw new Error('N8N_WEBHOOK_URL is not configured.');
   }
 
@@ -18,46 +15,37 @@ async function sendEntryWebhook(entry) {
     try {
       const folder = await diaryStore.findFolderById(entry.FolderId);
       if (folder) {
-        // n8n works best with simple key-value pairs or JSON strings.
-        folderPayload = JSON.stringify({ folder_id: folder.id, folder_name: folder.name });
+        folderPayload = { folder_id: folder.id, folder_name: folder.name };
       }
     } catch (err) {
       console.error('[Webhook] Error fetching folder for payload:', err.message);
-      // Decide if you want to proceed without the folder or stop.
-      // For now, we'll proceed without it.
     }
   }
 
-  const params = {
+  const payload = {
     entry_id: entry.id,
-    // Ensure content and idea are not undefined, default to empty string.
     content: entry.text || '',
     created_at: entry.timestamp,
     folder: folderPayload,
-    // Safely access nested property.
-    idea: entry.agent_logs?.Lune?.reflection || ''
+    idea: entry.agent_logs?.Lune?.reflection || '',
   };
 
-  // Use 'qs' for reliable and explicit query string generation.
-  const url = `${baseUrl}?${qs.stringify(params, { encode: true, arrayFormat: 'brackets' })}`;
-
-  console.log('[Webhook] Sending to n8n:', url);
+  console.log('[Webhook] Sending POST to n8n with payload:', JSON.stringify(payload, null, 2));
 
   try {
-    const response = await axios.get(url, {
-      timeout: 5000, // Increased timeout for safety.
-      validateStatus: null // Manually handle non-2xx responses.
+    const response = await axios.post(webhookUrl, payload, {
+      timeout: 5000,
+      headers: { 'Content-Type': 'application/json' },
+      validateStatus: null,
     });
 
     if (response.status >= 200 && response.status < 300) {
       console.log(`[Webhook] Success: Received status code ${response.status}`);
     } else {
       console.error(`[Webhook] Non-success status: ${response.status}`, response.data);
-      // Throw an error to ensure the failure is visible to the caller.
       throw new Error(`n8n webhook returned status ${response.status}`);
     }
   } catch (err) {
-    // Log the specific error message and re-throw to allow upstream handling.
     console.error('[Webhook] Failed to send:', err.message);
     throw err;
   }
