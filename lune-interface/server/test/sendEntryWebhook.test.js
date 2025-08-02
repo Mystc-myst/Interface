@@ -11,59 +11,78 @@ describe('sendEntryWebhook', () => {
     jest.clearAllMocks();
   });
 
-  it('sends payload with folder info', async () => {
-    axios.get.mockResolvedValue({});
-    jest.spyOn(diaryStore, 'findFolderById').mockResolvedValue({ id: 5, name: 'Personal' });
+  it('sends payload with folder info via POST', async () => {
+    axios.post.mockResolvedValue({ status: 200 });
+    jest.spyOn(diaryStore, 'findFolderById').mockResolvedValue({ id: 'folder-uuid-123', name: 'Personal' });
 
+    const now = new Date();
     const entry = {
-      id: 1,
+      id: 'entry-uuid-456',
       text: 'test',
-      timestamp: '2024-01-01',
-      FolderId: 5,
-      agent_logs: { Lune: { reflection: 'idea' } }
+      FolderId: 'folder-uuid-123',
+      createdAt: now,
+      updatedAt: now,
     };
 
     await diaryRoutes.sendEntryWebhook(entry);
 
     const expectedPayload = {
-      entry_id: 1,
+      entry_id: 'entry-uuid-456',
       content: 'test',
-      created_at: '2024-01-01',
-      folder: { folder_id: 5, folder_name: 'Personal' },
-      idea: 'idea'
+      created_at: now.toISOString(),
+      updated_at: now.toISOString(),
+      idea: null,
+      folder: {
+        folder_id: 'folder-uuid-123',
+        name: 'Personal',
+        description: null
+      },
     };
 
-    expect(diaryStore.findFolderById).toHaveBeenCalledWith(5);
-    expect(axios.get).toHaveBeenCalledWith(
+    expect(diaryStore.findFolderById).toHaveBeenCalledWith('folder-uuid-123');
+    expect(axios.post).toHaveBeenCalledWith(
       process.env.N8N_WEBHOOK_URL,
-      { params: expectedPayload, timeout: 2000 }
+      expectedPayload,
+      {
+        timeout: 5000,
+        headers: { 'Content-Type': 'application/json' },
+        validateStatus: null,
+      }
     );
   });
 
-  it('sends payload without folder', async () => {
-    axios.get.mockResolvedValue({});
+  it('sends payload without folder via POST', async () => {
+    axios.post.mockResolvedValue({ status: 200 });
 
+    const now = new Date();
     const entry = {
-      id: 2,
+      id: 'entry-uuid-789',
       text: 'hello',
-      timestamp: '2024',
-      agent_logs: {}
+      FolderId: null,
+      createdAt: now,
+      updatedAt: now,
     };
 
     await diaryRoutes.sendEntryWebhook(entry);
 
     const expectedPayload = {
-      entry_id: 2,
+      entry_id: 'entry-uuid-789',
       content: 'hello',
-      created_at: '2024',
+      created_at: now.toISOString(),
+      updated_at: now.toISOString(),
+      idea: null,
       folder: null,
-      idea: ''
     };
 
     expect(diaryStore.findFolderById).not.toHaveBeenCalled();
-    expect(axios.get).toHaveBeenCalledWith(
+    expect(axios.post).toHaveBeenCalledWith(
       process.env.N8N_WEBHOOK_URL,
-      { params: expectedPayload, timeout: 2000 }
+      expectedPayload,
+      {
+        timeout: 5000,
+        headers: { 'Content-Type': 'application/json' },
+        validateStatus: null,
+      }
     );
   });
 });
