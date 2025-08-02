@@ -15,7 +15,11 @@ async function sendEntryWebhook(entry) {
     try {
       const folder = await diaryStore.findFolderById(entry.FolderId);
       if (folder) {
-        folderPayload = { folder_id: folder.id, folder_name: folder.name };
+        folderPayload = {
+          folder_id: folder.id,
+          name: folder.name,
+          description: null, // No description field in the Folder model
+        };
       }
     } catch (err) {
       console.error('[Webhook] Error fetching folder for payload:', err.message);
@@ -25,9 +29,10 @@ async function sendEntryWebhook(entry) {
   const payload = {
     entry_id: entry.id,
     content: entry.text || '',
-    created_at: entry.timestamp,
+    created_at: entry.createdAt.toISOString(),
+    updated_at: entry.updatedAt.toISOString(),
+    idea: null,
     folder: folderPayload,
-    idea: entry.agent_logs?.Lune?.reflection || '',
   };
 
   console.log('[Webhook] Sending POST to n8n with payload:', JSON.stringify(payload, null, 2));
