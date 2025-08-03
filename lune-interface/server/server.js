@@ -8,13 +8,18 @@ const http = require('http');
 const { Server } = require("socket.io");
 const cors = require('cors');
 const dotenv = require('dotenv');
+
+// Load environment variables from .env file.
+dotenv.config();
+
 const diaryStore = require('./diaryStore');
 const luneRoutes = require('./routes/lune');
 const diaryRoutes = require('./routes/diary');
 const errorMapper = require('./middleware/errorMapper');
+const { getN8nWebhookUrl } = require('./config/n8n');
 
-// Load environment variables from .env file.
-dotenv.config();
+// Ensure required environment variables are set.
+getN8nWebhookUrl();
 
 // Initialize Express app and HTTP server.
 const app = express();

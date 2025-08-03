@@ -43,7 +43,8 @@ cd lune-interface/client && npm start
 
 Before starting the server, copy `lune-interface/server/.env.example` to
 `lune-interface/server/.env` and fill in the required values for
-`MONGO_URI`, `OPENAI_API_KEY`, `N8N_WEBHOOK_URL` and `PORT`.
+`MONGO_URI`, `OPENAI_API_KEY`, `N8N_WEBHOOK_URL` and `PORT`. The server
+will exit during startup if `N8N_WEBHOOK_URL` is not defined.
 
 The client is configured to proxy API requests to `http://localhost:5001`.
 To enable conversations with Lune uncomment the line enabling the route in

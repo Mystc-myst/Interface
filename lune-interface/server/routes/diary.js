@@ -2,13 +2,11 @@ const express = require('express');
 const diaryStore = require('../diaryStore');
 const axios = require('axios');
 const { processEntry } = require('../controllers/lune');
+const { getN8nWebhookUrl } = require('../config/n8n');
 
 // Helper to send an entry to an external n8n webhook
 async function sendEntryWebhook(entry) {
-  const webhookUrl = process.env.N8N_WEBHOOK_URL;
-  if (!webhookUrl) {
-    throw new Error('N8N_WEBHOOK_URL is not configured.');
-  }
+  const webhookUrl = getN8nWebhookUrl();
 
   let folderPayload = null;
   if (entry.FolderId) {
