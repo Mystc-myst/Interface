@@ -92,7 +92,7 @@ module.exports = function(io) {
       await processEntry(entry);
 
       // Fire and forget the webhook request so the client isn't blocked
-      sendEntryWebhook(entry).catch(() => {});
+      sendEntryWebhook(entry).catch(err => console.error('[Webhook] Failed:', err.message));
 
       io.emit('new-entry', serializeEntry(entry));
       await diaryStore.emitTagsUpdate(io);
@@ -116,7 +116,7 @@ router.get('/', asyncHandler(async (req, res) => {
       io.emit('entry-updated', serializeEntry(entry));
       await diaryStore.emitTagsUpdate(io);
 
-      sendEntryWebhook(entry).catch(() => {});
+      sendEntryWebhook(entry).catch(err => console.error('[Webhook] Failed:', err.message));
 
       res.json(serializeEntry(entry));
   }));
@@ -129,7 +129,7 @@ router.get('/', asyncHandler(async (req, res) => {
       const entry = await diaryStore.assignEntryToFolder(req.params.entryId, folderId);
       io.emit('entry-updated', serializeEntry(entry));
 
-      sendEntryWebhook(entry).catch(() => {});
+      sendEntryWebhook(entry).catch(err => console.error('[Webhook] Failed:', err.message));
 
       res.json(serializeEntry(entry));
   }));
