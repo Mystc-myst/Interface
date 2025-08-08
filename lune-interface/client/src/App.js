@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
+import { getEntries, getFolders, getTagIndex } from './api/diaryApi';
 import socket from './lib/socket';
 import InitiationView from './components/InitiationView';
 import DockChat from './components/DockChat';
@@ -73,10 +74,8 @@ function App() {
   // Uses useCallback to prevent re-creation on every render unless dependencies change.
   const fetchEntries = useCallback(async () => {
     try {
-      const res = await fetch('/diary'); // API endpoint for entries.
-      if (!res.ok) throw new Error(`Failed to fetch entries: ${res.status}`);
-      const data = await res.json();
-      setEntries(data); // Update entries state with fetched data.
+      const response = await getEntries();
+      setEntries(response.data); // Update entries state with fetched data.
     } catch (error) {
       console.error("Error fetching entries:", error);
       setEntries([]); // Reset to empty array on error to prevent crashes.
@@ -86,10 +85,8 @@ function App() {
   // Callback function to fetch folders from the backend.
   const fetchFolders = useCallback(async () => {
     try {
-      const res = await fetch('/diary/folders'); // API endpoint for folders.
-      if (!res.ok) throw new Error(`Failed to fetch folders: ${res.status}`);
-      const data = await res.json();
-      setFolders(data); // Update folders state.
+      const response = await getFolders();
+      setFolders(response.data); // Update folders state.
     } catch (error) {
       console.error("Error fetching folders:", error);
       setFolders([]); // Reset on error.
@@ -98,10 +95,8 @@ function App() {
 
   const fetchTagIndex = useCallback(async () => {
     try {
-      const res = await fetch('/diary/tags');
-      if (!res.ok) throw new Error(`Failed to fetch tags: ${res.status}`);
-      const data = await res.json();
-      setTagIndex(data);
+      const response = await getTagIndex();
+      setTagIndex(response.data);
     } catch (error) {
       console.error("Error fetching tag index:", error);
       setTagIndex({});

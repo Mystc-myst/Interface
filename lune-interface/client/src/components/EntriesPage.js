@@ -3,6 +3,7 @@ import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { promptInput } from '../lib/dialogs';
+import { deleteEntry, createFolder, updateEntryFolder } from '../api/diaryApi';
 // Import sub-components.
 import Folder from './Folder'; // Component to display a single folder and its entries.
 import EntryCard from './ui/EntryCard'; // UI component to display a single entry's summary.
@@ -27,11 +28,7 @@ export default function EntriesPage({
     // User confirmation before deleting.
     if (!window.confirm('Are you sure you want to delete this entry?')) return;
     try {
-      const res = await fetch(`/diary/${id}`, { method: 'DELETE' }); // API call to delete the entry.
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || 'Failed to delete entry');
-      }
+      await deleteEntry(id);
       await refreshEntries(); // Refresh all data to reflect the deletion.
     } catch (error) {
       console.error('Error deleting entry:', error);
@@ -44,15 +41,7 @@ export default function EntriesPage({
     const folderName = promptInput('Enter folder name:'); // Get folder name from user.
     if (folderName && folderName.trim() !== '') {
       try {
-        const response = await fetch('/diary/folders', { // API call to create a new folder.
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: folderName.trim() }),
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to create folder');
-        }
+        await createFolder({ name: folderName.trim() });
         // Refresh folder list (or all data if only refreshEntries is available).
         if (refreshFolders) {
           await refreshFolders();
@@ -70,15 +59,7 @@ export default function EntriesPage({
   // useCallback is used for performance, as this function is passed to Folder components.
   const handleDropEntryIntoFolder = useCallback(async (folderId, entryId) => {
     try {
-      const response = await fetch(`/diary/${entryId}/folder`, { // API call to update entry's folderId.
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ folderId: folderId }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to move entry to folder');
-      }
+      await updateEntryFolder(entryId, folderId);
       await refreshEntries(); // Refresh data to show the entry in its new folder.
     } catch (error) {
       console.error('Error moving entry to folder:', error);

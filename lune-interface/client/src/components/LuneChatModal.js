@@ -1,6 +1,7 @@
 // Import React hooks and PropTypes for type checking.
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { logToLune, sendToLune } from '../api/luneApi';
 
 // LuneChatModal component: Provides a modal interface for users to chat with the "Lune" AI.
 export default function LuneChatModal({ open, onClose }) {
@@ -17,11 +18,7 @@ export default function LuneChatModal({ open, onClose }) {
   const handleClose = async () => {
     try {
       // API call to log the conversation.
-      await fetch('/api/lune/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversation: messages }) // Send the entire message history.
-      });
+      await logToLune({ conversation: messages });
     } catch (e) {
       console.error('Failed to log conversation with Lune:', e);
     }
@@ -44,45 +41,34 @@ export default function LuneChatModal({ open, onClose }) {
 
     try {
       // API call to send the user's message to the Lune AI backend.
-      const res = await fetch('/api/lune/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: 'test-session-1', // Session ID, currently hardcoded.
-          userMessage: userMessage.text // The text of the user's message.
-        }),
+      const response = await sendToLune({
+        sessionId: 'test-session-1', // Session ID, currently hardcoded.
+        userMessage: userMessage.text // The text of the user's message.
       });
 
       // The AI's reply is expected directly in this HTTP response.
-      if (!res.ok) {
-        // If the response is not OK, try to parse error details and show an error message.
-        const errorData = await res.json().catch(() => ({})); // Gracefully handle non-JSON error responses.
-        console.error('Failed to send message to Lune server:', res.status, errorData.error);
-        setMessages([...newMessages, { sender: 'lune', text: `Sorry, failed to send your message. ${errorData.error || ''}`.trim() }]);
-      } else {
-        // If response is OK, parse the AI's reply.
-        const { aiReply } = await res.json();
-        let messageText;
-        // Check if aiReply is an object and has an 'output' property (common pattern for some AI services).
-        if (typeof aiReply === 'object' && aiReply !== null) {
-          if (Object.prototype.hasOwnProperty.call(aiReply, 'output')) {
-            messageText = aiReply.output;
-          } else {
-            // If structure is unexpected, log a warning and show an error.
-            console.warn("Unexpected AI response structure from Lune:", aiReply);
-            messageText = "Error: Received unexpected response format from AI.";
-          }
+      const { aiReply } = response.data;
+      let messageText;
+      // Check if aiReply is an object and has an 'output' property (common pattern for some AI services).
+      if (typeof aiReply === 'object' && aiReply !== null) {
+        if (Object.prototype.hasOwnProperty.call(aiReply, 'output')) {
+          messageText = aiReply.output;
         } else {
-          // If aiReply is a direct string or other primitive, use it as is.
-          messageText = aiReply;
+          // If structure is unexpected, log a warning and show an error.
+          console.warn("Unexpected AI response structure from Lune:", aiReply);
+          messageText = "Error: Received unexpected response format from AI.";
         }
-        // Add AI's reply to the messages state.
-        setMessages([...newMessages, { sender: 'lune', text: messageText }]);
+      } else {
+        // If aiReply is a direct string or other primitive, use it as is.
+        messageText = aiReply;
       }
+      // Add AI's reply to the messages state.
+      setMessages([...newMessages, { sender: 'lune', text: messageText }]);
     } catch (error) {
       // Catch any network or other errors during the fetch operation.
       console.error('Error sending message to Lune:', error);
-      setMessages([...newMessages, { sender: 'lune', text: 'Sorry, something went wrong. Please try again later.' }]);
+      const errorMessage = error.response?.data?.error || error.message || 'Sorry, something went wrong. Please try again later.';
+      setMessages([...newMessages, { sender: 'lune', text: errorMessage }]);
     } finally {
       setLoading(false); // Reset loading state regardless of success or failure.
     }

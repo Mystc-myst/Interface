@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import getCaretCoordinates from 'textarea-caret';
 import { log } from '../lib/logger';
 import socket from '../lib/socket';
+import { getTagIndex, createEntry, updateEntry } from '../api/diaryApi';
 
 function DiaryEditable({ entry, onSave }) {
   const [text, setText] = useState('');
@@ -20,14 +21,10 @@ function DiaryEditable({ entry, onSave }) {
   useEffect(() => {
     const fetchHashtags = async () => {
       try {
-        const response = await fetch('/diary/tags');
-        if (response.ok) {
-          const data = await response.json();
-          const tags = Object.keys(data).map(t => `#${t}`);
-          setAllHashtags(tags);
-        } else {
-          console.error('Failed to fetch hashtags');
-        }
+        const response = await getTagIndex();
+        const data = response.data;
+        const tags = Object.keys(data).map(t => `#${t}`);
+        setAllHashtags(tags);
       } catch (err) {
         console.error('Error fetching hashtags:', err);
       }
@@ -143,26 +140,10 @@ function DiaryEditable({ entry, onSave }) {
     e.preventDefault();
     if (!text.trim()) return;
     try {
-      let res;
       if (entry.id) {
-        res = await fetch(`/diary/${entry.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text }),
-        });
+        await updateEntry(entry.id, { text });
       } else {
-        res = await fetch('/diary', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text }),
-        });
-      }
-
-      if (!res.ok) {
-        const errText = await res.text();
-        console.error(errText);
-        alert(`Error saving entry: ${errText}`);
-        return;
+        await createEntry({ text });
       }
       setText('');
       onSave && onSave();
