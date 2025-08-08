@@ -1,6 +1,7 @@
 // Import React hooks and PropTypes for type checking.
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { createEntry, updateEntry } from '../api/diaryApi';
 // Import sub-components used within DockChat.
 import TagSidebar from './TagSidebar';
 import DiaryInput from "./DiaryInput"; // The main text input component for diary entries.
@@ -42,29 +43,14 @@ export default function DockChat({
     if (!text.trim()) return false; // Do nothing if text is empty or only whitespace.
 
     try {
-      let res;
       if (editingId) {
         // If editingId exists, update the existing entry (PUT request).
-        res = await fetch(`/diary/${editingId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
-        });
+        await updateEntry(editingId, { text });
       } else {
         // If no editingId, create a new entry (POST request).
-        res = await fetch('/diary', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
-        });
+        await createEntry({ text });
       }
 
-      if (!res.ok) {
-        const errText = await res.text();
-        console.error(errText);
-        alert(`Error saving entry: ${errText}`);
-        return false;
-      }
       // After successful save, reset editingId in App.js to indicate completion of edit/creation.
       if (setEditingId) {
         setEditingId(null);

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { deleteEntry, updateEntryFolder } from '../api/diaryApi';
 // Import CSS module for component-specific styling.
 import styles from './FolderViewPage.module.css';
 // Import UI component for displaying entries.
@@ -47,11 +48,7 @@ export default function FolderViewPage({
   const handleDeleteEntry = async (entryId) => {
     if (!window.confirm('Are you sure you want to delete this entry permanently?')) return;
     try {
-      const res = await fetch(`/diary/${entryId}`, { method: 'DELETE' }); // API call to delete.
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || 'Failed to delete entry');
-      }
+      await deleteEntry(entryId);
       if (refreshEntries) {
           await refreshEntries(); // Refresh data to reflect deletion.
       }
@@ -65,15 +62,7 @@ export default function FolderViewPage({
   const handleRemoveEntryFromFolder = async (entryId) => {
     if (!window.confirm('Are you sure you want to remove this entry from the folder?')) return;
     try {
-      const response = await fetch(`/diary/${entryId}/folder`, { // API call to update folderId.
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ folderId: null }), // Set folderId to null.
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to remove entry from folder');
-      }
+      await updateEntryFolder(entryId, null);
       if (refreshEntries) {
         await refreshEntries(); // Refresh data; the entry will no longer appear in this folder.
       }
