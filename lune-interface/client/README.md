@@ -19,6 +19,20 @@ You may also see any lint errors in the console.
 Launches the test runner in the interactive watch mode.\
 See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
+To run the test suite once without watch mode, navigate to `lune-interface/client/` and run:
+
+```
+npm test --watchAll=false
+```
+
+Test files reside under `src/api/__tests__`.
+
+If you encounter a `SyntaxError: Cannot use import statement outside a module`,
+your test files or dependencies may be written as ECMAScript modules while the
+default Jest configuration expects CommonJS. Configure Jest for ESM or adjust
+the modules accordingly; see the [Jest docs on ECMAScript modules](https://jestjs.io/docs/ecmascript-modules)
+for guidance.
+
 ### `npm run build`
 
 Builds the app for production to the `build` folder.\
