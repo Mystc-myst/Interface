@@ -41,6 +41,9 @@ const port = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
+// Add a tiny health route (non-breaking)
+app.get('/health', (req, res) => res.status(200).send('ok'));
+
 // Application Routes
 // Pass the io object to the diary routes to enable real-time updates.
 app.use('/diary', diaryRoutes(io));
@@ -58,7 +61,7 @@ io.on('connection', (socket) => {
 if (require.main === module) {
   (async () => {
     await diaryStore.initialize();
-    server.listen(port, () => {
+    server.listen(port, '0.0.0.0', () => {
       console.log(`Server is running on port: ${port}`);
     });
   })();
