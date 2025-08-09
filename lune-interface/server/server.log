@@ -3,4 +3,16 @@ Executing (default): SELECT name FROM sqlite_master WHERE type='table' AND name=
 Executing (default): PRAGMA INDEX_LIST(`SequelizeMeta`)
 Executing (default): PRAGMA INDEX_INFO(`sqlite_autoindex_SequelizeMeta_1`)
 Executing (default): SELECT `name` FROM `SequelizeMeta` AS `SequelizeMeta` ORDER BY `SequelizeMeta`.`name` ASC;
+Executing (default): SELECT name FROM sqlite_master WHERE type='table' AND name='SequelizeMeta';
+Executing (default): PRAGMA INDEX_LIST(`SequelizeMeta`)
+Executing (default): PRAGMA INDEX_INFO(`sqlite_autoindex_SequelizeMeta_1`)
+Executing (default): SELECT `name` FROM `SequelizeMeta` AS `SequelizeMeta` ORDER BY `SequelizeMeta`.`name` ASC;
+Executing (default): CREATE TABLE IF NOT EXISTS `Folders` (`id` UUID PRIMARY KEY, `name` VARCHAR(255) NOT NULL UNIQUE, `createdAt` DATETIME NOT NULL, `updatedAt` DATETIME NOT NULL);
+Executing (default): CREATE TABLE IF NOT EXISTS `Entries` (`id` UUID PRIMARY KEY, `text` TEXT NOT NULL, `timestamp` DATETIME, `FolderId` UUID REFERENCES `Folders` (`id`) ON DELETE SET NULL ON UPDATE CASCADE, `createdAt` DATETIME NOT NULL, `updatedAt` DATETIME NOT NULL);
+Executing (default): CREATE TABLE IF NOT EXISTS `Tags` (`name` VARCHAR(255) PRIMARY KEY, `createdAt` DATETIME NOT NULL, `updatedAt` DATETIME NOT NULL);
+Executing (default): CREATE TABLE IF NOT EXISTS `EntryTag` (`EntryId` UUID NOT NULL REFERENCES `Entries` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, `TagName` VARCHAR(255) NOT NULL REFERENCES `Tags` (`name`) ON DELETE CASCADE ON UPDATE CASCADE, `createdAt` DATETIME NOT NULL, `updatedAt` DATETIME NOT NULL, PRIMARY KEY (`EntryId`, `TagName`));
+Executing (default): SELECT name FROM sqlite_master WHERE type='table' AND name='SequelizeMeta';
+Executing (default): PRAGMA INDEX_LIST(`SequelizeMeta`)
+Executing (default): PRAGMA INDEX_INFO(`sqlite_autoindex_SequelizeMeta_1`)
+Executing (default): INSERT INTO `SequelizeMeta` (`name`) VALUES ($1);
 Server is running on port: 5001
