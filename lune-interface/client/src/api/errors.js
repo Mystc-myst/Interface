@@ -19,3 +19,10 @@ export class CancelledError extends Error {
     this.name = 'CancelledError';
   }
 }
+
+export class OfflineError extends Error {
+  constructor(message = 'The application is currently offline. Your request has been queued.') {
+    super(message);
+    this.name = 'OfflineError';
+  }
+}

@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { ApiError, NetworkError, CancelledError } from './errors';
+import { ApiError, NetworkError, CancelledError, OfflineError } from './errors';
+import { getOfflineQueue, addToOfflineQueue, clearOfflineQueue } from './offlineQueue';
 
 const axiosClient = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL,
@@ -10,14 +11,20 @@ const axiosClient = axios.create({
   }
 });
 
-// Request interceptor for logging and auth
+// Request interceptor for logging, auth, and offline handling
 axiosClient.interceptors.request.use(
   (config) => {
-    // In a real app, you would get the token from local storage or a state manager
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    if (!navigator.onLine) {
+      console.log('App is offline. Queuing request:', config);
+      addToOfflineQueue({
+        url: config.url,
+        method: config.method,
+        data: config.data,
+        headers: config.headers,
+      });
+      return Promise.reject(new OfflineError());
+    }
+
     console.log('Starting Request', config);
     return config;
   },
@@ -38,6 +45,10 @@ axiosClient.interceptors.response.use(
 
     if (axios.isCancel(error)) {
       return Promise.reject(new CancelledError());
+    }
+
+    if (error instanceof OfflineError) {
+      return Promise.reject(error);
     }
 
     const { config, response } = error;
@@ -79,5 +90,36 @@ axiosClient.interceptors.response.use(
     }
   }
 );
+
+const processOfflineQueue = async () => {
+  const queue = getOfflineQueue();
+  if (queue.length === 0) {
+    return;
+  }
+
+  console.log('Processing offline queue:', queue);
+
+  const results = await Promise.allSettled(
+    queue.map(request => axiosClient(request))
+  );
+
+  const failedRequests = [];
+  results.forEach((result, index) => {
+    if (result.status === 'rejected') {
+      console.error('Queued request failed:', result.reason);
+      failedRequests.push(queue[index]);
+    } else {
+      console.log('Queued request successful:', queue[index]);
+    }
+  });
+
+  if (failedRequests.length > 0) {
+    localStorage.setItem('offline-queue', JSON.stringify(failedRequests));
+  } else {
+    clearOfflineQueue();
+  }
+};
+
+window.addEventListener('online', processOfflineQueue);
 
 export default axiosClient;
